@@ -171,10 +171,6 @@ static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
  */
 uint8_t sd_raw_init()
 {
-    /* enable inputs for reading card status */
-    configure_pin_available();
-    configure_pin_locked();
-
     /* enable outputs for MOSI, SCK, SS, input for MISO */
     configure_pin_mosi();
     configure_pin_sck();
@@ -197,9 +193,6 @@ uint8_t sd_raw_init()
     /* initialization procedure */
     sd_raw_card_type = 0;
     
-    if(!sd_raw_available())
-        return 0;
-
     /* card needs 74 cycles minimum to start up */
     for(uint8_t i = 0; i < 10; ++i)
     {
@@ -225,7 +218,6 @@ uint8_t sd_raw_init()
         }
     }
 
-#if SD_RAW_SDHC
     /* check for version of SD card specification */
     response = sd_raw_send_command(CMD_SEND_IF_COND, 0x100 /* 2.7V - 3.6V */ | 0xaa /* test pattern */);
     if((response & (1 << R1_ILL_COMMAND)) == 0)
@@ -241,7 +233,6 @@ uint8_t sd_raw_init()
         sd_raw_card_type |= (1 << SD_RAW_SPEC_2);
     }
     else
-#endif
     {
         /* determine SD/MMC card type */
         sd_raw_send_command(CMD_APP, 0);
@@ -263,10 +254,8 @@ uint8_t sd_raw_init()
         if(sd_raw_card_type & ((1 << SD_RAW_SPEC_1) | (1 << SD_RAW_SPEC_2)))
         {
             uint32_t arg = 0;
-#if SD_RAW_SDHC
             if(sd_raw_card_type & (1 << SD_RAW_SPEC_2))
                 arg = 0x40000000;
-#endif
             sd_raw_send_command(CMD_APP, 0);
             response = sd_raw_send_command(CMD_SD_SEND_OP_COND, arg);
         }
@@ -285,7 +274,6 @@ uint8_t sd_raw_init()
         }
     }
 
-#if SD_RAW_SDHC
     if(sd_raw_card_type & (1 << SD_RAW_SPEC_2))
     {
         if(sd_raw_send_command(CMD_READ_OCR, 0))
@@ -301,7 +289,6 @@ uint8_t sd_raw_init()
         sd_raw_rec_byte();
         sd_raw_rec_byte();
     }
-#endif
 
     /* set block size to 512 bytes */
     if(sd_raw_send_command(CMD_SET_BLOCKLEN, 512))
@@ -328,28 +315,6 @@ uint8_t sd_raw_init()
 #endif
 
     return 1;
-}
-
-/**
- * \ingroup sd_raw
- * Checks wether a memory card is located in the slot.
- *
- * \returns 1 if the card is available, 0 if it is not.
- */
-uint8_t sd_raw_available()
-{
-    return get_pin_available() == 0x00;
-}
-
-/**
- * \ingroup sd_raw
- * Checks wether the memory card is locked for write access.
- *
- * \returns 1 if the card is locked, 0 if it is not.
- */
-uint8_t sd_raw_locked()
-{
-    return get_pin_locked() == 0x00;
 }
 
 /**
@@ -467,11 +432,7 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
             select_card();
 
             /* send single block request */
-#if SD_RAW_SDHC
             if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ? block_address / 512 : block_address)))
-#else
-            if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, block_address))
-#endif
             {
                 unselect_card();
                 return 0;
@@ -585,11 +546,7 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
         read_length = 512 - block_offset;
         
         /* send single block request */
-#if SD_RAW_SDHC
         if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ? offset / 512 : offset - block_offset)))
-#else
-        if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, offset - block_offset))
-#endif
         {
             unselect_card();
             return 0;
@@ -665,9 +622,6 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
  */
 uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
 {
-    if(sd_raw_locked())
-        return 0;
-
     offset_t block_address;
     uint16_t block_offset;
     uint16_t write_length;
@@ -714,11 +668,7 @@ uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
         select_card();
 
         /* send single block request */
-#if SD_RAW_SDHC
         if(sd_raw_send_command(CMD_WRITE_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ? block_address / 512 : block_address)))
-#else
-        if(sd_raw_send_command(CMD_WRITE_SINGLE_BLOCK, block_address))
-#endif
         {
             unselect_card();
             return 0;
@@ -850,7 +800,7 @@ uint8_t sd_raw_sync()
  */
 uint8_t sd_raw_get_info(struct sd_raw_info* info)
 {
-    if(!info || !sd_raw_available())
+    if(!info)
         return 0;
 
     memset(info, 0, sizeof(*info));
@@ -906,11 +856,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     /* read csd register */
     uint8_t csd_read_bl_len = 0;
     uint8_t csd_c_size_mult = 0;
-#if SD_RAW_SDHC
     uint16_t csd_c_size = 0;
-#else
-    uint32_t csd_c_size = 0;
-#endif
     uint8_t csd_structure = 0;
     if(sd_raw_send_command(CMD_SEND_CSD, 0))
     {
@@ -938,7 +884,6 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         }
         else
         {
-#if SD_RAW_SDHC
             if(csd_structure == 0x01)
             {
                 switch(i)
@@ -958,7 +903,6 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
                 }
             }
             else if(csd_structure == 0x00)
-#endif
             {
                 switch(i)
                 {
