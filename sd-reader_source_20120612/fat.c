@@ -147,9 +147,7 @@ struct fat_header_struct
     offset_t cluster_zero_offset;
 
     offset_t root_dir_offset;
-#if FAT_FAT32_SUPPORT
     cluster_t root_dir_cluster;
-#endif
 };
 
 struct fat_fs_struct
@@ -206,9 +204,7 @@ static uint8_t fat_calc_83_checksum(const uint8_t* file_name_83);
 #endif
 
 static uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t offset, void* p);
-#if FAT_FAT32_SUPPORT
 static uint8_t fat_get_fs_free_32_callback(uint8_t* buffer, offset_t offset, void* p);
-#endif
 
 #if FAT_WRITE_SUPPORT
 static cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, cluster_t count);
@@ -317,11 +313,7 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
         return 0;
 
     /* read fat parameters */
-#if FAT_FAT32_SUPPORT
     uint8_t buffer[37];
-#else
-    uint8_t buffer[25];
-#endif
     offset_t partition_offset = (offset_t) partition->offset * 512;
     if(!partition->device_read(partition_offset + 0x0b, buffer, sizeof(buffer)))
         return 0;
@@ -334,10 +326,8 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
     uint16_t sector_count_16 = read16(&buffer[0x08]);
     uint16_t sectors_per_fat = read16(&buffer[0x0b]);
     uint32_t sector_count = read32(&buffer[0x15]);
-#if FAT_FAT32_SUPPORT
     uint32_t sectors_per_fat32 = read32(&buffer[0x19]);
     uint32_t cluster_root_dir = read32(&buffer[0x21]);
-#endif
 
     if(sector_count == 0)
     {
@@ -347,26 +337,16 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
         else
             sector_count = sector_count_16;
     }
-#if FAT_FAT32_SUPPORT
     if(sectors_per_fat != 0)
         sectors_per_fat32 = sectors_per_fat;
     else if(sectors_per_fat32 == 0)
         /* this is neither FAT16 nor FAT32 */
         return 0;
-#else
-    if(sectors_per_fat == 0)
-        /* this is not a FAT16 */
-        return 0;
-#endif
 
     /* determine the type of FAT we have here */
     uint32_t data_sector_count = sector_count
                                  - reserved_sectors
-#if FAT_FAT32_SUPPORT
                                  - sectors_per_fat32 * fat_copies
-#else
-                                 - (uint32_t) sectors_per_fat * fat_copies
-#endif
                                  - ((max_root_entries * 32 + bytes_per_sector - 1) / bytes_per_sector);
     uint32_t data_cluster_count = data_sector_count / sectors_per_cluster;
     if(data_cluster_count < 4085)
@@ -394,9 +374,7 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
     header->sector_size = bytes_per_sector;
     header->cluster_size = (uint16_t) bytes_per_sector * sectors_per_cluster;
 
-#if FAT_FAT32_SUPPORT
     if(partition->type == PARTITION_TYPE_FAT16)
-#endif
     {
         header->root_dir_offset = /* jump to fats */
                                   header->fat_offset +
@@ -408,7 +386,6 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
                                       /* skip root directory entries */
                                       (offset_t) max_root_entries * 32;
     }
-#if FAT_FAT32_SUPPORT
     else
     {
         header->cluster_zero_offset = /* jump to fats */
@@ -418,7 +395,6 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
 
         header->root_dir_cluster = cluster_root_dir;
     }
-#endif
 
     return 1;
 }
@@ -440,7 +416,6 @@ cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster
     if(!fs || cluster_num < 2)
         return 0;
 
-#if FAT_FAT32_SUPPORT
     if(fs->partition->type == PARTITION_TYPE_FAT32)
     {
         /* read appropriate fat entry */
@@ -458,7 +433,6 @@ cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster
             return 0;
     }
     else
-#endif
     {
         /* read appropriate fat entry */
         uint16_t fat_entry;
@@ -503,14 +477,12 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
     cluster_t cluster_next = 0;
     cluster_t cluster_count;
     uint16_t fat_entry16;
-#if FAT_FAT32_SUPPORT
     uint32_t fat_entry32;
     uint8_t is_fat32 = (fs->partition->type == PARTITION_TYPE_FAT32);
 
     if(is_fat32)
         cluster_count = fs->header.fat_size / sizeof(fat_entry32);
     else
-#endif
         cluster_count = fs->header.fat_size / sizeof(fat_entry16);
 
     fs->cluster_free = 0;
@@ -519,20 +491,17 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
         if(cluster_current < 2 || cluster_current >= cluster_count)
             cluster_current = 2;
 
-#if FAT_FAT32_SUPPORT
         if(is_fat32)
         {
             if(!device_read(fat_offset + (offset_t) cluster_current * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
                 return 0;
         }
         else
-#endif
         {
             if(!device_read(fat_offset + (offset_t) cluster_current * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
                 return 0;
         }
 
-#if FAT_FAT32_SUPPORT
         if(is_fat32)
         {
             /* check if this is a free cluster */
@@ -559,7 +528,6 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
                 break;
         }
         else
-#endif
         {
             /* check if this is a free cluster */
             if(fat_entry16 != HTOL16(FAT16_CLUSTER_FREE))
@@ -599,7 +567,6 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
          */
         if(cluster_num >= 2)
         {
-#if FAT_FAT32_SUPPORT
             if(is_fat32)
             {
                 fat_entry32 = htol32(cluster_next);
@@ -608,7 +575,6 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
                     break;
             }
             else
-#endif
             {
                 fat_entry16 = htol16((uint16_t) cluster_next);
 
@@ -654,7 +620,6 @@ uint8_t fat_free_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
         return 0;
 
     offset_t fat_offset = fs->header.fat_offset;
-#if FAT_FAT32_SUPPORT
     if(fs->partition->type == PARTITION_TYPE_FAT32)
     {
         uint32_t fat_entry;
@@ -695,7 +660,6 @@ uint8_t fat_free_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
         }
     }
     else
-#endif
     {
         uint16_t fat_entry;
         while(cluster_num)
@@ -755,7 +719,6 @@ uint8_t fat_terminate_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
     cluster_t cluster_num_next = fat_get_next_cluster(fs, cluster_num);
 
     /* mark cluster as the last one */
-#if FAT_FAT32_SUPPORT
     if(fs->partition->type == PARTITION_TYPE_FAT32)
     {
         uint32_t fat_entry = HTOL32(FAT32_CLUSTER_LAST_MAX);
@@ -763,7 +726,6 @@ uint8_t fat_terminate_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
             return 0;
     }
     else
-#endif
     {
         uint16_t fat_entry = HTOL16(FAT16_CLUSTER_LAST_MAX);
         if(!fs->partition->device_write(fs->header.fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
@@ -1480,11 +1442,9 @@ uint8_t fat_read_dir(struct fat_dir_struct* dd, struct fat_dir_entry_struct* dir
     /* check if we read from the root directory */
     if(cluster_num == 0)
     {
-#if FAT_FAT32_SUPPORT
         if(fs->partition->type == PARTITION_TYPE_FAT32)
             cluster_num = header->root_dir_cluster;
         else
-#endif
             cluster_size = header->cluster_zero_offset - header->root_dir_offset;
     }
 
@@ -1694,9 +1654,7 @@ uint8_t fat_dir_entry_read_callback(uint8_t* buffer, offset_t offset, void* p)
         /* extract properties of file and store them within the structure */
         dir_entry->attributes = buffer[11];
         dir_entry->cluster = read16(&buffer[26]);
-#if FAT_FAT32_SUPPORT
         dir_entry->cluster |= ((cluster_t) read16(&buffer[20])) << 16;
-#endif
         dir_entry->file_size = read32(&buffer[28]);
 
 #if FAT_DATETIME_SUPPORT
@@ -1752,19 +1710,15 @@ offset_t fat_find_offset_for_dir_entry(struct fat_fs_struct* fs, const struct fa
     offset_t dir_entry_offset = 0;
     offset_t offset = 0;
     offset_t offset_to = 0;
-#if FAT_FAT32_SUPPORT
     uint8_t is_fat32 = (fs->partition->type == PARTITION_TYPE_FAT32);
-#endif
 
     if(cluster_num == 0)
     {
-#if FAT_FAT32_SUPPORT
         if(is_fat32)
         {
             cluster_num = fs->header.root_dir_cluster;
         }
         else
-#endif
         {
             /* we read/write from the root directory entry */
             offset = fs->header.root_dir_offset;
@@ -1964,9 +1918,7 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
     write16(&buffer[0x16], dir_entry->modification_time);
     write16(&buffer[0x18], dir_entry->modification_date);
 #endif
-#if FAT_FAT32_SUPPORT
     write16(&buffer[0x14], (uint16_t) (dir_entry->cluster >> 16));
-#endif
     write16(&buffer[0x1a], dir_entry->cluster);
     write32(&buffer[0x1c], dir_entry->file_size);
 
@@ -2450,11 +2402,9 @@ offset_t fat_get_fs_size(const struct fat_fs_struct* fs)
     if(!fs)
         return 0;
 
-#if FAT_FAT32_SUPPORT
     if(fs->partition->type == PARTITION_TYPE_FAT32)
         return (offset_t) (fs->header.fat_size / 4 - 2) * fs->header.cluster_size;
     else
-#endif
         return (offset_t) (fs->header.fat_size / 2 - 2) * fs->header.cluster_size;
 }
 
@@ -2490,13 +2440,9 @@ offset_t fat_get_fs_free(const struct fat_fs_struct* fs)
                                                 fat,
                                                 sizeof(fat),
                                                 length,
-#if FAT_FAT32_SUPPORT
                                                 (fs->partition->type == PARTITION_TYPE_FAT16) ?
                                                     fat_get_fs_free_16_callback :
                                                     fat_get_fs_free_32_callback,
-#else
-                                                fat_get_fs_free_16_callback,
-#endif
                                                 &count_arg
                                                )
           )
@@ -2528,7 +2474,7 @@ uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t offset, void* p)
     return 1;
 }
 
-#if DOXYGEN || FAT_FAT32_SUPPORT
+#if DOXYGEN
 /**
  * \ingroup fat_fs
  * Callback function used for counting free clusters in a FAT32.

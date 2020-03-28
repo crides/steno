@@ -55,14 +55,6 @@ extern "C"
 
 /**
  * \ingroup fat_config
- * Controls FAT32 support.
- *
- * Set to 1 to enable FAT32 support.
- */
-#define FAT_FAT32_SUPPORT SD_RAW_SDHC
-
-/**
- * \ingroup fat_config
  * Controls updates of directory entries.
  *
  * Set to 1 to delay directory entry updates until the file is closed.
@@ -114,11 +106,7 @@ void get_datetime(uint16_t* year, uint8_t* month, uint8_t* day, uint8_t* hour, u
  * @}
  */
 
-#if FAT_FAT32_SUPPORT
-    typedef uint32_t cluster_t;
-#else
-    typedef uint16_t cluster_t;
-#endif
+typedef uint32_t cluster_t;
 
 #ifdef __cplusplus
 }
