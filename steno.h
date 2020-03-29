@@ -2,6 +2,7 @@
 #define _STENO_H_
 
 #include "quantum.h"
+#include <stdint.h>
 
 #define S_N1  ((uint32_t) 1 << 27)
 #define S_N2  ((uint32_t) 1 << 26)
@@ -31,5 +32,15 @@
 #define S_SR  ((uint32_t) 1 << 2)
 #define S_D   ((uint32_t) 1 << 1)
 #define S_Z   ((uint32_t) 1 << 0)
+
+typedef struct {
+    uint8_t input[3];
+    uint8_t addr[3];
+} child_node_t;
+
+typedef struct {
+    uint16_t node_num;
+    uint8_t str_len;
+} node_header_t;
 
 #endif

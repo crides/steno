@@ -2474,7 +2474,6 @@ uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t offset, void* p)
     return 1;
 }
 
-#if DOXYGEN
 /**
  * \ingroup fat_fs
  * Callback function used for counting free clusters in a FAT32.
@@ -2493,5 +2492,3 @@ uint8_t fat_get_fs_free_32_callback(uint8_t* buffer, offset_t offset, void* p)
 
     return 1;
 }
-#endif
-

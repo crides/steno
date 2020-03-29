@@ -4,12 +4,12 @@ ARCH = AVR8
 F_USB = $(F_CPU)
 BOOTLOADER = caterina
 
-# SRC += File.cpp SD.cpp utility/Sd2Card.cpp utility/SdFile.cpp utility/SdVolume.cpp
+SRC += sdcard/fat.c sdcard/partition.c sdcard/sd_raw.c sdcard/byteordering.c
 
-MOUSEKEY_ENABLE = yes
-EXTRAKEY_ENABLE = yes
+MOUSEKEY_ENABLE = no
+EXTRAKEY_ENABLE = no
 CONSOLE_ENABLE = yes
 STENO_ENABLE = yes
 FORCE_NKRO = yes
-BLUETOOTH = AdafruitBLE
+# BLUETOOTH = AdafruitBLE
 COMBO_ENABLE = yes

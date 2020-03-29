@@ -34,7 +34,7 @@ extern "C"
  *
  * Set to 1 to enable MMC/SD write support, set to 0 to disable it.
  */
-#define SD_RAW_WRITE_SUPPORT 1
+#define SD_RAW_WRITE_SUPPORT 0
 
 /**
  * \ingroup sd_raw_config
@@ -63,13 +63,13 @@ extern "C"
  */
 
 /* defines for customisation of sd/mmc port access */
-#define configure_pin_mosi() DDRB |= (1 << DDB3)
-#define configure_pin_sck() DDRB |= (1 << DDB5)
+#define configure_pin_sck() DDRB |= (1 << DDB1)
+#define configure_pin_mosi() DDRB |= (1 << DDB2)
+#define configure_pin_miso() DDRB &= ~(1 << DDB3)
 #define configure_pin_ss() DDRD |= (1 << DDD1)
-#define configure_pin_miso() DDRB &= ~(1 << DDB4)
 
-#define select_card() PORTB &= ~(1 << PORTD1)
-#define unselect_card() PORTB |= (1 << PORTD1)
+#define select_card() PORTD &= ~(1 << PORTD1)
+#define unselect_card() PORTD |= (1 << PORTD1)
 
 typedef uint64_t offset_t;
 

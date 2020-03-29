@@ -12,6 +12,8 @@
 #include <avr/io.h>
 #include "sd_raw.h"
 
+#include "steno.h"
+
 /**
  * \addtogroup sd_raw MMC/SD/SDHC card raw access
  *
@@ -160,7 +162,7 @@ static uint8_t sd_raw_card_type;
 
 /* private helper functions */
 static void sd_raw_send_byte(uint8_t b);
-static uint8_t sd_raw_rec_byte();
+static uint8_t sd_raw_rec_byte(void);
 static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
 
 /**
@@ -169,9 +171,11 @@ static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
  *
  * \returns 0 on failure, 1 on success.
  */
-uint8_t sd_raw_init()
+uint8_t sd_raw_init(void)
 {
     /* enable outputs for MOSI, SCK, SS, input for MISO */
+    DDRB |= _BV(DDB0);
+    PORTB |= _BV(PORTB0);
     configure_pin_mosi();
     configure_pin_sck();
     configure_pin_ss();
@@ -180,15 +184,17 @@ uint8_t sd_raw_init()
     unselect_card();
 
     /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
-    SPCR = (0 << SPIE) | /* SPI Interrupt Enable */
-           (1 << SPE)  | /* SPI Enable */
-           (0 << DORD) | /* Data Order: MSB first */
-           (1 << MSTR) | /* Master mode */
-           (0 << CPOL) | /* Clock Polarity: SCK low when idle */
-           (0 << CPHA) | /* Clock Phase: sample on rising SCK edge */
-           (1 << SPR1) | /* Clock Frequency: f_OSC / 128 */
-           (1 << SPR0);
-    SPSR &= ~(1 << SPI2X); /* No doubled clock frequency */
+    SPCR = _BV(MSTR) | _BV(SPE) | _BV(SPR1) | _BV(SPR0);
+    /* SPCR = (0 << SPIE) | /1* SPI Interrupt Enable *1/ */
+    /*        (1 << SPE)  | /1* SPI Enable *1/ */
+    /*        (0 << DORD) | /1* Data Order: MSB first *1/ */
+    /*        (1 << MSTR) | /1* Master mode *1/ */
+    /*        (0 << CPOL) | /1* Clock Polarity: SCK low when idle *1/ */
+    /*        (0 << CPHA) | /1* Clock Phase: sample on rising SCK edge *1/ */
+    /*        (0 << SPR1) | /1* Clock Frequency: f_OSC / 128 *1/ */
+    /*        (0 << SPR0); */
+    SPSR = 0;
+    /* SPSR = _BV(SPI2X); /1* doubled clock frequency *1/ */
 
     /* initialization procedure */
     sd_raw_card_type = 0;
@@ -214,6 +220,7 @@ uint8_t sd_raw_init()
         if(i == 0x1ff)
         {
             unselect_card();
+            uprintf("too many tries\n");
             return 0;
         }
     }
@@ -224,10 +231,15 @@ uint8_t sd_raw_init()
     {
         sd_raw_rec_byte();
         sd_raw_rec_byte();
-        if((sd_raw_rec_byte() & 0x01) == 0)
+        if ((sd_raw_rec_byte() & 0x01) == 0) {
+            uprintf("Voltage\n");
             return 0; /* card operation voltage range doesn't match */
-        if(sd_raw_rec_byte() != 0xaa)
+        }
+        uint8_t byte = sd_raw_rec_byte();
+        if (byte != 0xaa) {
+            uprintf("Wrong pattern: %X\n", byte);
             return 0; /* wrong test pattern */
+        }
 
         /* card conforms to SD 2 card specification */
         sd_raw_card_type |= (1 << SD_RAW_SPEC_2);
@@ -267,9 +279,10 @@ uint8_t sd_raw_init()
         if((response & (1 << R1_IDLE_STATE)) == 0)
             break;
 
-        if(i == 0x7fff)
+        if(i == 0x7f)
         {
             unselect_card();
+            uprintf("Too many tries\n");
             return 0;
         }
     }
@@ -279,6 +292,7 @@ uint8_t sd_raw_init()
         if(sd_raw_send_command(CMD_READ_OCR, 0))
         {
             unselect_card();
+            uprintf("Read OCR\n");
             return 0;
         }
 
@@ -294,6 +308,7 @@ uint8_t sd_raw_init()
     if(sd_raw_send_command(CMD_SET_BLOCKLEN, 512))
     {
         unselect_card();
+        uprintf("Can't set block size\n");
         return 0;
     }
 
@@ -310,8 +325,10 @@ uint8_t sd_raw_init()
 #if SD_RAW_WRITE_BUFFERING
     raw_block_written = 1;
 #endif
-    if(!sd_raw_read(0, raw_block, sizeof(raw_block)))
+    if (!sd_raw_read(0, raw_block, sizeof(raw_block))) {
+        uprintf("Can't read\n");
         return 0;
+    }
 #endif
 
     return 1;
@@ -327,9 +344,7 @@ uint8_t sd_raw_init()
 void sd_raw_send_byte(uint8_t b)
 {
     SPDR = b;
-    /* wait for byte to be shifted out */
     while(!(SPSR & (1 << SPIF)));
-    SPSR &= ~(1 << SPIF);
 }
 
 /**
@@ -339,12 +354,11 @@ void sd_raw_send_byte(uint8_t b)
  * \returns The byte which should be read.
  * \see sd_raw_send_byte
  */
-uint8_t sd_raw_rec_byte()
+uint8_t sd_raw_rec_byte(void)
 {
     /* send dummy data for receiving some */
     SPDR = 0xff;
     while(!(SPSR & (1 << SPIF)));
-    SPSR &= ~(1 << SPIF);
 
     return SPDR;
 }
@@ -369,7 +383,7 @@ uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
     sd_raw_send_byte((arg >> 24) & 0xff);
     sd_raw_send_byte((arg >> 16) & 0xff);
     sd_raw_send_byte((arg >> 8) & 0xff);
-    sd_raw_send_byte((arg >> 0) & 0xff);
+    sd_raw_send_byte(arg & 0xff);
     switch(command)
     {
         case CMD_GO_IDLE_STATE:
@@ -387,8 +401,9 @@ uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
     for(uint8_t i = 0; i < 10; ++i)
     {
         response = sd_raw_rec_byte();
-        if(response != 0xff)
+        if (!(response & 0x80)) {
             break;
+        }
     }
 
     return response;

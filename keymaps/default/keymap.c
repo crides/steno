@@ -18,18 +18,6 @@
         {KC_NO , KC_NO , L20 , L21 , L22 , R20 , R21 , R22 , KC_NO , KC_NO , KC_NO} , \
     }
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-#ifdef CONSOLE_ENABLE
-    // For keylogging
-    /* uprintf("[kl] %u:%u %c\n", record->event.key.row, record->event.key.col, record->event.pressed ? 'p' : 'P'); */
-#endif 
-    return true;
-}
-
-void matrix_init_user() {
-    steno_set_mode(STENO_MODE_GEMINI);
-}
-
 void print_keys(uint32_t keys) {
     uint8_t buf[30] = {0};
 #define set_if_bit(c, n) buf[(27-n)] = keys & ((uint32_t) 1 << n) ? c : '-';
@@ -79,7 +67,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     P(S_N1 | S_N2 | S_RL | S_RR, layer_on(_QWERTY_STENO));
     return true;
 }
-
 enum combos {
     COMBO_A,
     COMBO_S,
