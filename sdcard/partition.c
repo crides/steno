@@ -12,6 +12,7 @@
 #include "partition.h"
 #include "partition_config.h"
 #include "sd-reader_config.h"
+#include "sd_raw.h"
 
 #include <string.h>
 
@@ -62,24 +63,17 @@ static struct partition_struct partition_handles[PARTITION_COUNT];
  * \returns 0 on failure, a partition descriptor on success.
  * \see partition_close
  */
-struct partition_struct* partition_open(device_read_t device_read, device_read_interval_t device_read_interval, device_write_t device_write, device_write_interval_t device_write_interval, int8_t index)
-{
+struct partition_struct* partition_open() {
     struct partition_struct* new_partition = 0;
     uint8_t buffer[0x10];
 
-    if(!device_read || !device_read_interval || index >= 4)
+    /* read specified partition table index */
+    if(!sd_raw_read(0x01be, buffer, sizeof(buffer)))
         return 0;
 
-    if(index >= 0)
-    {
-        /* read specified partition table index */
-        if(!device_read(0x01be + index * 0x10, buffer, sizeof(buffer)))
-            return 0;
-
-        /* abort on empty partition entry */
-        if(buffer[4] == 0x00)
-            return 0;
-    }
+    /* abort on empty partition entry */
+    if(buffer[4] == 0x00)
+        return 0;
 
     /* allocate partition descriptor */
 #if USE_DYNAMIC_MEMORY
@@ -103,21 +97,14 @@ struct partition_struct* partition_open(device_read_t device_read, device_read_i
     memset(new_partition, 0, sizeof(*new_partition));
 
     /* fill partition descriptor */
-    new_partition->device_read = device_read;
-    new_partition->device_read_interval = device_read_interval;
-    new_partition->device_write = device_write;
-    new_partition->device_write_interval = device_write_interval;
+    new_partition->device_read = sd_raw_read;
+    new_partition->device_read_interval = sd_raw_read_interval;
+    new_partition->device_write = 0;
+    new_partition->device_write_interval = 0;
 
-    if(index >= 0)
-    {
-        new_partition->type = buffer[4];
-        new_partition->offset = read32(&buffer[8]);
-        new_partition->length = read32(&buffer[12]);
-    }
-    else
-    {
-        new_partition->type = 0xff;
-    }
+    new_partition->type = buffer[4];
+    new_partition->offset = read32(&buffer[8]);
+    new_partition->length = read32(&buffer[12]);
 
     return new_partition;
 }
