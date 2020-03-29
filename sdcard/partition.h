@@ -153,35 +153,6 @@ typedef uint8_t (*device_write_interval_t)(offset_t offset, uint8_t* buffer, uin
 struct partition_struct
 {
     /**
-     * The function which reads data from the partition.
-     *
-     * \note The offset given to this function is relative to the whole disk,
-     *       not to the start of the partition.
-     */
-    device_read_t device_read;
-    /**
-     * The function which repeatedly reads a constant amount of data from the partition.
-     *
-     * \note The offset given to this function is relative to the whole disk,
-     *       not to the start of the partition.
-     */
-    device_read_interval_t device_read_interval;
-    /**
-     * The function which writes data to the partition.
-     *
-     * \note The offset given to this function is relative to the whole disk,
-     *       not to the start of the partition.
-     */
-    device_write_t device_write;
-    /**
-     * The function which repeatedly writes data to the partition.
-     *
-     * \note The offset given to this function is relative to the whole disk,
-     *       not to the start of the partition.
-     */
-    device_write_interval_t device_write_interval;
-
-    /**
      * The type of the partition.
      *
      * Compare this value to the PARTITION_TYPE_* constants.

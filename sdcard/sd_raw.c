@@ -151,10 +151,6 @@
 static uint8_t raw_block[512];
 /* offset where the data within raw_block lies on the card */
 static offset_t raw_block_address;
-#if SD_RAW_WRITE_BUFFERING
-/* flag to remember if raw_block was written to the card */
-static uint8_t raw_block_written;
-#endif
 #endif
 
 /* card type state */
@@ -184,7 +180,7 @@ uint8_t sd_raw_init(void)
     unselect_card();
 
     /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
-    SPCR = _BV(MSTR) | _BV(SPE) | _BV(SPR1) | _BV(SPR0);
+    SPCR = _BV(MSTR) | _BV(SPE);
     /* SPCR = (0 << SPIE) | /1* SPI Interrupt Enable *1/ */
     /*        (1 << SPE)  | /1* SPI Enable *1/ */
     /*        (0 << DORD) | /1* Data Order: MSB first *1/ */
@@ -193,8 +189,8 @@ uint8_t sd_raw_init(void)
     /*        (0 << CPHA) | /1* Clock Phase: sample on rising SCK edge *1/ */
     /*        (0 << SPR1) | /1* Clock Frequency: f_OSC / 128 *1/ */
     /*        (0 << SPR0); */
-    SPSR = 0;
-    /* SPSR = _BV(SPI2X); /1* doubled clock frequency *1/ */
+    /* SPSR = 0; */
+    SPSR = _BV(SPI2X); /* doubled clock frequency */
 
     /* initialization procedure */
     sd_raw_card_type = 0;
@@ -322,9 +318,6 @@ uint8_t sd_raw_init(void)
 #if !SD_RAW_SAVE_RAM
     /* the first block is likely to be accessed first, so precache it here */
     raw_block_address = (offset_t) -1;
-#if SD_RAW_WRITE_BUFFERING
-    raw_block_written = 1;
-#endif
     if (!sd_raw_read(0, raw_block, sizeof(raw_block))) {
         uprintf("Can't read\n");
         return 0;
@@ -438,10 +431,6 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
         if(block_address != raw_block_address)
 #endif
         {
-#if SD_RAW_WRITE_BUFFERING
-            if(!sd_raw_sync())
-                return 0;
-#endif
 
             /* address card */
             select_card();
@@ -619,184 +608,6 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
     return 1;
 #endif
 }
-
-#if DOXYGEN || SD_RAW_WRITE_SUPPORT
-/**
- * \ingroup sd_raw
- * Writes raw data to the card.
- *
- * \note If write buffering is enabled, you might have to
- *       call sd_raw_sync() before disconnecting the card
- *       to ensure all remaining data has been written.
- *
- * \param[in] offset The offset where to start writing.
- * \param[in] buffer The buffer containing the data to be written.
- * \param[in] length The number of bytes to write.
- * \returns 0 on failure, 1 on success.
- * \see sd_raw_write_interval, sd_raw_read, sd_raw_read_interval
- */
-uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
-{
-    offset_t block_address;
-    uint16_t block_offset;
-    uint16_t write_length;
-    while(length > 0)
-    {
-        /* determine byte count to write at once */
-        block_offset = offset & 0x01ff;
-        block_address = offset - block_offset;
-        write_length = 512 - block_offset; /* write up to block border */
-        if(write_length > length)
-            write_length = length;
-        
-        /* Merge the data to write with the content of the block.
-         * Use the cached block if available.
-         */
-        if(block_address != raw_block_address)
-        {
-#if SD_RAW_WRITE_BUFFERING
-            if(!sd_raw_sync())
-                return 0;
-#endif
-
-            if(block_offset || write_length < 512)
-            {
-                if(!sd_raw_read(block_address, raw_block, sizeof(raw_block)))
-                    return 0;
-            }
-            raw_block_address = block_address;
-        }
-
-        if(buffer != raw_block)
-        {
-            memcpy(raw_block + block_offset, buffer, write_length);
-
-#if SD_RAW_WRITE_BUFFERING
-            raw_block_written = 0;
-
-            if(length == write_length)
-                return 1;
-#endif
-        }
-
-        /* address card */
-        select_card();
-
-        /* send single block request */
-        if(sd_raw_send_command(CMD_WRITE_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ? block_address / 512 : block_address)))
-        {
-            unselect_card();
-            return 0;
-        }
-
-        /* send start byte */
-        sd_raw_send_byte(0xfe);
-
-        /* write byte block */
-        uint8_t* cache = raw_block;
-        for(uint16_t i = 0; i < 512; ++i)
-            sd_raw_send_byte(*cache++);
-
-        /* write dummy crc16 */
-        sd_raw_send_byte(0xff);
-        sd_raw_send_byte(0xff);
-
-        /* wait while card is busy */
-        while(sd_raw_rec_byte() != 0xff);
-        sd_raw_rec_byte();
-
-        /* deaddress card */
-        unselect_card();
-
-        buffer += write_length;
-        offset += write_length;
-        length -= write_length;
-
-#if SD_RAW_WRITE_BUFFERING
-        raw_block_written = 1;
-#endif
-    }
-
-    return 1;
-}
-#endif
-
-#if DOXYGEN || SD_RAW_WRITE_SUPPORT
-/**
- * \ingroup sd_raw
- * Writes a continuous data stream obtained from a callback function.
- *
- * This function starts writing at the specified offset. To obtain the
- * next bytes to write, it calls the callback function. The callback fills the
- * provided data buffer and returns the number of bytes it has put into the buffer.
- *
- * By returning zero, the callback may stop writing.
- *
- * \param[in] offset Offset where to start writing.
- * \param[in] buffer Pointer to a buffer which is used for the callback function.
- * \param[in] length Number of bytes to write in total. May be zero for endless writes.
- * \param[in] callback The function used to obtain the bytes to write.
- * \param[in] p An opaque pointer directly passed to the callback function.
- * \returns 0 on failure, 1 on success
- * \see sd_raw_read_interval, sd_raw_write, sd_raw_read
- */
-uint8_t sd_raw_write_interval(offset_t offset, uint8_t* buffer, uintptr_t length, sd_raw_write_interval_handler_t callback, void* p)
-{
-#if SD_RAW_SAVE_RAM
-    #error "SD_RAW_WRITE_SUPPORT is not supported together with SD_RAW_SAVE_RAM"
-#endif
-
-    if(!buffer || !callback)
-        return 0;
-
-    uint8_t endless = (length == 0);
-    while(endless || length > 0)
-    {
-        uint16_t bytes_to_write = callback(buffer, offset, p);
-        if(!bytes_to_write)
-            break;
-        if(!endless && bytes_to_write > length)
-            return 0;
-
-        /* as writing is always buffered, we directly
-         * hand over the request to sd_raw_write()
-         */
-        if(!sd_raw_write(offset, buffer, bytes_to_write))
-            return 0;
-
-        offset += bytes_to_write;
-        length -= bytes_to_write;
-    }
-
-    return 1;
-}
-#endif
-
-#if DOXYGEN || SD_RAW_WRITE_SUPPORT
-/**
- * \ingroup sd_raw
- * Writes the write buffer's content to the card.
- *
- * \note When write buffering is enabled, you should
- *       call this function before disconnecting the
- *       card to ensure all remaining data has been
- *       written.
- *
- * \returns 0 on failure, 1 on success.
- * \see sd_raw_write
- */
-uint8_t sd_raw_sync()
-{
-#if SD_RAW_WRITE_BUFFERING
-    if(raw_block_written)
-        return 1;
-    if(!sd_raw_write(raw_block_address, raw_block, sizeof(raw_block)))
-        return 0;
-    raw_block_written = 1;
-#endif
-    return 1;
-}
-#endif
 
 /**
  * \ingroup sd_raw

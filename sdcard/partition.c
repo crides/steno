@@ -96,12 +96,6 @@ struct partition_struct* partition_open() {
 
     memset(new_partition, 0, sizeof(*new_partition));
 
-    /* fill partition descriptor */
-    new_partition->device_read = sd_raw_read;
-    new_partition->device_read_interval = sd_raw_read_interval;
-    new_partition->device_write = 0;
-    new_partition->device_write_interval = 0;
-
     new_partition->type = buffer[4];
     new_partition->offset = read32(&buffer[8]);
     new_partition->length = read32(&buffer[12]);
