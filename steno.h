@@ -43,4 +43,7 @@ typedef struct {
     uint8_t str_len;
 } node_header_t;
 
+uint32_t node_find_input(uint32_t header_ptr, uint32_t input);
+void read_file_at(int32_t addr, void *dest, uint16_t size);
+
 #endif

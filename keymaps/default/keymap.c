@@ -1,7 +1,11 @@
+#include <string.h>
 #include "steno.h"
 #include "keymap_steno.h"
 #include "action_layer.h"
 #include "eeconfig.h"
+#include "sdcard/fat.h"
+#include "sdcard/partition.h"
+#include "sdcard/sd_raw.h"
 
 // Layers
 #define _STENO  0
@@ -17,6 +21,11 @@
         {L10   , L11   , L12 , L13 , L14 , R10 , R11 , R12 , R13   , R14   , R15}   , \
         {KC_NO , KC_NO , L20 , L21 , L22 , R20 , R21 , R22 , KC_NO , KC_NO , KC_NO} , \
     }
+
+extern struct fat_file_struct *file;
+extern int32_t _offset;
+extern node_header_t _header;
+extern child_node_t _child;
 
 void print_keys(uint32_t keys) {
     uint8_t buf[30] = {0};
@@ -61,12 +70,29 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         | ((uint32_t) chord[1] & 0x7F) << 19
         | ((uint32_t) chord[0] & 0x30) << (26 - 4);
     print_keys(keys);
-#define P(chord, action) if (keys == (chord)) { action; return false; }
-    P(S_N1 | S_N2 | S_ST1 | S_ST2 | S_ST3 | S_ST4, reset_keyboard());
-    P(S_N1 | S_N2, layer_on(_QWERTY));
-    P(S_N1 | S_N2 | S_RL | S_RR, layer_on(_QWERTY_STENO));
+
+    uint32_t input = keys & 0xFFF;
+    if (keys & 0xF000) {
+        input |= 0x1000;
+    }
+    input |= (keys >> 3) & 0x1FE000;
+    if (keys & 0x3000000) {
+        input |= 0x200000;
+    }
+    if (keys & 0xC000000) {
+        input |= 0x400000;
+    }
+    uint32_t node = node_find_input(0, input);
+    if (node) {
+        read_file_at(node, &_header, sizeof(node_header_t));
+        uint8_t buffer[128] = {0};
+        fat_read_file(file, buffer, _header.str_len);
+        uprintf("str: %s\n", buffer);
+    }
+
     return true;
 }
+
 enum combos {
     COMBO_A,
     COMBO_S,
