@@ -13,3 +13,5 @@ STENO_ENABLE = yes
 FORCE_NKRO = yes
 # BLUETOOTH = AdafruitBLE
 COMBO_ENABLE = yes
+
+EXTRAFLAGS += -flto
