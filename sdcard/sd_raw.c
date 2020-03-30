@@ -180,7 +180,7 @@ uint8_t sd_raw_init(void)
     unselect_card();
 
     /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
-    SPCR = _BV(MSTR) | _BV(SPE);
+    SPCR = _BV(MSTR) | _BV(SPE) | _BV(SPR1) | _BV(SPR0);
     /* SPCR = (0 << SPIE) | /1* SPI Interrupt Enable *1/ */
     /*        (1 << SPE)  | /1* SPI Enable *1/ */
     /*        (0 << DORD) | /1* Data Order: MSB first *1/ */
@@ -189,8 +189,8 @@ uint8_t sd_raw_init(void)
     /*        (0 << CPHA) | /1* Clock Phase: sample on rising SCK edge *1/ */
     /*        (0 << SPR1) | /1* Clock Frequency: f_OSC / 128 *1/ */
     /*        (0 << SPR0); */
-    /* SPSR = 0; */
-    SPSR = _BV(SPI2X); /* doubled clock frequency */
+    SPSR = 0;
+    /* SPSR = _BV(SPI2X); /1* doubled clock frequency *1/ */
 
     /* initialization procedure */
     sd_raw_card_type = 0;

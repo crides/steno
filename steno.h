@@ -34,16 +34,18 @@
 #define S_Z   ((uint32_t) 1 << 0)
 
 typedef struct {
-    uint8_t input[3];
-    uint8_t addr[3];
-} child_node_t;
+    uint32_t input;
+    uint32_t addr;
+} child_t;
 
 typedef struct {
     uint16_t node_num;
     uint8_t str_len;
-} node_header_t;
+} header_t;
 
 uint32_t node_find_input(uint32_t header_ptr, uint32_t input);
 void read_file_at(int32_t addr, void *dest, uint16_t size);
+void read_header_at(int32_t addr);
+void read_child_at(int32_t addr);
 
 #endif
