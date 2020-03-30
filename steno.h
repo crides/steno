@@ -40,12 +40,27 @@ typedef struct {
 
 typedef struct {
     uint16_t node_num;
+    uint8_t level;
     uint8_t str_len;
 } header_t;
+
+typedef struct {
+    uint32_t input;
+    uint32_t node;
+    uint8_t replaced;
+} history_node_t;
 
 uint32_t node_find_input(uint32_t header_ptr, uint32_t input);
 void read_file_at(int32_t addr, void *dest, uint16_t size);
 void read_header_at(int32_t addr);
 void read_child_at(int32_t addr);
+void read_string_at(int32_t addr);
+
+void hist_inc(void);
+void hist_replace(uint8_t n, uint32_t node);
+void hist_add(uint32_t node);
+void hist_add_raw(uint32_t input);
+void hist_exec(void);
+void hist_undo(void);
 
 #endif
