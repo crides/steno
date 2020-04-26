@@ -3,6 +3,7 @@
 #include "keymap_steno.h"
 #include "action_layer.h"
 #include "eeconfig.h"
+
 #include "sdcard/fat.h"
 #include "sdcard/partition.h"
 #include "sdcard/sd_raw.h"
@@ -78,7 +79,9 @@ void hist_exec() {  // Execute the current history entry
         /* history[history_ind] = cur; */
     }
     if (cur.node) {
-        read_string_at(cur.node);
+        seek(cur.node);
+        read_header();
+        read_string();
         SEND_STRING(" ");
         send_string((char *) _buf);
     } else {    // Raw input
@@ -90,7 +93,8 @@ void hist_undo(void) {
     history_node_t cur = history[history_ind];
     hist_dec();
     if (cur.node) {
-        read_header_at(cur.node);
+        seek(cur.node);
+        read_header();
         for (uint8_t i = 0; i <= _header.str_len; i ++) {   // Space included
             tap_code(KC_BSPC);
         }
@@ -180,6 +184,7 @@ void print_keys(uint32_t keys) {
 }
 
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
+    /* uint16_t start = timer_read(); */
     uint32_t keys = ((uint32_t) chord[5] & 1)
         | ((uint32_t) chord[4] & 0x7F) << 1
         | ((uint32_t) chord[3] & 0x3F) << 8
@@ -206,22 +211,27 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     uint8_t max_level = 0;
     uint32_t max_level_node = 0;
     uint8_t max_level_ended = 0;
+    /* uprintf("bef search %u\n", timer_elapsed(start)); */
     /* uprintf("search_node_size = %u\n", search_node_size); */
     for (uint8_t i = 0; i < search_node_size; i ++) {
         /* uprintf("Searching on node %lu\n", search_nodes[i]); */
+        /* uprintf("search %u\n", timer_elapsed(start)); */
+        /* uprintf("aft search %u\n", timer_elapsed(start)); */
         uint32_t next_node = node_find_input(search_nodes[i], input);
         if (!next_node) {
             /* uprintf("  No path.\n"); */
             continue;
         }
         /* uprintf("  next node = %lu\n", next_node); */
-        read_header_at(next_node);
+        seek(next_node);
+        read_header();
         /* uprintf("    node_num = %u\n", _header.node_num); */
         /* uprintf("    level = %u\n", _header.level); */
         if (_header.str_len) {
             if (_header.level > max_level) {
                 max_level = _header.level;
                 max_level_node = next_node;
+                read_string();
             }
             /* uint8_t buf[128] = {0}; */
             /* fat_read_file(file, buf, _header.str_len); */
@@ -236,12 +246,14 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
                 max_level_ended = 1;
             }
         }
+        /* uprintf("search end one %u\n", timer_elapsed(start)); */
     }
 
+    /* uprintf("hist start %u\n", timer_elapsed(start)); */
     /* uprintf("Final node: %lu %lX\n", max_level_node, max_level_node); */
     /* uprintf("  level: %u\n", max_level); */
     if (max_level_node) {
-        read_string_at(max_level_node);
+        /* read_string_at(max_level_node); */
         if (max_level > 1) {
             /* uprintf("Replace %u with \"%s\"\n", max_level - 1, _buf); */
             hist_replace(max_level - 1, max_level_node);
@@ -260,6 +272,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
             hist_exec();
         }
     }
+    /* uprintf("hist end %u\n", timer_elapsed(start)); */
 
     search_node_size = new_search_node_size + 1;
     search_nodes[0] = 0;
@@ -273,49 +286,57 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         }
     }
 
+    /* uprintf("end %u\n", timer_elapsed(start)); */
     return false;
 }
 
-void read_file_at(int32_t addr, void *dest, uint16_t size) {
+void seek(int32_t addr) {
     fat_seek_file(file, &addr, FAT_SEEK_SET);
+}
+
+void read_file_at(int32_t addr, void *dest, uint16_t size) {
+    seek(addr);
     fat_read_file(file, dest, size);
 }
 
-void read_string_at(int32_t addr) {
-    read_header_at(addr);
+void read_string(void) {
     fat_read_file(file, _buf, _header.str_len);
     _buf[_header.str_len] = 0;
 }
 
-void read_header_at(int32_t addr) {
-    fat_seek_file(file, &addr, FAT_SEEK_SET);
+void read_header(void) {
     fat_read_file(file, (uint8_t *) &_header, sizeof(header_t));
 }
 
-void read_child_at(int32_t addr) {
-    fat_seek_file(file, &addr, FAT_SEEK_SET);
+void read_child(void) {
     fat_read_file(file, (uint8_t *) &_child, sizeof(child_t));
 }
 
 uint32_t node_find_input(uint32_t header_ptr, uint32_t input) {
-    read_header_at(header_ptr);
+    seek(header_ptr);
+    read_header();
     uint32_t children_ptr = header_ptr + sizeof(header_t) + _header.str_len;
-    uint16_t start = 0, end = _header.node_num;
-    /* uprintf("%u %u %u\n", _header.node_num, _header.level, _header.str_len); */
-    while (start != end) {
-        uint16_t mid_ind = (start + end) / 2;
-        uint32_t mid_child_ptr = (uint32_t) mid_ind * sizeof(child_t) + children_ptr;
-        read_child_at(mid_child_ptr);
-        /* uprintf("%u %u %u\n", start, mid_ind, end); */
-        /* uprintf("%lX %lX\n", _child.input, _child.addr); */
+    uint32_t hash = 0x811c9dc5;
+    hash *= 0x01000193;
+    hash ^= (input) & 0xFF;
+    hash *= 0x01000193;
+    hash ^= (input >> 8) & 0xFF;
+    hash *= 0x01000193;
+    hash ^= (input >> 16) & 0xFF;
+    hash *= 0x01000193;
+    hash ^= (input >> 24) & 0xFF;
+    uint32_t child_ptr = children_ptr + (hash % _header.node_num) * sizeof(child_t);
+    uint8_t collisions = 0;
+    seek(child_ptr);
+    while (collisions < MAX_COLLISIONS) {
+        read_child();
         if (input == _child.input) {
             return _child.addr;
         }
-        if (input < _child.input) {
-            end = mid_ind;
-        } else {
-            start = mid_ind + 1;
+        if (!_child.input) {
+            return 0;
         }
+        collisions ++;
     }
     return 0;
 }

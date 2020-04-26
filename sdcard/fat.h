@@ -60,10 +60,6 @@ extern "C"
  * @}
  */
 
-struct partition_struct;
-struct fat_fs_struct;
-struct fat_file_struct;
-struct fat_dir_struct;
 
 /**
  * \ingroup fat_file
@@ -87,6 +83,60 @@ struct fat_dir_entry_struct
     uint32_t file_size;
     /** The total disk offset of this directory entry. */
     offset_t entry_offset;
+};
+struct fat_header_struct
+{
+    offset_t size;
+
+    offset_t fat_offset;
+    uint32_t fat_size;
+
+    uint16_t sector_size;
+    uint16_t cluster_size;
+
+    offset_t cluster_zero_offset;
+
+    offset_t root_dir_offset;
+    cluster_t root_dir_cluster;
+};
+
+struct fat_fs_struct
+{
+    struct partition_struct* partition;
+    struct fat_header_struct header;
+    cluster_t cluster_free;
+};
+
+struct fat_dir_struct
+{
+    struct fat_fs_struct* fs;
+    struct fat_dir_entry_struct dir_entry;
+    cluster_t entry_cluster;
+    uint16_t entry_offset;
+};
+
+struct fat_read_dir_callback_arg
+{
+    struct fat_dir_entry_struct* dir_entry;
+    uintptr_t bytes_read;
+#if FAT_LFN_SUPPORT
+    uint8_t checksum;
+#endif
+    uint8_t finished;
+};
+
+struct fat_usage_count_callback_arg
+{
+    cluster_t cluster_count;
+    uintptr_t buffer_size;
+};
+
+struct fat_file_struct
+{
+    struct fat_fs_struct* fs;
+    struct fat_dir_entry_struct dir_entry;
+    offset_t pos;
+    cluster_t pos_cluster;
 };
 
 struct fat_fs_struct* fat_open(struct partition_struct* partition);
@@ -119,6 +169,7 @@ uint8_t fat_get_dir_entry_of_path(struct fat_fs_struct* fs, const char* path, st
 offset_t fat_get_fs_size(const struct fat_fs_struct* fs);
 offset_t fat_get_fs_free(const struct fat_fs_struct* fs);
 
+cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster_num);
 /**
  * @}
  */

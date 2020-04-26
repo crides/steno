@@ -15,6 +15,8 @@
 #include "sd-reader_config.h"
 #include "sd_raw.h"
 
+#include "quantum.h"
+
 #include <string.h>
 
 #if USE_DYNAMIC_MEMORY
@@ -135,61 +137,6 @@
  * For deleted lfn entries, the ordinal field is set to 0xe5.
  */
 
-struct fat_header_struct
-{
-    offset_t size;
-
-    offset_t fat_offset;
-    uint32_t fat_size;
-
-    uint16_t sector_size;
-    uint16_t cluster_size;
-
-    offset_t cluster_zero_offset;
-
-    offset_t root_dir_offset;
-    cluster_t root_dir_cluster;
-};
-
-struct fat_fs_struct
-{
-    struct partition_struct* partition;
-    struct fat_header_struct header;
-    cluster_t cluster_free;
-};
-
-struct fat_file_struct
-{
-    struct fat_fs_struct* fs;
-    struct fat_dir_entry_struct dir_entry;
-    offset_t pos;
-    cluster_t pos_cluster;
-};
-
-struct fat_dir_struct
-{
-    struct fat_fs_struct* fs;
-    struct fat_dir_entry_struct dir_entry;
-    cluster_t entry_cluster;
-    uint16_t entry_offset;
-};
-
-struct fat_read_dir_callback_arg
-{
-    struct fat_dir_entry_struct* dir_entry;
-    uintptr_t bytes_read;
-#if FAT_LFN_SUPPORT
-    uint8_t checksum;
-#endif
-    uint8_t finished;
-};
-
-struct fat_usage_count_callback_arg
-{
-    cluster_t cluster_count;
-    uintptr_t buffer_size;
-};
-
 #if !USE_DYNAMIC_MEMORY
 static struct fat_fs_struct fat_fs_handles[FAT_FS_COUNT];
 static struct fat_file_struct fat_file_handles[FAT_FILE_COUNT];
@@ -197,7 +144,6 @@ static struct fat_dir_struct fat_dir_handles[FAT_DIR_COUNT];
 #endif
 
 static uint8_t fat_read_header(struct fat_fs_struct* fs);
-static cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster_num);
 static offset_t fat_cluster_offset(const struct fat_fs_struct* fs, cluster_t cluster_num);
 static uint8_t fat_dir_entry_read_callback(uint8_t* buffer, offset_t offset, void* p);
 #if FAT_LFN_SUPPORT
@@ -602,6 +548,7 @@ void fat_close_file(struct fat_file_struct* fd)
  */
 intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t buffer_len)
 {
+    /* uint16_t start = timer_read(); */
     /* check arguments */
     if(!fd || !buffer || buffer_len < 1)
         return -1;
@@ -616,11 +563,13 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
     cluster_t cluster_num = fd->pos_cluster;
     uintptr_t buffer_left = buffer_len;
     uint16_t first_cluster_offset = (uint16_t) (fd->pos & (cluster_size - 1));
+    /* uprintf("start %u\n", timer_elapsed(start)); */
 
     /* find cluster in which to start reading */
     if(!cluster_num)
     {
         cluster_num = fd->dir_entry.cluster;
+        /* uprintf("  cluster_num %u\n", cluster_num); */
         
         if(!cluster_num)
         {
@@ -636,13 +585,17 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
             while(pos >= cluster_size)
             {
                 pos -= cluster_size;
+                /* uint16_t old = cluster_num; */
                 cluster_num = fat_get_next_cluster(fd->fs, cluster_num);
+                /* uprintf("  cluster_num %u -> %u\n", old, cluster_num); */
                 if(!cluster_num)
                     return -1;
             }
         }
     }
+    /* uprintf("cluster_num %u\n", cluster_num); */
     
+    /* uprintf("aft prepare %u\n", timer_elapsed(start)); */
     /* read data */
     do
     {
@@ -652,9 +605,14 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
         if(copy_length > buffer_left)
             copy_length = buffer_left;
 
+        /* uprintf("aft offset %u\n", timer_elapsed(start)); */
         /* read data */
-        if(!sd_raw_read(cluster_offset, buffer, copy_length))
+        uint8_t ret = sd_raw_read(cluster_offset, buffer, copy_length);
+        /* uprintf("aft data %u\n", timer_elapsed(start)); */
+        if(!ret) {
+            /* uprintf("!\n"); */
             return buffer_len - buffer_left;
+        }
 
         /* calculate new file position */
         buffer += copy_length;
@@ -663,14 +621,18 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
 
         if(first_cluster_offset + copy_length >= cluster_size)
         {
+            /* uprintf("bef next %u\n", timer_elapsed(start)); */
             /* we are on a cluster boundary, so get the next cluster */
-            if((cluster_num = fat_get_next_cluster(fd->fs, cluster_num)))
+            cluster_num = fat_get_next_cluster(fd->fs, cluster_num);
+            /* uprintf("aft next %u\n", timer_elapsed(start)); */
+            if(cluster_num)
             {
                 first_cluster_offset = 0;
             }
             else
             {
                 fd->pos_cluster = 0;
+                /* uprintf("@\n"); */
                 return buffer_len - buffer_left;
             }
         }
@@ -679,6 +641,7 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
 
     } while(buffer_left > 0); /* check if we are done */
 
+    /* uprintf("#\n"); */
     return buffer_len;
 }
 
