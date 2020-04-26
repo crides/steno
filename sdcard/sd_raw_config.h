@@ -71,7 +71,7 @@ extern "C"
 #define select_card() PORTD &= ~(1 << PORTD1)
 #define unselect_card() PORTD |= (1 << PORTD1)
 
-typedef uint64_t offset_t;
+typedef uint32_t offset_t;
 
 /* configuration checks */
 #if SD_RAW_WRITE_SUPPORT

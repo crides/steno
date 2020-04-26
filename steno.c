@@ -7,6 +7,7 @@
 #include "sdcard/partition.h"
 #include "sdcard/sd_raw.h"
 
+#ifdef CUSTOM_STENO
 struct fat_file_struct *file;
 int32_t _offset;
 header_t _header;
@@ -178,7 +179,7 @@ void print_keys(uint32_t keys) {
     uprintf("%s\n", buf);
 }
 
-bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) { 
+bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     uint32_t keys = ((uint32_t) chord[5] & 1)
         | ((uint32_t) chord[4] & 0x7F) << 1
         | ((uint32_t) chord[3] & 0x3F) << 8
@@ -197,8 +198,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (keys & 0xC000000) {
         input |= 0x400000;
     }
-    uprintf("%6lX ", input);
-    print_stroke(input);
+    /* uprintf("%6lX ", input); */
+    /* print_stroke(input); */
 
     uint32_t new_search_nodes[8];
     uint8_t new_search_node_size = 0;
@@ -242,11 +243,11 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (max_level_node) {
         read_string_at(max_level_node);
         if (max_level > 1) {
-            uprintf("Replace %u with \"%s\"\n", max_level - 1, _buf);
+            /* uprintf("Replace %u with \"%s\"\n", max_level - 1, _buf); */
             hist_replace(max_level - 1, max_level_node);
             hist_exec();
         } else {
-            uprintf("Append \"%s\"\n", _buf);
+            /* uprintf("Append \"%s\"\n", _buf); */
             hist_add(max_level_node);
             hist_exec();
         }
@@ -272,7 +273,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         }
     }
 
-    return true;
+    return false;
 }
 
 void read_file_at(int32_t addr, void *dest, uint16_t size) {
@@ -380,3 +381,4 @@ error:
 void matrix_init_user() {
     steno_set_mode(STENO_MODE_GEMINI);
 }
+#endif
