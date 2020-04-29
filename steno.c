@@ -15,7 +15,7 @@ header_t _header;
 child_t _child;
 uint8_t _buf[128];
 
-uint32_t search_nodes[8];
+search_node_t search_nodes[8];
 uint8_t search_node_size = 0;
 uint32_t past_nodes[16];
 uint8_t past_node_ind = 0;
@@ -85,7 +85,10 @@ void hist_exec() {  // Execute the current history entry
         SEND_STRING(" ");
         send_string((char *) _buf);
     } else {    // Raw input
-        SEND_STRING(" <RAW>");
+        char buf[30];
+        stroke_to_string(cur.input, buf);
+        SEND_STRING(" ");
+        send_string((char *) buf);
     }
 }
 
@@ -99,12 +102,12 @@ void hist_undo(void) {
             tap_code(KC_BSPC);
         }
     } else {    // Raw input
-        tap_code(KC_BSPC);
-        tap_code(KC_BSPC);
-        tap_code(KC_BSPC);
-        tap_code(KC_BSPC);
-        tap_code(KC_BSPC);
-        tap_code(KC_BSPC);
+        char buf[30];
+        stroke_to_string(cur.input, buf);
+        uint8_t len = strlen(buf) + 1;
+        for (uint8_t i = 0; i < len; i ++) {
+            tap_code(KC_BSPC);
+        }
     }
 
     if (cur.replaced) {     // Redo previous entries
@@ -118,70 +121,90 @@ void hist_undo(void) {
     }
 }
 
-void print_stroke(uint32_t stroke) {
-    uint8_t buf[24] = {0};
-#define set_if_bit(c, n) buf[(22-n)] = stroke & ((uint32_t) 1 << n) ? c : '-';
-    set_if_bit('#', 22);
-    set_if_bit('S', 21);
-    set_if_bit('T', 20);
-    set_if_bit('K', 19);
-    set_if_bit('P', 18);
-    set_if_bit('W', 17);
-    set_if_bit('H', 16);
-    set_if_bit('R', 15);
-    set_if_bit('A', 14);
-    set_if_bit('O', 13);
-    set_if_bit('*', 12);
-    set_if_bit('E', 11);
-    set_if_bit('U', 10);
-    set_if_bit('F', 9);
-    set_if_bit('R', 8);
-    set_if_bit('P', 7);
-    set_if_bit('B', 6);
-    set_if_bit('L', 5);
-    set_if_bit('G', 4);
-    set_if_bit('T', 3);
-    set_if_bit('S', 2);
-    set_if_bit('D', 1);
-    set_if_bit('Z', 0);
-#undef set_if_bit
-    uprintf("%s\n", buf);
+/* void print_stroke(uint32_t stroke) { */
+/*     uint8_t buf[24] = {0}; */
+/* #define set_if_bit(c, n) buf[(22-n)] = stroke & ((uint32_t) 1 << n) ? c : '-'; */
+/*     set_if_bit('#', 22); */
+/*     set_if_bit('S', 21); */
+/*     set_if_bit('T', 20); */
+/*     set_if_bit('K', 19); */
+/*     set_if_bit('P', 18); */
+/*     set_if_bit('W', 17); */
+/*     set_if_bit('H', 16); */
+/*     set_if_bit('R', 15); */
+/*     set_if_bit('A', 14); */
+/*     set_if_bit('O', 13); */
+/*     set_if_bit('*', 12); */
+/*     set_if_bit('E', 11); */
+/*     set_if_bit('U', 10); */
+/*     set_if_bit('F', 9); */
+/*     set_if_bit('R', 8); */
+/*     set_if_bit('P', 7); */
+/*     set_if_bit('B', 6); */
+/*     set_if_bit('L', 5); */
+/*     set_if_bit('G', 4); */
+/*     set_if_bit('T', 3); */
+/*     set_if_bit('S', 2); */
+/*     set_if_bit('D', 1); */
+/*     set_if_bit('Z', 0); */
+/* #undef set_if_bit */
+/*     uprintf("%s\n", buf); */
+/* } */
+
+void stroke_to_string(uint32_t stroke, char *buf) {
+    uint8_t len = 0;
+    char *KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
+    bool has_mid = false;
+    for (int8_t i = 22; i >= 0; i --) {
+        if (stroke & ((uint32_t) 1 << i)) {
+            if (i < 10) {
+                if (!has_mid) {
+                    buf[len++] = '-';
+                    has_mid = true;
+                }
+            } else if (i <= 14) {
+                has_mid = true;
+            }
+            buf[len++] = KEYS[22 - i];
+        }
+    }
+    buf[len++] = 0;
 }
 
-void print_keys(uint32_t keys) {
-    uint8_t buf[30] = {0};
-#define set_if_bit(c, n) buf[(27-n)] = keys & ((uint32_t) 1 << n) ? c : '-';
-    set_if_bit('N', 27);
-    set_if_bit('n', 26);
-    set_if_bit('S', 25);
-    set_if_bit('s', 24);
-    set_if_bit('T', 23);
-    set_if_bit('K', 22);
-    set_if_bit('P', 21);
-    set_if_bit('W', 20);
-    set_if_bit('H', 19);
-    set_if_bit('R', 18);
-    set_if_bit('A', 17);
-    set_if_bit('O', 16);
-    set_if_bit('%', 15);
-    set_if_bit('^', 14);
-    set_if_bit('&', 13);
-    set_if_bit('*', 12);
-    set_if_bit('E', 11);
-    set_if_bit('U', 10);
-    set_if_bit('F', 9);
-    set_if_bit('R', 8);
-    set_if_bit('P', 7);
-    set_if_bit('B', 6);
-    set_if_bit('L', 5);
-    set_if_bit('G', 4);
-    set_if_bit('T', 3);
-    set_if_bit('S', 2);
-    set_if_bit('D', 1);
-    set_if_bit('Z', 0);
-#undef set_if_bit
-    uprintf("%s\n", buf);
-}
+/* void print_keys(uint32_t keys) { */
+/*     uint8_t buf[30] = {0}; */
+/* #define set_if_bit(c, n) buf[(27-n)] = keys & ((uint32_t) 1 << n) ? c : '-'; */
+/*     set_if_bit('N', 27); */
+/*     set_if_bit('n', 26); */
+/*     set_if_bit('S', 25); */
+/*     set_if_bit('s', 24); */
+/*     set_if_bit('T', 23); */
+/*     set_if_bit('K', 22); */
+/*     set_if_bit('P', 21); */
+/*     set_if_bit('W', 20); */
+/*     set_if_bit('H', 19); */
+/*     set_if_bit('R', 18); */
+/*     set_if_bit('A', 17); */
+/*     set_if_bit('O', 16); */
+/*     set_if_bit('%', 15); */
+/*     set_if_bit('^', 14); */
+/*     set_if_bit('&', 13); */
+/*     set_if_bit('*', 12); */
+/*     set_if_bit('E', 11); */
+/*     set_if_bit('U', 10); */
+/*     set_if_bit('F', 9); */
+/*     set_if_bit('R', 8); */
+/*     set_if_bit('P', 7); */
+/*     set_if_bit('B', 6); */
+/*     set_if_bit('L', 5); */
+/*     set_if_bit('G', 4); */
+/*     set_if_bit('T', 3); */
+/*     set_if_bit('S', 2); */
+/*     set_if_bit('D', 1); */
+/*     set_if_bit('Z', 0); */
+/* #undef set_if_bit */
+/*     uprintf("%s\n", buf); */
+/* } */
 
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     /* uint16_t start = timer_read(); */
@@ -206,60 +229,42 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     /* uprintf("%6lX ", input); */
     /* print_stroke(input); */
 
-    uint32_t new_search_nodes[8];
+    search_node_t new_search_nodes[8];
     uint8_t new_search_node_size = 0;
     uint8_t max_level = 0;
     uint32_t max_level_node = 0;
     uint8_t max_level_ended = 0;
-    /* uprintf("bef search %u\n", timer_elapsed(start)); */
-    /* uprintf("search_node_size = %u\n", search_node_size); */
     for (uint8_t i = 0; i < search_node_size; i ++) {
-        /* uprintf("Searching on node %lu\n", search_nodes[i]); */
-        /* uprintf("search %u\n", timer_elapsed(start)); */
-        /* uprintf("aft search %u\n", timer_elapsed(start)); */
-        uint32_t next_node = node_find_input(search_nodes[i], input);
+        uint32_t next_node = node_find_input(search_nodes[i].node, input);
         if (!next_node) {
-            /* uprintf("  No path.\n"); */
             continue;
         }
-        /* uprintf("  next node = %lu\n", next_node); */
         seek(next_node);
         read_header();
-        /* uprintf("    node_num = %u\n", _header.node_num); */
-        /* uprintf("    level = %u\n", _header.level); */
+        uint8_t next_level = search_nodes[i].level + 1;
         if (_header.str_len) {
-            if (_header.level > max_level) {
-                max_level = _header.level;
+            if (next_level > max_level) {
+                max_level = next_level;
                 max_level_node = next_node;
                 read_string();
             }
-            /* uint8_t buf[128] = {0}; */
-            /* fat_read_file(file, buf, _header.str_len); */
-            /* uprintf("    str: %s\n", buf); */
         }
         if (_header.node_num) {
-            new_search_nodes[new_search_node_size] = next_node;
+            new_search_nodes[new_search_node_size].node = next_node;
+            new_search_nodes[new_search_node_size].level = next_level;
             new_search_node_size ++;
         } else {
-            /* uprintf("  Path ended\n"); */
             if (next_node == max_level_node) {
                 max_level_ended = 1;
             }
         }
-        /* uprintf("search end one %u\n", timer_elapsed(start)); */
     }
 
-    /* uprintf("hist start %u\n", timer_elapsed(start)); */
-    /* uprintf("Final node: %lu %lX\n", max_level_node, max_level_node); */
-    /* uprintf("  level: %u\n", max_level); */
     if (max_level_node) {
-        /* read_string_at(max_level_node); */
         if (max_level > 1) {
-            /* uprintf("Replace %u with \"%s\"\n", max_level - 1, _buf); */
             hist_replace(max_level - 1, max_level_node);
             hist_exec();
         } else {
-            /* uprintf("Append \"%s\"\n", _buf); */
             hist_add(max_level_node);
             hist_exec();
         }
@@ -272,21 +277,16 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
             hist_exec();
         }
     }
-    /* uprintf("hist end %u\n", timer_elapsed(start)); */
 
     search_node_size = new_search_node_size + 1;
-    search_nodes[0] = 0;
-    if (max_level_ended) {
-        /* uprintf("Max level ended; cleaning up\n"); */
-    } else {
-        /* uprintf("new_search_node_size: %u\n", new_search_node_size); */
+    search_nodes[0].node = 0;
+    search_nodes[0].level = 0;
+    if (!max_level_ended) {
         for (uint8_t i = 0; i < new_search_node_size; i ++) {
-            /* uprintf("new_search_node: %lu %lX\n", new_search_nodes[i], new_search_nodes[i]); */
             search_nodes[i + 1] = new_search_nodes[i];
         }
     }
 
-    /* uprintf("end %u\n", timer_elapsed(start)); */
     return false;
 }
 
@@ -316,18 +316,23 @@ uint32_t node_find_input(uint32_t header_ptr, uint32_t input) {
     seek(header_ptr);
     read_header();
     uint32_t children_ptr = header_ptr + sizeof(header_t) + _header.str_len;
-    uint32_t hash = 0x811c9dc5;
-    hash *= 0x01000193;
-    hash ^= (input) & 0xFF;
-    hash *= 0x01000193;
-    hash ^= (input >> 8) & 0xFF;
-    hash *= 0x01000193;
-    hash ^= (input >> 16) & 0xFF;
-    hash *= 0x01000193;
-    hash ^= (input >> 24) & 0xFF;
-    uint32_t child_ptr = children_ptr + (hash % _header.node_num) * sizeof(child_t);
+    if (_header.node_num < MAX_COLLISIONS) {
+        seek(children_ptr);
+    } else {
+        uint32_t hash = 0x811c9dc5;
+        hash *= 0x01000193;
+        hash ^= (input) & 0xFF;
+        hash *= 0x01000193;
+        hash ^= (input >> 8) & 0xFF;
+        hash *= 0x01000193;
+        hash ^= (input >> 16) & 0xFF;
+        hash *= 0x01000193;
+        /* hash ^= (input >> 24) & 0xFF; */
+        uint32_t child_ptr = children_ptr + (hash % _header.node_num) * sizeof(child_t);
+        seek(child_ptr);
+    }
+
     uint8_t collisions = 0;
-    seek(child_ptr);
     while (collisions < MAX_COLLISIONS) {
         read_child();
         if (input == _child.input) {
@@ -372,7 +377,7 @@ void keyboard_post_init_user(void) {
 
     /* open file system */
     struct fat_fs_struct *fs = fat_open(partition);
-    if(!fs) {
+    if (!fs) {
         goto error;
     }
 
@@ -381,21 +386,22 @@ void keyboard_post_init_user(void) {
     fat_get_dir_entry_of_path(fs, "/", &directory);
 
     struct fat_dir_struct *dd = fat_open_dir(fs, &directory);
-    if(!dd) {
+    if (!dd) {
         goto error;
     }
     
     /* search file in current directory and open it */
     file = open_file_in_dir(fs, dd, "steno.bin");
-    if(!file) {
+    if (!file) {
         goto error;
     }
 
-    search_nodes[0] = 0;
+    search_nodes[0].node = 0;
+    search_nodes[0].level = 0;
     search_node_size = 1;
     return;
 error:
-    uprintf("Can't init\n");
+    /* uprintf("Can't init\n"); */
     while(1);
 }
 

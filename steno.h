@@ -36,13 +36,12 @@
 #define MAX_COLLISIONS 8
 
 typedef struct {
-    uint32_t input;
-    uint32_t addr;
+    uint32_t input : 24;
+    uint32_t addr : 24;
 } child_t;
 
 typedef struct {
     uint32_t node_num;
-    uint8_t level;
     uint8_t str_len;
 } header_t;
 
@@ -52,12 +51,20 @@ typedef struct {
     uint8_t replaced;
 } history_node_t;
 
+typedef struct {
+    uint32_t node;
+    uint8_t level;
+} search_node_t;
+
 uint32_t node_find_input(uint32_t header_ptr, uint32_t input);
 void read_file_at(int32_t addr, void *dest, uint16_t size);
 void seek(int32_t addr);
 void read_header(void);
 void read_child(void);
 void read_string(void);
+
+void print_stroke(uint32_t stroke);
+void stroke_to_string(uint32_t stroke, char *buf);
 
 void hist_inc(void);
 void hist_replace(uint8_t n, uint32_t node);
