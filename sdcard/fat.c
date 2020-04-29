@@ -582,15 +582,16 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
         if(fd->pos)
         {
             uint32_t pos = fd->pos;
-            while(pos >= cluster_size)
-            {
-                pos -= cluster_size;
-                /* uint16_t old = cluster_num; */
-                cluster_num = fat_get_next_cluster(fd->fs, cluster_num);
-                /* uprintf("  cluster_num %u -> %u\n", old, cluster_num); */
-                if(!cluster_num)
-                    return -1;
-            }
+            cluster_num += pos / cluster_size;
+            /* while(pos >= cluster_size) */
+            /* { */
+            /*     pos -= cluster_size; */
+            /*     /1* uint16_t old = cluster_num; *1/ */
+            /*     /1* cluster_num = fat_get_next_cluster(fd->fs, cluster_num); *1/ */
+            /*     /1* uprintf("  cluster_num %u -> %u\n", old, cluster_num); *1/ */
+            /*     if(!cluster_num) */
+            /*         return -1; */
+            /* } */
         }
     }
     /* uprintf("cluster_num %u\n", cluster_num); */
