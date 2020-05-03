@@ -25,11 +25,11 @@ impl Stroke {
 }
 
 #[derive(Debug)]
-pub struct StrokeParseError(char);
+pub struct StrokeParseError(String, char);
 
 impl Display for StrokeParseError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Unknown char in string: {}", self.0)
+        write!(f, "Unknown char '{}' in string '{}'", self.1, self.0)
     }
 }
 
@@ -54,7 +54,7 @@ impl FromStr for Stroke {
                 '-' => ind = KEYS.find('*').unwrap(),
                 '#' => res.set(KEYS.len() - 1),
                 _ => {
-                    ind += KEYS[ind..].find(c).ok_or(StrokeParseError(c))?;
+                    ind += KEYS[ind..].find(c).ok_or(StrokeParseError(s.clone(), c))?;
                     res.set(KEYS.len() - ind - 1);
                 }
             }
