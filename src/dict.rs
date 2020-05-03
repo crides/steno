@@ -45,7 +45,6 @@ impl Dict {
                         .parse()
                         .map_err(|_| ParseDictErr::InvalidStroke(strokes.clone()))
                 })
-                .rev()
             {
                 let stroke = stroke?;
                 cur_dict = cur_dict.entry(stroke).or_default();
