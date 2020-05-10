@@ -7,14 +7,14 @@
 struct fat_file_struct *file;
 header_t _header;
 child_t _child;
-uint8_t _buf[128];
+char _buf[128];
 
 void seek(int32_t addr) {
     fat_seek_file(file, &addr, FAT_SEEK_SET);
 }
 
 void read_string(void) {
-    fat_read_file(file, _buf, _header.str_len);
+    fat_read_file(file, (uint8_t *) _buf, _header.str_len);
     _buf[_header.str_len] = 0;
 }
 
@@ -109,14 +109,15 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level, uint8_t *max_level_ended) {
     uint8_t _size = *size;
     *size = 0;
-    for (uint8_t i = 0; i < _size; i ++) {
-        uint32_t next_node = node_find_stroke(nodes[i].node, stroke);
+    for (uint8_t i = 0; i <= _size; i ++) {
+        // Search root node at the end
+        uint32_t next_node = node_find_stroke(i == _size ? 0 : nodes[i].node, stroke);
         if (!next_node) {
             continue;
         }
         seek(next_node);
         read_header();
-        uint8_t next_level = nodes[i].level + 1;
+        uint8_t next_level = i == _size ? 1 : nodes[i].level + 1;
         if (_header.str_len) {
             if (next_level > *max_level) {
                 *max_level = next_level;
@@ -138,9 +139,4 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             }
         }
     }
-
-    // Add back root node
-    nodes[*size].node = 0;
-    nodes[*size].level = 0;
-    (*size)++;
 }

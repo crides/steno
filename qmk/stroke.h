@@ -23,14 +23,14 @@ typedef struct __attribute__((packed)) {
 } header_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t node;
+    uint32_t node : 24;
     uint8_t level;
 } search_node_t;
 
 struct fat_file_struct *file;
 header_t _header;
 child_t _child;
-uint8_t _buf[128];
+char _buf[128];
 
 void seek(int32_t addr);
 void read_string(void);
