@@ -3,5 +3,6 @@
 
 #include "quantum.h"
 #include <stdint.h>
+#include "stroke.h"
 
 #endif

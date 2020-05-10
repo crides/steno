@@ -10,11 +10,11 @@
 #include "sdcard/partition.h"
 #include "sdcard/sd_raw.h"
 
-#include "stroke.h"
 #include "hist.h"
 
 search_node_t search_nodes[SEARCH_NODES_SIZE];
-uint8_t search_node_size = 0;
+uint8_t search_nodes_len = 0;
+state_t state;
 
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     uint32_t stroke = qmk_chord_to_stroke(chord);
@@ -24,23 +24,33 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
+    // TODO free up the next entry for boundary
+    history_t new_hist;
+    search_node_t *hist_nodes = malloc(search_nodes_len * sizeof(search_node_t));
+    if (!hist_nodes) {
+        uprintf("Can't allocate memory for history!\n");
+        return false;
+    }
+    memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t));
+    new_hist.search_nodes = hist_nodes;
+    new_hist.search_nodes_len = search_nodes_len;
+    new_hist.state = state;
+
     uint32_t max_level_node = 0;
     uint8_t max_level = 0, max_level_ended = 0;
-    search_on_nodes(search_nodes, &search_node_size, stroke, &max_level_node, &max_level, &max_level_ended);
+    search_on_nodes(search_nodes, &search_nodes_len, stroke, &max_level_node, &max_level, &max_level_ended);
 
     if (max_level_node) {
-        if (max_level > 1) {
-            hist_replace(max_level - 1, max_level_node);
-            hist_exec();
-        } else {
-            hist_add(max_level_node);
-            hist_exec();
-        }
+        new_hist.output.type = NODE_STRING;
+        new_hist.output.node = max_level_node;
+        new_hist.repl_len = max_level - 1;
     } else {
-        // Perform default action
-        hist_add_raw(stroke);
-        hist_exec();
+        new_hist.output.type = RAW_STROKE;
+        new_hist.output.stroke = stroke;
+        new_hist.repl_len = 0;
     }
+    new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
+    hist_add(new_hist);
 
     return false;
 }
@@ -95,9 +105,6 @@ void keyboard_post_init_user(void) {
         goto error;
     }
 
-    search_nodes[0].node = 0;
-    search_nodes[0].level = 0;
-    search_node_size = 1;
     return;
 error:
     uprintf("Can't init\n");

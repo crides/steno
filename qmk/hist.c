@@ -1,107 +1,79 @@
 #include "hist.h"
-#include "stroke.h"
 #include "quantum.h"
 #include <string.h>
 
-history_node_t history[HIST_SIZE];
-uint8_t history_ind = 0;
+history_t history[HIST_SIZE];
+uint8_t hist_ind = 0;
 
-void hist_inc(void) {
-    if (history_ind == (HIST_SIZE - 1)) {
-        history_ind = 0;
-    } else {
-        history_ind ++;
+void hist_add(history_t hist) {
+    hist_ind ++;
+    if (hist_ind == HIST_SIZE) {
+        hist_ind = 0;
     }
-}
 
-void hist_dec(void) {
-    if (history_ind == 0) {
-        history_ind = HIST_SIZE - 1;
-    } else {
-        history_ind --;
+    if (history[hist_ind].len) {
+        free(history[hist_ind].search_nodes);
     }
+
+    history[hist_ind] = hist;
 }
 
-void hist_replace(uint8_t n, uint32_t node) {
-    history_node_t new_hist;
-    new_hist.stroke = 0;
-    new_hist.node = node;
-    new_hist.replaced = n;
-    hist_inc();
-    history[history_ind] = new_hist;
-}
-
-void hist_add(uint32_t node) {
-    history_node_t new_hist;
-    new_hist.replaced = 0;
-    new_hist.stroke = 0;
-    new_hist.node = node;
-    hist_inc();
-    history[history_ind] = new_hist;
-}
-
-void hist_add_raw(uint32_t stroke) {
-    history_node_t new_hist;
-    new_hist.replaced = 0;
-    new_hist.stroke = stroke;
-    new_hist.node = 0;
-    hist_inc();
-    history[history_ind] = new_hist;
-}
-
-void hist_exec() {  // Execute the current history entry
-    history_node_t cur = history[history_ind];
-    if (cur.replaced) {
-        hist_dec();
-        for (uint8_t i = 0; i < cur.replaced; i ++) {
-            hist_undo();
-        }
-        for (uint8_t i = 0; i < cur.replaced; i ++) {
-            hist_inc();
-        }
-        hist_inc();
-        /* history[history_ind] = cur; */
+void hist_undo() {
+    history_t hist = history[hist_ind];
+    uint8_t len = hist.len;
+    if (!len) {
+        tap_code(KC_BSPC);
+        return;
     }
-    if (cur.node) {
-        seek(cur.node);
-        read_header();
-        read_string();
-        SEND_STRING(" ");
-        send_string((char *) _buf);
-    } else {    // Raw input
-        char buf[30];
-        stroke_to_string(cur.stroke, buf);
-        SEND_STRING(" ");
-        send_string((char *) buf);
-    }
-}
-
-void hist_undo(void) {
-    history_node_t cur = history[history_ind];
-    hist_dec();
-    if (cur.node) {
-        seek(cur.node);
-        read_header();
-        for (uint8_t i = 0; i <= _header.str_len; i ++) {   // Space included
+    // Check if replacements are available
+    for (uint8_t i = 0; i < hist.repl_len; i ++) {
+        history_t old_hist = history[(hist_ind + i - hist.repl_len) % HIST_SIZE];
+        if (!old_hist.len) {
+            history[hist_ind].len = 0;
             tap_code(KC_BSPC);
+            return;
         }
-    } else {    // Raw input
-        char buf[30];
-        stroke_to_string(cur.stroke, buf);
-        uint8_t len = strlen(buf) + 1;
-        for (uint8_t i = 0; i < len; i ++) {
+    }
+
+    for (uint8_t i = 0; i < len; i ++) {
+        tap_code(KC_BSPC);
+    }
+    state = hist.state;
+    search_nodes_len = hist.search_nodes_len;
+    memcpy(search_nodes, hist.search_nodes, search_nodes_len * sizeof(search_node_t));
+    for (uint8_t i = 0; i < hist.repl_len; i ++) {
+        history_t old_hist = history[(hist_ind + i - hist.repl_len) % HIST_SIZE];
+        state_t state = old_hist.state;
+        process_output(&state, old_hist.output, old_hist.repl_len);
+    }
+
+    if (hist_ind == 0) {
+        hist_ind = HIST_SIZE - 1;
+    } else {
+        hist_ind --;
+    }
+}
+
+uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
+    // TODO use state
+    for (uint8_t i = 0; i < repl_len; i ++) {
+        history_t old_hist = history[(hist_ind + i + 1 - repl_len) % HIST_SIZE];
+        for (uint8_t j = 0; j < old_hist.len; j ++) {
             tap_code(KC_BSPC);
         }
     }
 
-    if (cur.replaced) {     // Redo previous entries
-        for (uint8_t i = 0; i < cur.replaced; i ++) {
-            hist_dec();
-        }
-        for (uint8_t i = 0; i < cur.replaced; i ++) {
-            hist_inc();
-            hist_exec();
-        }
+    SEND_STRING(" ");
+    if (output.type == RAW_STROKE) {
+        char buf[24];
+        stroke_to_string(output.stroke, buf);
+        send_string(buf);
+        return strlen(buf) + 1;
     }
-}
 
+    seek(output.node);
+    read_header();
+    read_string();
+    send_string(_buf);
+    return strlen(_buf) + 1;
+}
