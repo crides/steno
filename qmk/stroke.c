@@ -64,8 +64,26 @@ uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
     return 0;
 }
 
-void stroke_to_string(uint32_t stroke, char *buf) {
+// Returns if the stroke contains only digits
+bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
     uint8_t len = 0;
+    const uint32_t DIGIT_BITS = 0x7562A8;
+    if (stroke & ((uint32_t) 1 << 22) && !(stroke & ~DIGIT_BITS)) {
+        if (stroke & ((uint32_t) 1 << 21)) buf[len++] = '1';
+        if (stroke & ((uint32_t) 1 << 20)) buf[len++] = '2';
+        if (stroke & ((uint32_t) 1 << 18)) buf[len++] = '3';
+        if (stroke & ((uint32_t) 1 << 16)) buf[len++] = '4';
+        if (stroke & ((uint32_t) 1 << 14)) buf[len++] = '5';
+        if (stroke & ((uint32_t) 1 << 13)) buf[len++] = '0';
+        if (stroke & ((uint32_t) 1 << 9)) buf[len++] = '6';
+        if (stroke & ((uint32_t) 1 << 7)) buf[len++] = '7';
+        if (stroke & ((uint32_t) 1 << 5)) buf[len++] = '8';
+        if (stroke & ((uint32_t) 1 << 3)) buf[len++] = '9';
+        buf[len] = 0;
+        *ret_len = len;
+        return true;
+    }
+
     char *KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
     bool has_mid = false;
     for (int8_t i = 22; i >= 0; i --) {
@@ -81,7 +99,9 @@ void stroke_to_string(uint32_t stroke, char *buf) {
             buf[len++] = KEYS[22 - i];
         }
     }
-    buf[len++] = 0;
+    buf[len] = 0;
+    *ret_len = len;
+    return false;
 }
 
 uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {

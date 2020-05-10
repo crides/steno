@@ -1,6 +1,7 @@
 #include "hist.h"
 #include "quantum.h"
 #include <string.h>
+#include <ctype.h>
 
 history_t history[HIST_SIZE];
 uint8_t hist_ind = 0;
@@ -55,7 +56,7 @@ void hist_undo() {
 }
 
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
-    // TODO use state
+    // TODO optimization: compare beginning of current and string to replace
     for (uint8_t i = 0; i < repl_len; i ++) {
         history_t old_hist = history[(hist_ind + i + 1 - repl_len) % HIST_SIZE];
         for (uint8_t j = 0; j < old_hist.len; j ++) {
@@ -63,17 +64,40 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         }
     }
 
-    SEND_STRING(" ");
+    state_t old_state = *state;
+    uint8_t len = 0;
+    state->cap = 0;
+    state->prev_glue = 0;
+    state->space = 1;
+
     if (output.type == RAW_STROKE) {
-        char buf[24];
-        stroke_to_string(output.stroke, buf);
-        send_string(buf);
-        return strlen(buf) + 1;
+        if (stroke_to_string(output.stroke, _buf, &len)) {
+            state->prev_glue = 1;
+        }
+    } else {
+        seek(output.node);
+        read_header();
+        read_string();
+        len = strlen(_buf);
+        for (uint8_t i = 0; i < len; i ++) {
+            if (!isdigit(_buf[i])) {
+                state->prev_glue = 0;
+                goto end_num_check;
+            }
+        }
+        state->prev_glue = 1;
+
+end_num_check:
+        // TODO check for state changes
+        if (state->cap) {
+            _buf[0] = toupper(_buf[0]);
+        }
+    }
+    if (old_state.space && !(old_state.prev_glue && state->prev_glue)) {
+        SEND_STRING(" ");
+        len ++;
     }
 
-    seek(output.node);
-    read_header();
-    read_string();
     send_string(_buf);
-    return strlen(_buf) + 1;
+    return len;
 }

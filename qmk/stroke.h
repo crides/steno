@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #define MAX_COLLISIONS 8
 #define SEARCH_NODES_SIZE 8
 
@@ -37,6 +39,6 @@ void read_string(void);
 void read_header(void);
 void read_child(void);
 
-void stroke_to_string(uint32_t stroke, char *buf);
+bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *len);
 uint32_t qmk_chord_to_stroke(uint8_t chord[6]);
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level, uint8_t *max_level_ended);
