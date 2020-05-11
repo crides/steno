@@ -37,8 +37,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     new_hist.state = state;
 
     uint32_t max_level_node = 0;
-    uint8_t max_level = 0, max_level_ended = 0;
-    search_on_nodes(search_nodes, &search_nodes_len, stroke, &max_level_node, &max_level, &max_level_ended);
+    uint8_t max_level = 0;
+    search_on_nodes(search_nodes, &search_nodes_len, stroke, &max_level_node, &max_level);
 
     if (max_level_node) {
         new_hist.output.type = NODE_STRING;

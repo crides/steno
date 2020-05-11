@@ -41,4 +41,4 @@ void read_child(void);
 
 bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *len);
 uint32_t qmk_chord_to_stroke(uint8_t chord[6]);
-void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level, uint8_t *max_level_ended);
+void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level);

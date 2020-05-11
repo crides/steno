@@ -126,7 +126,7 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
     return stroke;
 }
 
-void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level, uint8_t *max_level_ended) {
+void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
     uint8_t _size = *size;
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
@@ -152,10 +152,6 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             if (*size >= SEARCH_NODES_SIZE) {
                 uprintf("Search nodes full!\n");
                 return;
-            }
-        } else {
-            if (next_node == *max_level_node) {
-                *max_level_ended = 1;
             }
         }
     }
