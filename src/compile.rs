@@ -1,21 +1,25 @@
 use std::io::{self, prelude::*};
 
-use crate::dict::Dict;
+use bitfield::BitRange;
+
+use crate::dict::{Dict, Attr};
 use crate::stroke::Stroke;
 use crate::hashmap::LPHashMap;
 
 struct IRNode {
     node_num: u32,
     string: String,
+    attr: Attr,
     children: LPHashMap,
 }
 
 impl IRNode {
-    fn new(node_num: u32, string: String) -> Self {
+    fn new(node_num: u32, string: String, attr: Attr) -> Self {
         let children = LPHashMap::new(node_num as usize);
         Self {
             node_num: children.total_size() as u32,
             string,
+            attr,
             children,
         }
     }
@@ -46,10 +50,10 @@ impl IR {
         self.cur_addr
     }
 
-    pub fn add_node(&mut self, node_num: u32, string: String) {
+    pub fn add_node(&mut self, node_num: u32, string: String, attr: Attr) {
         let len = string.len();
-        let new_node = IRNode::new(node_num, string);
-        self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 4;
+        let new_node = IRNode::new(node_num, string, attr);
+        self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 5;
         self.nodes.push(new_node);
     }
 
@@ -64,9 +68,10 @@ impl IR {
         let mut children: Vec<(Stroke, Dict)> = dict.children.into_iter().collect();
         children.sort_by(|a, b| a.0.cmp(&b.0));
         let cur_ind = self.len();
-        self.add_node(children.len() as u32, dict.entry.unwrap_or("".into()));
+        self.add_node(children.len() as u32, dict.entry.unwrap_or("".into()), dict.attr);
 
         for child in children.into_iter() {
+            let entry: String = child.1.entry.clone().unwrap_or("None".into());
             let child_addr = self._from_dict(child.1);
             self.nodes[cur_ind].add_child(child.0.raw(), child_addr);
         }
@@ -82,6 +87,7 @@ impl IR {
             let string_len = node.string.len();
             bytes.extend_from_slice(&(node.children.total_size() as u32).to_le_bytes()[0..3]);
             bytes.push(string_len as u8);
+            bytes.push(node.attr.0);
             bytes.extend_from_slice(&node.string.clone().into_bytes());
             w.write_all(&bytes)?;
             node.children.write_all_to(w)?;
