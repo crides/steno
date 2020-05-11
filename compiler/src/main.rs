@@ -47,4 +47,11 @@ fn main() {
     let ir = IR::from_dict(dict);
     ir.write(&mut File::create(output_file).expect("output file"))
         .expect("write output");
+
+    // let app = App::new("compile-steno")
+    //     .arg(Arg::with_name("test").required(true));
+    // let matches = app.get_matches();
+    // let test_str = matches.value_of("test").unwrap();
+    // let (attr, s) = Dict::parse_entry(test_str);
+    // println!("attr: {:?}, str: {}", attr, s);
 }
