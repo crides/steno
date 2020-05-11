@@ -19,9 +19,26 @@ typedef struct __attribute__((packed)) {
     uint32_t addr : 24;
 } child_t;
 
+typedef enum {
+    ATTR_CAPS_DEFAULT = 0,
+    ATTR_CAPS_FORCE_LOWER = 1,
+    ATTR_CAPS_KEEP = 2,
+    ATTR_CAPS_FORCE_UPPER = 3,
+} attr_caps_t;
+
+typedef struct __attribute__((packed)) {
+    attr_caps_t caps : 2;
+    uint8_t space_prev : 1;
+    uint8_t space_after : 1;
+    uint8_t glue : 1;
+    uint8_t force_all_caps : 1;
+    uint8_t force_all_lower : 1;
+} attr_t;
+
 typedef struct __attribute__((packed)) {
     uint32_t node_num : 24;
     uint8_t str_len;
+    attr_t attrs;
 } header_t;
 
 typedef struct __attribute__((packed)) {

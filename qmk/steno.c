@@ -14,7 +14,7 @@
 
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
-state_t state;
+state_t state = {.space = 0, .cap = 1, .prev_glue = 0};
 
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     uint32_t stroke = qmk_chord_to_stroke(chord);

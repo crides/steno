@@ -65,7 +65,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     }
 
     state_t old_state = *state;
-    uint8_t len = 0;
+    uint8_t len = 0, space = old_state.space;
     state->cap = 0;
     state->prev_glue = 0;
     state->space = 1;
@@ -81,19 +81,28 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         len = strlen(_buf);
         for (uint8_t i = 0; i < len; i ++) {
             if (!isdigit(_buf[i])) {
-                state->prev_glue = 0;
                 goto end_num_check;
             }
         }
         state->prev_glue = 1;
 
-end_num_check:
-        // TODO check for state changes
-        if (state->cap) {
+end_num_check:;
+        attr_t attr = _header.attrs;
+        switch (attr.caps) {
+            case ATTR_CAPS_FORCE_LOWER: state->cap = 0;             break;
+            case ATTR_CAPS_FORCE_UPPER: state->cap = 1;             break;
+            case ATTR_CAPS_KEEP:        state->cap = old_state.cap; break;
+            case ATTR_CAPS_DEFAULT: break;
+        }
+        space = space && attr.space_prev;
+        state->space = attr.space_after;
+        state->prev_glue = state->prev_glue && attr.glue;
+        // TODO use other state/attrs
+        if (old_state.cap) {
             _buf[0] = toupper(_buf[0]);
         }
     }
-    if (old_state.space && !(old_state.prev_glue && state->prev_glue)) {
+    if (space && !(old_state.prev_glue && state->prev_glue)) {
         SEND_STRING(" ");
         len ++;
     }
