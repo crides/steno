@@ -4,12 +4,6 @@
 
 #define HIST_SIZE 30
 
-/* typedef struct __attribute__((packed)) { */
-/*     uint32_t stroke : 24; */
-/*     uint32_t node : 24; */
-/*     uint8_t replaced; */
-/* } history_t; */
-
 typedef enum {
     RAW_STROKE,
     NODE_STRING,
