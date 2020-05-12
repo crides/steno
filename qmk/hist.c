@@ -79,14 +79,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         read_header();
         read_string();
         len = strlen(_buf);
-        for (uint8_t i = 0; i < len; i ++) {
-            if (!isdigit(_buf[i])) {
-                goto end_num_check;
-            }
-        }
-        state->prev_glue = 1;
 
-end_num_check:;
         attr_t attr = _header.attrs;
         switch (attr.caps) {
             case ATTR_CAPS_FORCE_LOWER: state->cap = 0;             break;

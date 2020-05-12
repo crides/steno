@@ -127,6 +127,9 @@ impl Dict {
                 }
             }
         }
+        if buf.chars().all(|c| c.is_ascii_digit()) {
+            attr.set_glue(1);
+        }
         (attr, buf)
     }
     pub fn parse_from_json(m: &Map<String, Value>) -> Result<Dict, ParseDictErr> {
