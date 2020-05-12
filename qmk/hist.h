@@ -36,6 +36,9 @@ extern search_node_t search_nodes[SEARCH_NODES_SIZE];
 extern uint8_t search_nodes_len;
 extern state_t state;
 
+extern history_t history[HIST_SIZE];
+extern uint8_t hist_ind;
+
 void hist_add(history_t hist);
 void hist_undo(void);
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len);

@@ -49,6 +49,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         new_hist.output.stroke = stroke;
         new_hist.repl_len = 0;
     }
+    if (new_hist.repl_len) {
+        state = history[(hist_ind - new_hist.repl_len) % HIST_SIZE].state;
+    }
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
     hist_add(new_hist);
 
