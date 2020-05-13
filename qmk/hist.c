@@ -23,17 +23,9 @@ void hist_undo() {
     history_t hist = history[hist_ind];
     uint8_t len = hist.len;
     if (!len) {
+        uprintf("Invalid current history entry\n");
         tap_code(KC_BSPC);
         return;
-    }
-    // Check if replacements are available
-    for (uint8_t i = 0; i < hist.repl_len; i ++) {
-        history_t old_hist = history[(hist_ind + i - hist.repl_len) % HIST_SIZE];
-        if (!old_hist.len) {
-            history[hist_ind].len = 0;
-            tap_code(KC_BSPC);
-            return;
-        }
     }
 
     for (uint8_t i = 0; i < len; i ++) {
@@ -42,11 +34,20 @@ void hist_undo() {
     state = hist.state;
     search_nodes_len = hist.search_nodes_len;
     memcpy(search_nodes, hist.search_nodes, search_nodes_len * sizeof(search_node_t));
+    uint8_t hist_ind_save = hist_ind;
     for (uint8_t i = 0; i < hist.repl_len; i ++) {
-        history_t old_hist = history[(hist_ind + i - hist.repl_len) % HIST_SIZE];
+        hist_ind = (hist_ind_save + i - hist.repl_len) % HIST_SIZE;
+        history_t old_hist = history[hist_ind];
         state_t state = old_hist.state;
+        hist_ind = (hist_ind - 1) % HIST_SIZE;
+        if (!history[hist_ind].len) {
+            history[hist_ind_save].len = 0;
+            uprintf("Invalid previous history entry\n");
+            return;
+        }
         process_output(&state, old_hist.output, old_hist.repl_len);
     }
+    hist_ind = hist_ind_save;
 
     if (hist_ind == 0) {
         hist_ind = HIST_SIZE - 1;
@@ -57,11 +58,14 @@ void hist_undo() {
 
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     // TODO optimization: compare beginning of current and string to replace
-    for (uint8_t i = 0; i < repl_len; i ++) {
-        history_t old_hist = history[(hist_ind + i + 1 - repl_len) % HIST_SIZE];
+    int8_t counter = repl_len;
+    while (counter > 0) {
+        uint8_t old_hist_ind = (hist_ind - repl_len + counter) % HIST_SIZE;
+        history_t old_hist = history[old_hist_ind];
         for (uint8_t j = 0; j < old_hist.len; j ++) {
             tap_code(KC_BSPC);
         }
+        counter -= old_hist.repl_len + 1;
     }
 
     state_t old_state = *state;
