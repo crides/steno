@@ -131,13 +131,15 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
         // Search root node at the end
-        uint32_t next_node = node_find_stroke(i == _size ? 0 : nodes[i].node, stroke);
+        uint32_t node = i == _size ? 0 : nodes[i].node;
+        uint32_t next_node = node_find_stroke(node, stroke);
         if (!next_node) {
             continue;
         }
         seek(next_node);
         read_header();
         uint8_t next_level = i == _size ? 1 : nodes[i].level + 1;
+        uint32_t node_num = _header.node_num;
         if (_header.str_len) {
             if (next_level > *max_level) {
                 *max_level = next_level;
@@ -145,13 +147,19 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
                 read_string();
             }
         }
-        if (_header.node_num) {
+        if (node_num) {
             nodes[*size].node = next_node;
             nodes[*size].level = next_level;
             (*size)++;
             if (*size >= SEARCH_NODES_SIZE) {
-                uprintf("Search nodes full!\n");
+                xprintf("Search nodes full!\n");
                 return;
+            }
+        } else {
+            if (next_node == *max_level_node) {    // Max level ended
+                *size = 0;
+                xprintf("max_level ends\n");
+                return;         // FIXME Should we return early here?
             }
         }
     }

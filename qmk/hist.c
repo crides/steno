@@ -23,7 +23,7 @@ void hist_undo() {
     history_t hist = history[hist_ind];
     uint8_t len = hist.len;
     if (!len) {
-        uprintf("Invalid current history entry\n");
+        xprintf("Invalid current history entry\n");
         tap_code(KC_BSPC);
         return;
     }
@@ -39,10 +39,9 @@ void hist_undo() {
         hist_ind = (hist_ind_save + i - hist.repl_len) % HIST_SIZE;
         history_t old_hist = history[hist_ind];
         state_t state = old_hist.state;
-        hist_ind = (hist_ind - 1) % HIST_SIZE;
         if (!history[hist_ind].len) {
             history[hist_ind_save].len = 0;
-            uprintf("Invalid previous history entry\n");
+            xprintf("Invalid previous history entry\n");
             return;
         }
         process_output(&state, old_hist.output, old_hist.repl_len);

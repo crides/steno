@@ -216,7 +216,7 @@ uint8_t sd_raw_init(void)
         if(i == 0x1ff)
         {
             unselect_card();
-            uprintf("too many tries\n");
+            dprintf("too many tries\n");
             return 0;
         }
     }
@@ -228,12 +228,12 @@ uint8_t sd_raw_init(void)
         sd_raw_rec_byte();
         sd_raw_rec_byte();
         if ((sd_raw_rec_byte() & 0x01) == 0) {
-            uprintf("Voltage\n");
+            dprintf("Voltage\n");
             return 0; /* card operation voltage range doesn't match */
         }
         uint8_t byte = sd_raw_rec_byte();
         if (byte != 0xaa) {
-            uprintf("Wrong pattern: %X\n", byte);
+            dprintf("Wrong pattern: %X\n", byte);
             return 0; /* wrong test pattern */
         }
 
@@ -278,7 +278,7 @@ uint8_t sd_raw_init(void)
         if(i == 0x7f)
         {
             unselect_card();
-            uprintf("Too many tries\n");
+            dprintf("Too many tries\n");
             return 0;
         }
     }
@@ -288,7 +288,7 @@ uint8_t sd_raw_init(void)
         if(sd_raw_send_command(CMD_READ_OCR, 0))
         {
             unselect_card();
-            uprintf("Read OCR\n");
+            dprintf("Read OCR\n");
             return 0;
         }
 
@@ -304,7 +304,7 @@ uint8_t sd_raw_init(void)
     if(sd_raw_send_command(CMD_SET_BLOCKLEN, 512))
     {
         unselect_card();
-        uprintf("Can't set block size\n");
+        dprintf("Can't set block size\n");
         return 0;
     }
 
@@ -319,7 +319,7 @@ uint8_t sd_raw_init(void)
     /* the first block is likely to be accessed first, so precache it here */
     raw_block_address = (offset_t) -1;
     if (!sd_raw_read(0, raw_block, sizeof(raw_block))) {
-        uprintf("Can't read\n");
+        dprintf("Can't read\n");
         return 0;
     }
 #endif

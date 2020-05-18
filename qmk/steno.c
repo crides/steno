@@ -28,7 +28,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     history_t new_hist;
     search_node_t *hist_nodes = malloc(search_nodes_len * sizeof(search_node_t));
     if (!hist_nodes) {
-        uprintf("Can't allocate memory for history!\n");
+        xprintf("Can't allocate memory for history!\n");
         return false;
     }
     memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t));
@@ -50,7 +50,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         new_hist.repl_len = 0;
     }
     if (new_hist.repl_len) {
-        state = history[(hist_ind - new_hist.repl_len) % HIST_SIZE].state;
+        state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
     }
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
     hist_add(new_hist);
@@ -110,7 +110,7 @@ void keyboard_post_init_user(void) {
 
     return;
 error:
-    uprintf("Can't init\n");
+    xprintf("Can't init\n");
     while(1);
 }
 
