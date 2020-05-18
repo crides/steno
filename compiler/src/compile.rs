@@ -1,8 +1,9 @@
 use std::io::{self, prelude::*};
+use std::collections::HashMap;
 
 use bitfield::BitRange;
 
-use crate::dict::{Dict, Attr};
+use crate::dict::{Dict, Attr, HashableDict};
 use crate::stroke::Stroke;
 use crate::hashmap::LPHashMap;
 
@@ -59,11 +60,12 @@ impl IR {
 
     pub fn from_dict(dict: Dict) -> Self {
         let mut ir = IR::new();
-        assert_eq!(ir._from_dict(dict), 0);
+        let mut node_cache = HashMap::new();
+        assert_eq!(ir._from_dict(dict, &mut node_cache), 0);
         ir
     }
 
-    fn _from_dict(&mut self, dict: Dict) -> u32 {
+    fn _from_dict(&mut self, dict: Dict, node_cache: &mut HashMap<HashableDict, u32>) -> u32 {
         let addr = self.addr();
         let mut children: Vec<(Stroke, Dict)> = dict.children.into_iter().collect();
         children.sort_by(|a, b| a.0.cmp(&b.0));
@@ -71,8 +73,13 @@ impl IR {
         self.add_node(children.len() as u32, dict.entry.unwrap_or("".into()), dict.attr);
 
         for child in children.into_iter() {
-            let entry: String = child.1.entry.clone().unwrap_or("None".into());
-            let child_addr = self._from_dict(child.1);
+            // let entry: String = child.1.entry.clone().unwrap_or("None".into());
+            let hash = HashableDict::from_dict(&child.1);
+            if !node_cache.contains_key(&hash) {
+                let child_addr = self._from_dict(child.1, node_cache);
+                node_cache.insert(hash.clone(), child_addr);
+            }
+            let child_addr = node_cache.get(&hash).copied().unwrap();
             self.nodes[cur_ind].add_child(child.0.raw(), child_addr);
         }
         let stats = self.nodes[cur_ind].children.stats();

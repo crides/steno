@@ -1,4 +1,5 @@
 use std::collections::{HashMap, hash_map::Entry};
+use std::hash::{Hash, Hasher};
 
 use serde_json::{Map, Value};
 
@@ -10,6 +11,7 @@ lazy_static! {
 }
 
 bitfield! {
+    #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     pub struct Attr(u8);
     impl Debug;
     caps, set_caps: 1, 0;
@@ -39,6 +41,33 @@ pub struct Dict {
     pub entry: Option<String>,
     pub attr: Attr,
     pub children: HashMap<Stroke, Dict>,
+}
+
+/// A hashable counter part for `Dict`, contains only the information needed
+#[derive(PartialEq, Eq, Clone)]
+pub struct HashableDict {
+    pub entry: Option<String>,
+    pub attr: Attr,
+    pub len: usize,
+}
+
+impl HashableDict {
+    pub fn from_dict(d: &Dict) -> Self {
+        let Dict { entry, attr, .. } = d;
+        Self {
+            entry: entry.clone(),
+            attr: *attr,
+            len: d.children.len(),
+        }
+    }
+}
+
+impl Hash for HashableDict {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.entry.hash(state);
+        self.attr.hash(state);
+        self.len.hash(state);
+    }
 }
 
 impl Dict {
