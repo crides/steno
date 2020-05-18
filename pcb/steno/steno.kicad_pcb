@@ -449,7 +449,7 @@
     (fp_text reference D27 (at -0.127 1.905 180) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -493,7 +493,7 @@
     (fp_text reference D7 (at -0.127 1.905 180) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -537,7 +537,7 @@
     (fp_text reference D18 (at -0.127 1.905 180) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -656,7 +656,7 @@
     (fp_text reference D28 (at -0.127 1.905 180) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -697,10 +697,10 @@
     (tags D_SOD-123F)
     (path /5E2B5EBC)
     (attr smd)
-    (fp_text reference D26 (at -0.127 1.905) (layer B.SilkS)
+    (fp_text reference D26 (at -0.127 1.905) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -744,7 +744,7 @@
     (fp_text reference D25 (at -0.127 1.905) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -788,7 +788,7 @@
     (fp_text reference D24 (at -0.127 1.905) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -876,7 +876,7 @@
     (fp_text reference D21 (at -0.127 1.905 180) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
-    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab)
+    (fp_text value DIODE (at 0 -2.1 180) (layer B.Fab) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_line (start -2.2 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -1005,7 +1005,7 @@
     (tags D_SOD-123F)
     (path /5E2B5E71)
     (attr smd)
-    (fp_text reference D17 (at -0.127 1.905) (layer B.SilkS)
+    (fp_text reference D17 (at -0.127 1.905) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_text value DIODE (at 0 -2.1) (layer B.Fab)
@@ -1445,7 +1445,7 @@
     (tags D_SOD-123F)
     (path /5E2B5E26)
     (attr smd)
-    (fp_text reference D6 (at -6 0) (layer B.SilkS)
+    (fp_text reference D6 (at -6 0) (layer B.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
     )
     (fp_text value DIODE (at 0 -2.1) (layer B.Fab)
