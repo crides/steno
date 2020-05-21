@@ -1,9 +1,9 @@
-use std::fmt::{self, Display, Formatter, Write};
+use std::fmt::{self, Debug, Display, Formatter};
 use std::str::FromStr;
 
 pub static KEYS: &'static str = "#STKPWHRAO*EUFRPBLGTSDZ";
 
-#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Copy)]
 pub struct Stroke(u32);
 
 impl Stroke {
@@ -21,6 +21,57 @@ impl Stroke {
 
     pub fn raw(self) -> u32 {
         self.0
+    }
+}
+
+impl Display for Stroke {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        const DIGIT_BITS: u32 = 0x7562A8;
+        static KEYS: &str = "#STKPWHRAO*EUFRPBLGTSDZ";
+        let mut buf = String::new();
+        if self.is_set(22) && (self.0 & !DIGIT_BITS) != 0 {
+            for &(bit, digit) in &[
+                (21, '1'),
+                (20, '2'),
+                (18, '3'),
+                (16, '4'),
+                (14, '5'),
+                (13, '0'),
+                (9, '6'),
+                (7, '7'),
+                (5, '8'),
+                (3, '9'),
+            ] {
+                if self.is_set(bit) {
+                    buf.push(digit);
+                }
+            }
+        } else {
+            let mut has_mid = false;
+            for i in (0..23).rev() {
+                if (self.0 & (1 << i)) > 0 {
+                    if i < 10 {
+                        if !has_mid {
+                            buf.push('-');
+                            has_mid = true;
+                        }
+                    } else if i <= 14 {
+                        has_mid = true;
+                    }
+                    buf.push(KEYS.chars().nth(22 - i).unwrap());
+                }
+            }
+        }
+        write!(f, "{}", buf)
+    }
+}
+
+impl Debug for Stroke {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_tuple("Stroke")
+            .field(&format_args!("{:x}", &self.0))
+            .field(&format_args!("{}", &self))
+            .finish()
     }
 }
 
@@ -60,18 +111,5 @@ impl FromStr for Stroke {
             }
         }
         Ok(res)
-    }
-}
-
-impl Display for Stroke {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        for (i, c) in KEYS.chars().enumerate() {
-            f.write_char(if self.is_set(KEYS.len() - i - 1) {
-                c
-            } else {
-                '-'
-            })?;
-        }
-        Ok(())
     }
 }
