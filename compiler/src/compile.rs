@@ -1,14 +1,13 @@
-use std::io::{self, prelude::*};
 use std::collections::HashMap;
+use std::io::{self, prelude::*};
 
 use bitfield::BitRange;
 
-use crate::dict::{Dict, Attr, HashableDict};
-use crate::stroke::Stroke;
+use crate::dict::{Attr, Dict, HashableDict};
 use crate::hashmap::LPHashMap;
+use crate::stroke::Stroke;
 
 struct IRNode {
-    node_num: u32,
     string: String,
     attr: Attr,
     children: LPHashMap,
@@ -18,7 +17,6 @@ impl IRNode {
     fn new(node_num: u32, string: String, attr: Attr) -> Self {
         let children = LPHashMap::new(node_num as usize);
         Self {
-            node_num: children.total_size() as u32,
             string,
             attr,
             children,
@@ -61,29 +59,49 @@ impl IR {
     pub fn from_dict(dict: Dict) -> Self {
         let mut ir = IR::new();
         let mut node_cache = HashMap::new();
-        assert_eq!(ir._from_dict(dict, &mut node_cache), 0);
+        let mut max_collisions = 0;
+        assert_eq!(ir._from_dict(dict, &mut node_cache, &mut max_collisions), 0);
+        println!("Max collisions: {}", max_collisions);
         ir
     }
 
-    fn _from_dict(&mut self, dict: Dict, node_cache: &mut HashMap<HashableDict, u32>) -> u32 {
+    fn _from_dict(
+        &mut self,
+        dict: Dict,
+        node_cache: &mut HashMap<HashableDict, u32>,
+        max_collisions: &mut usize,
+    ) -> u32 {
         let addr = self.addr();
         let mut children: Vec<(Stroke, Dict)> = dict.children.into_iter().collect();
         children.sort_by(|a, b| a.0.cmp(&b.0));
         let cur_ind = self.len();
-        self.add_node(children.len() as u32, dict.entry.unwrap_or("".into()), dict.attr);
+        self.add_node(
+            children.len() as u32,
+            dict.entry.unwrap_or("".into()),
+            dict.attr,
+        );
 
         for child in children.into_iter() {
-            // let entry: String = child.1.entry.clone().unwrap_or("None".into());
             let hash = HashableDict::from_dict(&child.1);
-            if !node_cache.contains_key(&hash) {
-                let child_addr = self._from_dict(child.1, node_cache);
-                node_cache.insert(hash.clone(), child_addr);
-            }
-            let child_addr = node_cache.get(&hash).copied().unwrap();
+            let child_addr = if !node_cache.contains_key(&hash) {
+                let child_addr = self._from_dict(child.1, node_cache, max_collisions);
+                if hash.keys.iter().all(|(_s, ent)| ent.is_some()) {
+                    node_cache.insert(hash.clone(), child_addr);
+                }
+                child_addr
+            } else {
+                // if hash.keys.len() > 0 {
+                //     println!("{}, {:#?}", child.0, hash);
+                // }
+                node_cache.get(&hash).copied().unwrap()
+            };
             self.nodes[cur_ind].add_child(child.0.raw(), child_addr);
         }
         let stats = self.nodes[cur_ind].children.stats();
-        println!("{} {} {}", stats.0, stats.1, stats.2);
+        if stats.0 > *max_collisions {
+            *max_collisions = stats.0;
+        }
+        // println!("{} {} {}", stats.0, stats.1, stats.2);
         addr
     }
 
@@ -92,6 +110,7 @@ impl IR {
         for node in self.nodes.iter() {
             bytes.clear();
             let string_len = node.string.len();
+            // Note: this is 3 bytes long. MSB is at the end cuz LE.
             bytes.extend_from_slice(&(node.children.total_size() as u32).to_le_bytes()[0..3]);
             bytes.push(string_len as u8);
             bytes.push(node.attr.0);
