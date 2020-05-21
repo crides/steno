@@ -1,7 +1,5 @@
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::{hash_map::Entry, HashMap};
 use std::hash::{Hash, Hasher};
-
-use serde_json::{Map, Value};
 
 use crate::stroke::Stroke;
 use regex::Regex;
@@ -9,6 +7,8 @@ use regex::Regex;
 lazy_static! {
     static ref META_RE: Regex = Regex::new(r"[^{}]+|\{[^{}]*\}").unwrap();
 }
+
+pub type JsonDict = HashMap<String, String>;
 
 bitfield! {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -37,6 +37,7 @@ pub enum ParseDictErr {
     InvalidEntry(String),
 }
 
+#[derive(Debug, Clone)]
 pub struct Dict {
     pub entry: Option<String>,
     pub attr: Attr,
@@ -44,20 +45,49 @@ pub struct Dict {
 }
 
 /// A hashable counter part for `Dict`, contains only the information needed
-#[derive(PartialEq, Eq, Clone)]
+#[derive(Debug, Eq, Clone)]
 pub struct HashableDict {
     pub entry: Option<String>,
     pub attr: Attr,
-    pub len: usize,
+    pub keys: Vec<(Stroke, Option<String>)>,
+}
+
+impl PartialEq for HashableDict {
+    fn eq(&self, other: &Self) -> bool {
+        if self.entry != other.entry {
+            return false;
+        }
+        if self.attr != other.attr {
+            return false;
+        }
+        for (key, other_key) in self.keys.iter().zip(other.keys.iter()) {
+            if key.0 != other_key.0 {
+                return false;
+            }
+            if key.1.is_none() || other_key.1.is_none() || key.1 != other_key.1 {
+                return false;
+            }
+        }
+        true
+    }
 }
 
 impl HashableDict {
     pub fn from_dict(d: &Dict) -> Self {
-        let Dict { entry, attr, .. } = d;
+        let Dict {
+            entry,
+            attr,
+            children,
+        } = d;
+        let mut keys: Vec<(Stroke, Option<String>)> = children
+            .iter()
+            .map(|(k, v)| (*k, v.entry.clone()))
+            .collect();
+        keys.sort();
         Self {
             entry: entry.clone(),
             attr: *attr,
-            len: d.children.len(),
+            keys,
         }
     }
 }
@@ -66,7 +96,7 @@ impl Hash for HashableDict {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.entry.hash(state);
         self.attr.hash(state);
-        self.len.hash(state);
+        self.keys.hash(state);
     }
 }
 
@@ -90,10 +120,10 @@ impl Dict {
     pub fn parse_entry(s: &str) -> (Attr, String) {
         let mut buf = String::new();
         let mut attr = Attr::default();
-        
+
         let (mut space, mut caps, mut glue) = (true, false, false);
         let atoms = META_RE.find_iter(s).collect::<Vec<_>>();
-        println!("{:#?}", atoms);
+        // println!("{:#?}", atoms);
         for i in 0..atoms.len() {
             let mat = atoms[i];
             let mut mat_s = mat.as_str();
@@ -111,7 +141,7 @@ impl Dict {
                             attr.set_caps(3);
                             attr.set_space_after(1);
                         }
-                    },
+                    }
                     "," | ";" | ":" => {
                         buf.push_str(mat_s);
                         space = true;
@@ -122,7 +152,7 @@ impl Dict {
                         if i == atoms.len() - 1 {
                             attr.set_space_after(1);
                         }
-                    },
+                    }
                     _ => {
                         if mat_s.starts_with('^') {
                             mat_s = &mat_s[1..];
@@ -161,21 +191,16 @@ impl Dict {
         }
         (attr, buf)
     }
-    pub fn parse_from_json(m: &Map<String, Value>) -> Result<Dict, ParseDictErr> {
+
+    pub fn parse_from_json(m: &JsonDict) -> Result<Dict, ParseDictErr> {
         let mut root = Dict::new(None);
         for (strokes, entry) in m.iter() {
-            let entry = entry
-                .as_str()
-                .ok_or(ParseDictErr::InvalidEntry(strokes.clone()))?;
             let mut cur_dict = &mut root;
-            for stroke in strokes
-                .split('/')
-                .map(|stroke| {
-                    stroke
-                        .parse()
-                        .map_err(|_| ParseDictErr::InvalidStroke(strokes.clone()))
-                })
-            {
+            for stroke in strokes.split('/').map(|stroke| {
+                stroke
+                    .parse()
+                    .map_err(|_| ParseDictErr::InvalidStroke(strokes.clone()))
+            }) {
                 let stroke = stroke?;
                 cur_dict = cur_dict.entry(stroke).or_default();
             }
