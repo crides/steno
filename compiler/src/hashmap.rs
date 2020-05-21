@@ -1,7 +1,7 @@
 use std::io::{self, prelude::*};
 use std::sync::Mutex;
 
-use primes::{Sieve, PrimeSet};
+use primes::{PrimeSet, Sieve};
 
 lazy_static! {
     pub static ref PRIMES: Mutex<Sieve> = Mutex::new(Sieve::new());
@@ -25,7 +25,7 @@ impl LPHashMap {
                 max_collisions: 0,
             }
         } else {
-            let (_, map_size) = PRIMES.lock().unwrap().find(size as u64 * 7);
+            let (_, map_size) = PRIMES.lock().unwrap().find(size as u64 * 6);
             let map_size = map_size as usize;
             Self {
                 map: vec![(0, 0); map_size],
@@ -67,6 +67,7 @@ impl LPHashMap {
         (self.max_collisions, self.map.len(), self.original_size)
     }
 
+    /// From FNV-1a
     pub fn hash(input: u32) -> u32 {
         let bytes = input.to_le_bytes();
         let mut hash = 0x811c9dc5u32;
