@@ -19,11 +19,22 @@ typedef struct __attribute__((packed)) {
     uint32_t addr : 24;
 } child_t;
 
+// Caps for the current entry
 typedef enum {
-    ATTR_CAPS_DEFAULT = 0,
-    ATTR_CAPS_FORCE_LOWER = 1,
-    ATTR_CAPS_KEEP = 2,
-    ATTR_CAPS_FORCE_UPPER = 3,
+    // all lower case
+    CAPS_LOWER = 0,
+    // Capitalized; only first charater is upper
+    CAPS_CAP = 1,
+    // ALL CAPS
+    CAPS_UPPER = 2,
+} caps_t;
+
+// Attributes for next entry
+typedef enum {
+    ATTR_CAPS_LOWER = 0,
+    ATTR_CAPS_KEEP = 1,
+    ATTR_CAPS_CAPS = 2,
+    ATTR_CAPS_UPPER = 3,
 } attr_caps_t;
 
 typedef struct __attribute__((packed)) {
@@ -31,8 +42,6 @@ typedef struct __attribute__((packed)) {
     uint8_t space_prev : 1;
     uint8_t space_after : 1;
     uint8_t glue : 1;
-    uint8_t force_all_caps : 1;
-    uint8_t force_all_lower : 1;
 } attr_t;
 
 typedef struct __attribute__((packed)) {

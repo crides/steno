@@ -85,10 +85,10 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 
         attr_t attr = _header.attrs;
         switch (attr.caps) {
-            case ATTR_CAPS_FORCE_LOWER: state->cap = 0;             break;
-            case ATTR_CAPS_FORCE_UPPER: state->cap = 1;             break;
+            case ATTR_CAPS_LOWER: state->cap = 0;             break;
+            case ATTR_CAPS_UPPER: state->cap = 1;             break;
             case ATTR_CAPS_KEEP:        state->cap = old_state.cap; break;
-            case ATTR_CAPS_DEFAULT: break;
+            case ATTR_CAPS_CAPS: state->cap = 1;             break;
         }
         space = space && attr.space_prev;
         state->space = attr.space_after;
