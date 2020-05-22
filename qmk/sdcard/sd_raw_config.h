@@ -66,10 +66,10 @@ extern "C"
 #define configure_pin_sck() DDRB |= (1 << DDB1)
 #define configure_pin_mosi() DDRB |= (1 << DDB2)
 #define configure_pin_miso() DDRB &= ~(1 << DDB3)
-#define configure_pin_ss() DDRD |= (1 << DDD1)
+#define configure_pin_ss() DDRC |= (1 << DDC6)
 
-#define select_card() PORTD &= ~(1 << PORTD1)
-#define unselect_card() PORTD |= (1 << PORTD1)
+#define select_card() PORTC &= ~(1 << PORTC6)
+#define unselect_card() PORTC |= (1 << PORTC6)
 
 typedef uint32_t offset_t;
 
