@@ -42,6 +42,7 @@ typedef struct __attribute__((packed)) {
     uint8_t space_prev : 1;
     uint8_t space_after : 1;
     uint8_t glue : 1;
+    uint8_t present : 1;
 } attr_t;
 
 typedef struct __attribute__((packed)) {

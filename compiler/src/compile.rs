@@ -14,6 +14,7 @@ bitfield! {
     space_prev, set_space_prev: 2, 2;
     space_after, set_space_after: 3, 3;
     glue, set_glue: 4, 4;
+    present, set_present: 5, 5;
 }
 
 impl Default for RawAttr {
@@ -34,6 +35,7 @@ impl From<Attr> for RawAttr {
         ra.set_glue(a.glue.into());
         ra.set_space_prev(a.space_prev.into());
         ra.set_space_after(a.space_after.into());
+        ra.set_present(a.present.into());
         ra
     }
 }

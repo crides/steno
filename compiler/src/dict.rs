@@ -23,6 +23,19 @@ pub struct Attr {
     pub space_prev: bool,
     pub space_after: bool,
     pub glue: bool,
+    pub present: bool,
+}
+
+impl Attr {
+    fn none() -> Self {
+        Attr {
+            caps: Caps::Lower,
+            space_prev: false,
+            space_after: false,
+            glue: false,
+            present: false,
+        }
+    }
 }
 
 impl Default for Attr {
@@ -32,6 +45,7 @@ impl Default for Attr {
             space_prev: true,
             space_after: true,
             glue: false,
+            present: true,
         }
     }
 }
@@ -115,27 +129,30 @@ impl Dict {
 
     pub fn parse_entry(s: &str) -> (Attr, String) {
         let mut buf = String::new();
-        let mut entry_attr = Attr::default();
+        let mut entry_attr = Attr {
+            present: true,
+            ..Attr::default()
+        };
         let mut last_cap = Caps::Lower;
 
-        let atoms = META_RE
+        let mut atoms = META_RE
             .find_iter(s)
             .map(|m| Dict::parse_atom(m.as_str()))
             .collect::<Vec<_>>();
         let len = atoms.len();
         // println!("{:#?}", atoms);
         for i in 0..len {
-            let (attr, string) = dbg!(&atoms[i]);
-            let prev_attr = dbg!(if i == 0 {
+            let prev_attr = if i == 0 {
                 Attr::default()
             } else {
                 atoms[i - 1].0
-            });
+            };
+            let (attr, string) = &mut atoms[i];
             if prev_attr.glue && attr.glue || !prev_attr.space_after || !attr.space_prev {
                 if i == 0 {
                     entry_attr.space_prev = false;
                 }
-            } else if i > 0 {
+            } else if buf.len() > 0 && !string.is_empty() {
                 buf.push(' ');
             }
             if prev_attr.caps == Caps::Caps
@@ -145,9 +162,7 @@ impl Dict {
                 if let Some(c) = chars.next() {
                     buf.push(c.to_ascii_uppercase());
                 }
-                while let Some(c) = chars.next() {
-                    buf.push(c);
-                }
+                buf.extend(chars);
                 last_cap = Caps::Caps;
             } else if prev_attr.caps == Caps::Upper
                 || last_cap == Caps::Upper && prev_attr.caps == Caps::Keep
@@ -189,7 +204,10 @@ impl Dict {
 
 impl Default for Dict {
     fn default() -> Dict {
-        Dict::new(None)
+        Dict {
+            attr: Attr::none(),
+            ..Dict::new(None)
+        }
     }
 }
 

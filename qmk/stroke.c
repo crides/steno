@@ -140,7 +140,7 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         read_header();
         uint8_t next_level = i == _size ? 1 : nodes[i].level + 1;
         uint32_t node_num = _header.node_num;
-        if (_header.str_len) {
+        if (_header.str_len || _header.attrs.present) {
             if (next_level > *max_level) {
                 *max_level = next_level;
                 *max_level_node = next_node;
