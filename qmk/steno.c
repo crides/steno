@@ -1,6 +1,7 @@
 #include <string.h>
 #include "steno.h"
 #include "keymap_steno.h"
+#include "raw_hid.h"
 /* #include "action_layer.h" */
 /* #include "eeconfig.h" */
 
@@ -108,6 +109,10 @@ void keyboard_post_init_user(void) {
         goto error;
     }
 
+#ifdef OLED_DRIVER_ENABLE
+    oled_write_P(PSTR("Hello World!"), false);
+#endif
+
     return;
 error:
     xprintf("Can't init\n");
@@ -116,6 +121,18 @@ error:
 
 void matrix_init_user() {
     steno_set_mode(STENO_MODE_GEMINI);
+}
+
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+    xprintf("recv: ");
+    for (uint8_t i = 0; i < length; i ++) {
+        xprintf(" %02X", data[i]);
+    }
+    xprintf("\n");
+    /* oled_write((char *) data, false); */
+    uint8_t buf[32] = {'A', 'C', 'K', 0};
+    raw_hid_send(buf, 32);
+    xprintf("Sent?!\n");
 }
 
 #endif
