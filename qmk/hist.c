@@ -87,18 +87,18 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         switch (attr.caps) {
             case ATTR_CAPS_LOWER: state->cap = 0;             break;
             case ATTR_CAPS_UPPER: state->cap = 1;             break;
-            case ATTR_CAPS_KEEP:        state->cap = old_state.cap; break;
-            case ATTR_CAPS_CAPS: state->cap = 1;             break;
+            case ATTR_CAPS_KEEP:  state->cap = old_state.cap; break;
+            case ATTR_CAPS_CAPS:  state->cap = 1;             break;
         }
         space = space && attr.space_prev;
         state->space = attr.space_after;
-        state->prev_glue = state->prev_glue && attr.glue;
+        state->prev_glue = attr.glue;
         // TODO use other state/attrs
         if (old_state.cap) {
             _buf[0] = toupper(_buf[0]);
         }
     }
-    if (space && !(old_state.prev_glue && state->prev_glue)) {
+    if (space && len && !(old_state.prev_glue && state->prev_glue)) {
         SEND_STRING(" ");
         len ++;
     }

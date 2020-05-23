@@ -96,11 +96,14 @@ impl Dict {
                 }
                 ">" => {
                     attr.caps = Caps::Lower;
-                    attr.space_after = false;
                     s = "";
                 }
                 "<" => {
                     attr.caps = Caps::Upper;
+                    s = "";
+                }
+                "^" => {
+                    attr.space_prev = false;
                     attr.space_after = false;
                     s = "";
                 }
@@ -173,11 +176,15 @@ impl Dict {
                 buf.push_str(&string);
                 last_cap = Caps::Lower;
             }
+            if buf.is_empty() && string.is_empty() {
+                attr.space_after = attr.space_after && prev_attr.space_after;
+                attr.space_prev = attr.space_prev && prev_attr.space_prev;
+            }
         }
         let last_attr = atoms.last().map(|(a, _s)| a).copied().unwrap_or_default();
         entry_attr.caps = last_attr.caps;
         entry_attr.space_after = last_attr.space_after;
-        if buf.chars().all(|c| c.is_ascii_digit()) || atoms.iter().any(|(a, _s)| a.glue) {
+        if !buf.is_empty() && buf.chars().all(|c| c.is_ascii_digit()) || atoms.iter().any(|(a, _s)| a.glue) {
             entry_attr.glue = true;
         }
         (entry_attr, buf)
@@ -240,6 +247,36 @@ fn test_finger_spell() {
                 ..Attr::default()
             },
             "c".into()
+        )
+    );
+}
+
+#[test]
+fn test_cap() {
+    assert_eq!(
+        Dict::parse_entry("{-|}"),
+        (
+            Attr {
+                caps: Caps::Caps,
+                ..Attr::default()
+            },
+            "".into()
+        )
+    );
+}
+
+#[test]
+fn test_cap_star() {
+    assert_eq!(
+        Dict::parse_entry("{^}{-|}"),
+        (
+            Attr {
+                caps: Caps::Caps,
+                space_prev: false,
+                space_after: false,
+                ..Attr::default()
+            },
+            "".into()
         )
     );
 }
