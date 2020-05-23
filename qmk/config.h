@@ -5,11 +5,15 @@
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
-#define PRODUCT_ID      0x6060
+#define PRODUCT_ID      0x6061
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    Crides
 #define PRODUCT         Steno
+#define SERIAL_NUMBER   v2
 #define DESCRIPTION     28 key steno board
+#define RAW_USAGE_PAGE  0xFF60
+#define RAW_USAGE_ID    0x61
+#undef VIRTSER_ENABLE
 
 #define MATRIX_ROWS 3
 #define MATRIX_COLS 10

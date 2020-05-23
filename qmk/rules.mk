@@ -4,7 +4,7 @@ ARCH = AVR8
 F_USB = $(F_CPU)
 BOOTLOADER = caterina
 
-SRC += hist.c stroke.c sdcard/fat.c sdcard/partition.c sdcard/sd_raw.c sdcard/byteordering.c
+SRC += hist.c stroke.c flash.c
 
 MOUSEKEY_ENABLE = no
 EXTRAKEY_ENABLE = no
@@ -12,6 +12,7 @@ CONSOLE_ENABLE = yes
 STENO_ENABLE = yes
 # BLUETOOTH = AdafruitBLE
 COMBO_ENABLE = no
+RAW_ENABLE = yes
 # OLED_DRIVER_ENABLE = yes
 
 EXTRAFLAGS += -flto

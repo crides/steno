@@ -7,10 +7,6 @@
 
 #ifdef CUSTOM_STENO
 
-#include "sdcard/fat.h"
-#include "sdcard/partition.h"
-#include "sdcard/sd_raw.h"
-
 #include "hist.h"
 
 search_node_t search_nodes[SEARCH_NODES_SIZE];
