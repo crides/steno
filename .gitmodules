@@ -1,0 +1,9 @@
+[submodule "compiler/rust-hidapi-sys"]
+	path = compiler/lib/rust-hidapi-sys
+	url = git@github.com:crides/rust-hidapi-sys.git
+[submodule "compiler/lib/rust-hid"]
+	path = compiler/lib/rust-hid
+	url = git@github.com:crides/rust-hid.git
+[submodule "compiler/lib/hidapi-1"]
+	path = compiler/lib/hidapi-1
+	url = git@github.com:crides/hidapi-1.git

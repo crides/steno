@@ -13,12 +13,14 @@ mod stroke;
 
 use std::fs::File;
 use std::io::{Seek, SeekFrom};
+use std::time::Duration;
 
 use clap::{App, Arg, SubCommand};
 
 use compile::IR;
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
+use stroke::Stroke;
 
 // use stroke::Stroke;
 
@@ -37,6 +39,8 @@ use rule::{apply_rules, Dict as RuleDict, Rules};
 
 fn main() {
     let matches = App::new("compile-steno")
+        .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
+        .subcommand(SubCommand::with_name("test2").arg(Arg::with_name("input").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
                 .arg(Arg::with_name("input").required(true))
@@ -76,6 +80,32 @@ fn main() {
             let output_file =
                 File::create(m.value_of("to").unwrap()).expect("Cannot create output file!");
             serde_json::to_writer(output_file, &output_dict).expect("Write output file");
+        }
+        ("test", Some(m)) => {
+            let stroke: Stroke = m.value_of("stroke").unwrap().parse().unwrap();
+            println!("{:x}", stroke.raw());
+        }
+        ("test2", Some(m)) => {
+            let input = m.value_of("input").unwrap();
+            let manager = hid::init().unwrap();
+            for device in manager.find(Some(0xFEED), Some(0x6061)) {
+                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
+                    println!("serial: {:?}", device.serial_number());
+                    println!("path: {:?}", device.path());
+                    println!("manu_string: {:?}", device.manufacturer_string());
+                    println!("prod_string: {:?}", device.product_string());
+                    println!("release: {:?}", device.release_number());
+                    println!("interface: {:?}", device.interface_number());
+                    println!("usage_page: {:x}", device.usage_page());
+                    println!("usage: {:x}", device.usage());
+                    let mut handle = device.open_by_path().unwrap();
+                    handle.data().write(input).unwrap();
+                    let mut buf = vec![0; 32];
+                    handle.data().read(&mut buf, Duration::from_secs(0)).unwrap();
+                    dbg!(buf);
+                    break;
+                }
+            }
         }
         (cmd, _) => panic!("{}", cmd),
     }
