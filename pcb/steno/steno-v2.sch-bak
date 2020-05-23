@@ -72,24 +72,11 @@ COL6
 NoConn ~ 10700 5400
 NoConn ~ 9650 5800
 NoConn ~ 10700 4900
-Text GLabel 10700 4800 2    50   Input ~ 0
-GND
-$Comp
-L Connector_Generic:Conn_01x02 J1
-U 1 1 5E6B230F
-P 11000 4300
-F 0 "J1" H 11080 4292 50  0000 L CNN
-F 1 "Conn_01x02" H 11080 4201 50  0000 L CNN
-F 2 "Connector_JST:JST_PH_B2B-PH-SM4-TB_1x02-1MP_P2.00mm_Vertical" H 11000 4300 50  0001 C CNN
-F 3 "~" H 11000 4300 50  0001 C CNN
-	1    11000 4300
-	1    0    0    -1  
-$EndComp
-Text GLabel 10800 4300 0    50   Input ~ 0
+Text GLabel 10700 4000 0    50   Input ~ 0
 GND
 Text GLabel 10700 4700 2    50   Input ~ 0
 BAT
-Text GLabel 10800 4400 0    50   Input ~ 0
+Text GLabel 10700 3700 0    50   Input ~ 0
 BAT
 $Comp
 L steno-rescue:Adafruit_Feather-ProMicro U1
@@ -1032,7 +1019,7 @@ Connection ~ 8300 3750
 Connection ~ 8300 3200
 Connection ~ 8300 2650
 Wire Wire Line
-	2000 3750 3400 3750
+	2000 3750 2700 3750
 Text GLabel 8950 4150 3    50   BiDi ~ 0
 COL10
 Wire Wire Line
@@ -1057,7 +1044,7 @@ U 1 1 5ECCCE62
 P 5650 5550
 F 0 "U2" H 5725 5875 50  0000 C CNN
 F 1 "MT25QL128ABA1ESE" H 5725 5784 50  0000 C CNN
-F 2 "steno:SOIC-8" H 5650 5150 50  0001 C CNN
+F 2 "Package_SO:SOP-8_5.28x5.23mm_P1.27mm" H 5650 5150 50  0001 C CNN
 F 3 "" H 5650 5150 50  0001 C CNN
 	1    5650 5550
 	1    0    0    -1  
@@ -1191,4 +1178,19 @@ Wire Wire Line
 	3300 4150 3350 4150
 Wire Wire Line
 	2600 4150 2650 4150
+Connection ~ 2700 3750
+Wire Wire Line
+	2700 3750 3400 3750
+NoConn ~ 10700 4800
+$Comp
+L Device:Battery_Cell BT?
+U 1 1 5EC9EBF8
+P 10700 3900
+F 0 "BT?" H 10818 3996 50  0000 L CNN
+F 1 "Battery_Cell" H 10818 3905 50  0000 L CNN
+F 2 "" V 10700 3960 50  0001 C CNN
+F 3 "~" V 10700 3960 50  0001 C CNN
+	1    10700 3900
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
