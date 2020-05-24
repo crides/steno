@@ -3,9 +3,6 @@
 #include "keymap_steno.h"
 #include "action_layer.h"
 #include "eeconfig.h"
-#include "sdcard/fat.h"
-#include "sdcard/partition.h"
-#include "sdcard/sd_raw.h"
 
 // Layers
 #define _STENO  0

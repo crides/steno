@@ -184,7 +184,9 @@ impl Dict {
         let last_attr = atoms.last().map(|(a, _s)| a).copied().unwrap_or_default();
         entry_attr.caps = last_attr.caps;
         entry_attr.space_after = last_attr.space_after;
-        if !buf.is_empty() && buf.chars().all(|c| c.is_ascii_digit()) || atoms.iter().any(|(a, _s)| a.glue) {
+        if !buf.is_empty() && buf.chars().all(|c| c.is_ascii_digit())
+            || atoms.iter().any(|(a, _s)| a.glue)
+        {
             entry_attr.glue = true;
         }
         (entry_attr, buf)
