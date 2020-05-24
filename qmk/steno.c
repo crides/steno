@@ -115,7 +115,7 @@ void keyboard_post_init_user(void) {
 
     return;
 error:
-    xprintf("Can't init\n");
+    uprintf("Can't init\n");
     while(1);
 }
 

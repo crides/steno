@@ -171,7 +171,6 @@ uint8_t sd_raw_init(void)
 {
     /* enable outputs for MOSI, SCK, SS, input for MISO */
     DDRB |= _BV(DDB0);
-    PORTB |= _BV(PORTB0);
     configure_pin_mosi();
     configure_pin_sck();
     configure_pin_ss();
