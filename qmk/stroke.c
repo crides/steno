@@ -2,6 +2,7 @@
 #include "quantum.h"
 #include "stroke.h"
 #include "stdbool.h"
+#include "hist.h"
 #include "sdcard/fat.h"
 
 struct fat_file_struct *file;
@@ -128,10 +129,15 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
     uint8_t _size = *size;
+    // We want the next non-root result node to have 1 more level than the current/last node; if
+    // that can't be achieved, we'll use the root-based node.
+    // See commit for details
+    uint8_t last_level = history[hist_ind].repl_len + 1;
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
+        bool last = i == _size;
         // Search root node at the end
-        uint32_t node = i == _size ? 0 : nodes[i].node;
+        uint32_t node = last ? 0 : nodes[i].node;
         uint32_t next_node = node_find_stroke(node, stroke);
         if (!next_node) {
             continue;
@@ -141,7 +147,7 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         uint8_t next_level = i == _size ? 1 : nodes[i].level + 1;
         uint32_t node_num = _header.node_num;
         if (_header.str_len || _header.attrs.present) {
-            if (next_level > *max_level) {
+            if (next_level > *max_level && (next_level > last_level || last)) {
                 *max_level = next_level;
                 *max_level_node = next_node;
                 read_string();
