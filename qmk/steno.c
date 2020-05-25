@@ -54,7 +54,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
     }
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
-    hist_add(new_hist);
+    if (new_hist.len) {
+        hist_add(new_hist);
+    }
 
     return false;
 }
@@ -110,12 +112,12 @@ void keyboard_post_init_user(void) {
     }
 
 #ifdef OLED_DRIVER_ENABLE
-    oled_write_P(PSTR("Hello World!"), false);
+    oled_set_contrast(0);
 #endif
 
     return;
 error:
-    uprintf("Can't init\n");
+    xprintf("Can't init\n");
     while(1);
 }
 

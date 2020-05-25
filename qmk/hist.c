@@ -16,10 +16,27 @@ void hist_add(history_t hist) {
         free(history[hist_ind].search_nodes);
     }
 
+#if STENO_DEBUG
+    xprintf("history[%u]:\n", hist_ind);
+    xprintf("  len: %u\n", hist.len);
+    xprintf("  repl_len: %u\n", hist.repl_len);
+    if (hist.output.type == RAW_STROKE) {
+        char buf[24];
+        uint8_t _len = 0;
+        stroke_to_string(hist.output.stroke, buf, &_len);
+        xprintf("  output: %s\n", buf);
+    } else {
+        uint32_t node = hist.output.node;
+        xprintf("  output: %lX\n", node);
+    }
+#endif
     history[hist_ind] = hist;
 }
 
 void hist_undo() {
+#if STENO_DEBUG
+    xprintf("hist_undo()\n");
+#endif
     history_t hist = history[hist_ind];
     uint8_t len = hist.len;
     if (!len) {
@@ -28,6 +45,9 @@ void hist_undo() {
         return;
     }
 
+#if STENO_DEBUG
+    xprintf("  bspc len: %u\n", len);
+#endif
     for (uint8_t i = 0; i < len; i ++) {
         tap_code(KC_BSPC);
     }
@@ -44,6 +64,9 @@ void hist_undo() {
             xprintf("Invalid previous history entry\n");
             return;
         }
+        // `process_output` expects the previous history entry to be on `hist_ind`, but the
+        // information for recreating the output is on the next history entry
+        hist_ind = (hist_ind - 1) % HIST_SIZE;
         process_output(&state, old_hist.output, old_hist.repl_len);
     }
     hist_ind = hist_ind_save;
@@ -57,10 +80,22 @@ void hist_undo() {
 
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     // TODO optimization: compare beginning of current and string to replace
+#if STENO_DEBUG
+    xprintf("process_output()\n");
+#endif
     int8_t counter = repl_len;
     while (counter > 0) {
         uint8_t old_hist_ind = (hist_ind - repl_len + counter) % HIST_SIZE;
         history_t old_hist = history[old_hist_ind];
+#if STENO_DEBUG
+        xprintf("  old_hist_ind: %u\n", old_hist_ind);
+        xprintf("  bspc len: %u\n", old_hist.len);
+#endif
+        if (!old_hist.len) {
+            history[hist_ind].len = 0;
+            xprintf("Invalid previous history entry\n");
+            break;
+        }
         for (uint8_t j = 0; j < old_hist.len; j ++) {
             tap_code(KC_BSPC);
         }
@@ -98,11 +133,21 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
             _buf[0] = toupper(_buf[0]);
         }
     }
+#if STENO_DEBUG
+    xprintf("  output: '");
+#endif
     if (space && len && !(old_state.prev_glue && state->prev_glue)) {
+#if STENO_DEBUG
+        xprintf(" ");
+#endif
         SEND_STRING(" ");
         len ++;
     }
 
+#if STENO_DEBUG
+    xprintf("%s'\n", _buf);
+    xprintf("  -> %u\n", len);
+#endif
     send_string(_buf);
     return len;
 }

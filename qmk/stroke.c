@@ -128,6 +128,9 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 }
 
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
+#if STENO_DEBUG
+    xprintf("search_on_nodes()\n");
+#endif
     uint8_t _size = *size;
     // We want the next non-root result node to have 1 more level than the current/last node; if
     // that can't be achieved, we'll use the root-based node.
@@ -139,14 +142,23 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         // Search root node at the end
         uint32_t node = last ? 0 : nodes[i].node;
         uint32_t next_node = node_find_stroke(node, stroke);
+#if STENO_DEBUG
+        char buf[24];
+        uint8_t _len = 0;
+        stroke_to_string(stroke, buf, &_len);
+        xprintf("  %lX + %s -> %lX\n", node, buf, next_node);
+#endif
         if (!next_node) {
             continue;
         }
         seek(next_node);
         read_header();
         uint8_t next_level = i == _size ? 1 : nodes[i].level + 1;
+#if STENO_DEBUG
+        xprintf("  next_level: %u\n", next_level);
+#endif
         uint32_t node_num = _header.node_num;
-        if (_header.str_len || _header.attrs.present) {
+        if (_header.attrs.present) {
             if (next_level > *max_level && (next_level > last_level || last)) {
                 *max_level = next_level;
                 *max_level_node = next_node;
@@ -164,7 +176,7 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         } else {
             if (next_node == *max_level_node) {    // Max level ended
                 *size = 0;
-                xprintf("max_level ends\n");
+                /* xprintf("max_level ends\n"); */
                 return;         // FIXME Should we return early here?
             }
         }
