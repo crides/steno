@@ -20,6 +20,8 @@ void hist_add(history_t hist) {
     xprintf("history[%u]:\n", hist_ind);
     xprintf("  len: %u\n", hist.len);
     xprintf("  repl_len: %u\n", hist.repl_len);
+    state_t state = hist.state;
+    xprintf("  state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     if (hist.output.type == RAW_STROKE) {
         char buf[24];
         uint8_t _len = 0;
@@ -58,7 +60,10 @@ void hist_undo() {
     for (uint8_t i = 0; i < hist.repl_len; i ++) {
         hist_ind = (hist_ind_save + i - hist.repl_len) % HIST_SIZE;
         history_t old_hist = history[hist_ind];
-        state_t state = old_hist.state;
+#if STENO_DEBUG
+    xprintf("  hist_ind: %u\n", hist_ind);
+#endif
+        state = old_hist.state;
         if (!history[hist_ind].len) {
             history[hist_ind_save].len = 0;
             xprintf("Invalid previous history entry\n");

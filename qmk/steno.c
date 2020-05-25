@@ -35,7 +35,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t));
     new_hist.search_nodes = hist_nodes;
     new_hist.search_nodes_len = search_nodes_len;
-    new_hist.state = state;
 
     uint32_t max_level_node = 0;
     uint8_t max_level = 0;
@@ -52,8 +51,15 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     }
     if (new_hist.repl_len) {
         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
+#if STENO_DEBUG
+        xprintf("  steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
+#endif
     }
+    new_hist.state = state;
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
+#if STENO_DEBUG
+    xprintf("  steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
+#endif
     if (new_hist.len) {
         hist_add(new_hist);
     }
