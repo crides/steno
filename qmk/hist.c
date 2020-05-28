@@ -108,7 +108,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     }
 
     state_t old_state = *state;
-    uint8_t len = 0, space = old_state.space;
+    uint8_t len = 0, space = old_state.space, cap = old_state.cap;
     state->cap = 0;
     state->prev_glue = 0;
     state->space = 1;
@@ -117,42 +117,74 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         if (stroke_to_string(output.stroke, _buf, &len)) {
             state->prev_glue = 1;
         }
-    } else {
-        seek(output.node);
-        read_header();
-        read_string();
-        len = strlen(_buf);
-
-        attr_t attr = _header.attrs;
-        switch (attr.caps) {
-            case ATTR_CAPS_LOWER: state->cap = 0;             break;
-            case ATTR_CAPS_UPPER: state->cap = 1;             break;
-            case ATTR_CAPS_KEEP:  state->cap = old_state.cap; break;
-            case ATTR_CAPS_CAPS:  state->cap = 1;             break;
+        if (space) {
+            send_char(' ');
+            len ++;
         }
-        space = space && attr.space_prev;
-        state->space = attr.space_after;
-        state->prev_glue = attr.glue;
-        // TODO use other state/attrs
-        if (old_state.cap) {
-            _buf[0] = toupper(_buf[0]);
-        }
+        send_string(_buf);
+        return len;
     }
+
+    uint8_t entry_len = _header.str_len;
+    seek(output.node);
+    read_header();
+    read_string();
+
+    attr_t attr = _header.attrs;
+    switch (attr.caps) {
+        case ATTR_CAPS_LOWER: state->cap = 0;             break;
+        case ATTR_CAPS_UPPER: state->cap = 1;             break;
+        case ATTR_CAPS_KEEP:  state->cap = old_state.cap; break;
+        case ATTR_CAPS_CAPS:  state->cap = 1;             break;
+    }
+    space = space && attr.space_prev;
+    state->space = attr.space_after;
+    state->prev_glue = attr.glue;
 #if STENO_DEBUG
-    xprintf("  output: '");
+    xprintf("  output:\n");
 #endif
-    if (space && len && !(old_state.prev_glue && state->prev_glue)) {
+    if (space && entry_len && !(old_state.prev_glue && state->prev_glue)) {
 #if STENO_DEBUG
-        xprintf(" ");
+        xprintf("    str: ' '\n");
 #endif
         SEND_STRING(" ");
         len ++;
     }
 
+    uint8_t has_raw_key = 0;
+    for (uint8_t i = 0; i < entry_len; i ++) {
+        if (_buf[i] & 0x80) {
+            has_raw_key = 1;
+            // TODO use mods
+            i ++;
 #if STENO_DEBUG
-    xprintf("%s'\n", _buf);
+            xprintf("    key: %X\n", _buf[i]);
+#endif
+            tap_code(_buf[i]);
+        } else {
+            uint8_t str_end = _buf[i] + i;
+#if STENO_DEBUG
+            xprintf("    str: '");
+            if (cap) {      // TODO handle ALL CAPS
+                _buf[i + 1] = toupper(_buf[i + 1]);
+                cap = 0;
+            }
+#endif
+            for ( ; i < str_end; ) {
+                i ++;
+                len ++;
+#if STENO_DEBUG
+                xprintf("%c", _buf[i]);
+#endif
+                send_char(_buf[i]);
+            }
+#if STENO_DEBUG
+            xprintf("'\n");
+#endif
+        }
+    }
+#if STENO_DEBUG
     xprintf("  -> %u\n", len);
 #endif
-    send_string(_buf);
-    return len;
+    return has_raw_key ? 0 : len;
 }
