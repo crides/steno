@@ -136,6 +136,9 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
     // that can't be achieved, we'll use the root-based node.
     // See commit for details
     uint8_t last_level = history[hist_ind].repl_len + 1;
+#if STENO_DEBUG
+    xprintf("  last_level: %u\n", last_level);
+#endif
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
         bool last = i == _size;
@@ -149,22 +152,24 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         xprintf("  %lX + %s -> %lX\n", node, buf, next_node);
 #endif
         if (!next_node) {
+            if (!last) {
+                i = _size - 1;
+            }
             continue;
         }
         seek(next_node);
         read_header();
-        uint8_t next_level = i == _size ? 1 : nodes[i].level + 1;
+        uint32_t node_num = _header.node_num;
+        uint8_t next_level = last ? 1 : nodes[i].level + 1;
+        if (_header.attrs.present && next_level > *max_level) {
+            *max_level = next_level;
+            *max_level_node = next_node;
+            read_string();
+        }
 #if STENO_DEBUG
         xprintf("  next_level: %u\n", next_level);
+        xprintf("  node_num: %u\n", node_num);
 #endif
-        uint32_t node_num = _header.node_num;
-        if (_header.attrs.present) {
-            if (next_level > *max_level && (next_level > last_level || last)) {
-                *max_level = next_level;
-                *max_level_node = next_node;
-                read_string();
-            }
-        }
         if (node_num) {
             nodes[*size].node = next_node;
             nodes[*size].level = next_level;
@@ -173,12 +178,9 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
                 xprintf("Search nodes full!\n");
                 return;
             }
-        } else {
-            if (next_node == *max_level_node) {    // Max level ended
-                *size = 0;
-                /* xprintf("max_level ends\n"); */
-                return;         // FIXME Should we return early here?
-            }
         }
     }
+#if STENO_DEBUG
+    xprintf("  -> max_level: %u, max_level_node: %lX\n", *max_level, *max_level_node);
+#endif
 }
