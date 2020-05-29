@@ -2,9 +2,53 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::io::{self, prelude::*};
 
-use crate::dict::{Attr, Caps, Dict};
+use crate::dict::{Attr, Caps, Dict, Entry, Input};
 use crate::hashmap::LPHashMap;
 use crate::stroke::Stroke;
+
+pub struct RawEntry(Vec<u8>);
+
+impl From<Entry> for RawEntry {
+    fn from(e: Entry) -> RawEntry {
+        let bytes = e.input.iter().flat_map(|i| {
+            match i {
+                Input::String(s) => {
+                    assert!(s.len() <= 127);
+                    if !s.is_empty() {
+                        let mut bytes = vec![s.len() as u8];
+                        bytes.extend_from_slice(s.as_bytes());
+                        bytes
+                    } else {
+                        vec![]
+                    }
+                }
+                Input::Keycode(k) => {
+                    let mut mods = 0x80;
+                    if k.ctrl {
+                        mods |= 0x08;
+                    }
+                    if k.shift {
+                        mods |= 0x04;
+                    }
+                    if k.alt {
+                        mods |= 0x02;
+                    }
+                    if k.gui {
+                        mods |= 0x01;
+                    }
+                    vec![mods, k.key]
+                }
+            }
+        }).collect();
+        RawEntry(bytes)
+    }
+}
+
+impl RawEntry {
+    fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
 
 bitfield! {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -15,12 +59,6 @@ bitfield! {
     space_after, set_space_after: 3, 3;
     glue, set_glue: 4, 4;
     present, set_present: 5, 5;
-}
-
-impl Default for RawAttr {
-    fn default() -> Self {
-        Attr::default().into()
-    }
 }
 
 impl From<Attr> for RawAttr {
@@ -43,17 +81,13 @@ impl From<Attr> for RawAttr {
 /// A hashable counter part for `Dict`, contains only the information needed
 #[derive(Debug, Eq, Clone)]
 pub struct HashableDict {
-    pub entry: Option<String>,
-    pub attr: Attr,
-    pub children: Vec<(Stroke, Option<String>)>,
+    pub entry: Option<Entry>,
+    pub children: Vec<(Stroke, Option<Entry>)>,
 }
 
 impl PartialEq for HashableDict {
     fn eq(&self, other: &Self) -> bool {
         if self.entry != other.entry {
-            return false;
-        }
-        if self.attr != other.attr {
             return false;
         }
         for ((stroke, entry), (other_stroke, other_entry)) in
@@ -74,17 +108,15 @@ impl HashableDict {
     pub fn from_dict(d: &Dict) -> Self {
         let Dict {
             entry,
-            attr,
             children,
         } = d;
-        let mut children: Vec<(Stroke, Option<String>)> = children
+        let mut children: Vec<(Stroke, Option<_>)> = children
             .iter()
             .map(|(k, v)| (*k, v.entry.clone()))
             .collect();
-        children.sort();
+        children.sort_by_key(|(k, _v)| *k);
         Self {
             entry: entry.clone(),
-            attr: *attr,
             children,
         }
     }
@@ -93,23 +125,20 @@ impl HashableDict {
 impl Hash for HashableDict {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.entry.hash(state);
-        self.attr.hash(state);
         self.children.hash(state);
     }
 }
 
 struct IRNode {
-    string: String,
-    attr: Attr,
+    entry: Entry,
     children: LPHashMap,
 }
 
 impl IRNode {
-    fn new(node_num: u32, string: String, attr: Attr) -> Self {
+    fn new(node_num: u32, entry: Entry) -> Self {
         let children = LPHashMap::new(node_num as usize);
         Self {
-            string,
-            attr,
+            entry,
             children,
         }
     }
@@ -140,10 +169,10 @@ impl IR {
         self.cur_addr
     }
 
-    pub fn add_node(&mut self, node_num: u32, string: String, attr: Attr) {
-        let len = string.len();
+    pub fn add_node(&mut self, node_num: u32, entry: Entry) {
+        let len = entry.len();
         // eprintln!("{:x}: {}", self.cur_addr, string);
-        let new_node = IRNode::new(node_num, string, attr);
+        let new_node = IRNode::new(node_num, entry);
         self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 5;
         self.nodes.push(new_node);
     }
@@ -169,8 +198,7 @@ impl IR {
         let cur_ind = self.len();
         self.add_node(
             children.len() as u32,
-            dict.entry.unwrap_or("".into()),
-            dict.attr,
+            dict.entry.unwrap_or_default(),
         );
 
         for child in children.into_iter() {
@@ -200,13 +228,14 @@ impl IR {
         let mut bytes: Vec<u8> = Vec::new();
         for node in self.nodes.iter() {
             bytes.clear();
-            let string_len = node.string.len();
+            let len = node.entry.len();
             // Note: this is 3 bytes long. MSB is at the end cuz LE.
             bytes.extend_from_slice(&(node.children.total_size() as u32).to_le_bytes()[0..3]);
-            bytes.push(string_len as u8);
-            let raw_attr: RawAttr = node.attr.into();
+            bytes.push(len as u8);
+            let raw_attr: RawAttr = node.entry.attr.into();
             bytes.push(raw_attr.0);
-            bytes.extend_from_slice(&node.string.clone().into_bytes());
+            let raw_entry: RawEntry = node.entry.clone().into();
+            bytes.extend_from_slice(raw_entry.as_bytes());
             w.write_all(&bytes)?;
             node.children.write_all_to(w)?;
         }
