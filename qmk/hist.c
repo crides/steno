@@ -36,9 +36,7 @@ void hist_add(history_t hist) {
 }
 
 void hist_undo() {
-#if STENO_DEBUG
-    xprintf("hist_undo()\n");
-#endif
+    steno_debug("hist_undo()\n");
     history_t hist = history[hist_ind];
     uint8_t len = hist.len;
     if (!len) {
@@ -47,9 +45,7 @@ void hist_undo() {
         return;
     }
 
-#if STENO_DEBUG
-    xprintf("  bspc len: %u\n", len);
-#endif
+    steno_debug("  bspc len: %u\n", len);
     for (uint8_t i = 0; i < len; i ++) {
         tap_code(KC_BSPC);
     }
@@ -60,9 +56,7 @@ void hist_undo() {
     for (uint8_t i = 0; i < hist.repl_len; i ++) {
         hist_ind = (hist_ind_save + i - hist.repl_len) % HIST_SIZE;
         history_t old_hist = history[hist_ind];
-#if STENO_DEBUG
-    xprintf("  hist_ind: %u\n", hist_ind);
-#endif
+        steno_debug("  hist_ind: %u\n", hist_ind);
         state = old_hist.state;
         if (!history[hist_ind].len) {
             history[hist_ind_save].len = 0;
@@ -85,17 +79,13 @@ void hist_undo() {
 
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     // TODO optimization: compare beginning of current and string to replace
-#if STENO_DEBUG
-    xprintf("process_output()\n");
-#endif
+    steno_debug("process_output()\n");
     int8_t counter = repl_len;
     while (counter > 0) {
         uint8_t old_hist_ind = (hist_ind - repl_len + counter) % HIST_SIZE;
         history_t old_hist = history[old_hist_ind];
-#if STENO_DEBUG
-        xprintf("  old_hist_ind: %u\n", old_hist_ind);
-        xprintf("  bspc len: %u\n", old_hist.len);
-#endif
+        steno_debug("  old_hist_ind: %u\n", old_hist_ind);
+        steno_debug("  bspc len: %u\n", old_hist.len);
         if (!old_hist.len) {
             history[hist_ind].len = 0;
             xprintf("Invalid previous history entry\n");
@@ -108,27 +98,34 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     }
 
     state_t old_state = *state;
+    steno_debug("  old_state: space: %u, cap: %u, glue: %u\n", old_state.space, old_state.cap, old_state.prev_glue);
     uint8_t len = 0, space = old_state.space, cap = old_state.cap;
     state->cap = 0;
     state->prev_glue = 0;
     state->space = 1;
 
     if (output.type == RAW_STROKE) {
+        xprintf("  stroke: %lX\n", output.stroke);
         if (stroke_to_string(output.stroke, _buf, &len)) {
             state->prev_glue = 1;
         }
-        if (space) {
+        steno_debug("  output: '");
+        if (space && !(old_state.prev_glue && state->prev_glue)) {
             send_char(' ');
+            steno_debug(" ");
             len ++;
         }
         send_string(_buf);
+        steno_debug("%s'\n", _buf);
+        steno_debug("  -> %u\n", len);
         return len;
     }
 
-    uint8_t entry_len = _header.str_len;
     seek(output.node);
     read_header();
     read_string();
+    uint8_t entry_len = _header.entry_len;
+    steno_debug("  node: %lX\n", output.node);
 
     attr_t attr = _header.attrs;
     switch (attr.caps) {
@@ -137,54 +134,44 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         case ATTR_CAPS_KEEP:  state->cap = old_state.cap; break;
         case ATTR_CAPS_CAPS:  state->cap = 1;             break;
     }
-    space = space && attr.space_prev;
     state->space = attr.space_after;
     state->prev_glue = attr.glue;
-#if STENO_DEBUG
-    xprintf("  output:\n");
-#endif
-    if (space && entry_len && !(old_state.prev_glue && state->prev_glue)) {
-#if STENO_DEBUG
-        xprintf("    str: ' '\n");
-#endif
-        SEND_STRING(" ");
-        len ++;
-    }
+    space = space && attr.space_prev && entry_len && !(old_state.prev_glue && state->prev_glue);
+    steno_debug("  attr:\n");
+    steno_debug("    glue: %u\n", attr.glue);
+    steno_debug("  entry_len: %u\n", entry_len);
+    steno_debug("  output:\n");
 
     uint8_t has_raw_key = 0;
     for (uint8_t i = 0; i < entry_len; i ++) {
         if (_buf[i] & 0x80) {
+            space = 0;
             has_raw_key = 1;
             // TODO use mods
             i ++;
-#if STENO_DEBUG
-            xprintf("    key: %X\n", _buf[i]);
-#endif
+            steno_debug("    key: %X\n", _buf[i]);
             tap_code(_buf[i]);
         } else {
             uint8_t str_end = _buf[i] + i;
-#if STENO_DEBUG
-            xprintf("    str: '");
+            len += _buf[i];
+            steno_debug("    str: len: %u, '", _buf[i]);
+            if (space) {
+                steno_debug(" ");
+                len ++;
+                send_char(' ');
+            }
             if (cap) {      // TODO handle ALL CAPS
                 _buf[i + 1] = toupper(_buf[i + 1]);
                 cap = 0;
             }
-#endif
-            for ( ; i < str_end; ) {
+            while (i < str_end) {
                 i ++;
-                len ++;
-#if STENO_DEBUG
-                xprintf("%c", _buf[i]);
-#endif
+                steno_debug("%c", _buf[i]);
                 send_char(_buf[i]);
             }
-#if STENO_DEBUG
-            xprintf("'\n");
-#endif
+            steno_debug("'\n");
         }
     }
-#if STENO_DEBUG
-    xprintf("  -> %u\n", len);
-#endif
+    steno_debug("  -> %u\n", len);
     return has_raw_key ? 0 : len;
 }

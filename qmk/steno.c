@@ -51,19 +51,16 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     }
     if (new_hist.repl_len) {
         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
-#if STENO_DEBUG
-        xprintf("  steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
-#endif
+        steno_debug("  steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     }
     new_hist.state = state;
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
-#if STENO_DEBUG
-    xprintf("  steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
-#endif
+    steno_debug("  steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     if (new_hist.len) {
         hist_add(new_hist);
     }
 
+    steno_debug("\n");
     return false;
 }
 

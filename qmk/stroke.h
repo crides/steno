@@ -47,7 +47,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     uint32_t node_num : 24;
-    uint8_t str_len;
+    uint8_t entry_len;
     attr_t attrs;
 } header_t;
 

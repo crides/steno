@@ -15,8 +15,8 @@ void seek(int32_t addr) {
 }
 
 void read_string(void) {
-    fat_read_file(file, (uint8_t *) _buf, _header.str_len);
-    _buf[_header.str_len] = 0;
+    fat_read_file(file, (uint8_t *) _buf, _header.entry_len);
+    _buf[_header.entry_len] = 0;
 }
 
 void read_header(void) {
@@ -43,7 +43,7 @@ uint32_t hash_stroke(uint32_t stroke) {
 uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
     seek(header_ptr);
     read_header();
-    uint32_t children_ptr = header_ptr + sizeof(header_t) + _header.str_len;
+    uint32_t children_ptr = header_ptr + sizeof(header_t) + _header.entry_len;
     if (_header.node_num < MAX_COLLISIONS) {
         seek(children_ptr);
     } else {
@@ -128,17 +128,13 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 }
 
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
-#if STENO_DEBUG
-    xprintf("search_on_nodes()\n");
-#endif
+    steno_debug("search_on_nodes()\n");
     uint8_t _size = *size;
     // We want the next non-root result node to have 1 more level than the current/last node; if
     // that can't be achieved, we'll use the root-based node.
     // See commit for details
     uint8_t last_level = history[hist_ind].repl_len + 1;
-#if STENO_DEBUG
-    xprintf("  last_level: %u\n", last_level);
-#endif
+    steno_debug("  last_level: %u\n", last_level);
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
         bool last = i == _size;
@@ -166,10 +162,8 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             *max_level_node = next_node;
             read_string();
         }
-#if STENO_DEBUG
-        xprintf("  next_level: %u\n", next_level);
-        xprintf("  node_num: %u\n", node_num);
-#endif
+        steno_debug("  next_level: %u\n", next_level);
+        steno_debug("  node_num: %u\n", node_num);
         if (node_num) {
             nodes[*size].node = next_node;
             nodes[*size].level = next_level;
@@ -180,7 +174,5 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             }
         }
     }
-#if STENO_DEBUG
-    xprintf("  -> max_level: %u, max_level_node: %lX\n", *max_level, *max_level_node);
-#endif
+    steno_debug("  -> max_level: %u, max_level_node: %lX\n", *max_level, *max_level_node);
 }
