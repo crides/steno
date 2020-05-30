@@ -1,7 +1,8 @@
 #include "hist.h"
-#include "quantum.h"
+#include "steno.h"
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 history_t history[HIST_SIZE];
 uint8_t hist_ind = 0;
@@ -17,11 +18,10 @@ void hist_add(history_t hist) {
     }
 
 #if STENO_DEBUG
-    xprintf("history[%u]:\n", hist_ind);
-    xprintf("  len: %u\n", hist.len);
-    xprintf("  repl_len: %u\n", hist.repl_len);
+    xprintf("hist[%u]:\n", hist_ind);
+    xprintf("  len: %u, repl_len: %u\n", hist.len, hist.repl_len);
     state_t state = hist.state;
-    xprintf("  state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
+    xprintf("  space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     if (hist.output.type == RAW_STROKE) {
         char buf[24];
         uint8_t _len = 0;
@@ -56,6 +56,7 @@ void hist_undo() {
     for (uint8_t i = 0; i < hist.repl_len; i ++) {
         hist_ind = (hist_ind_save + i - hist.repl_len) % HIST_SIZE;
         history_t old_hist = history[hist_ind];
+        assert((hist_ind & 0xE0) == 0);
         steno_debug("  hist_ind: %u\n", hist_ind);
         state = old_hist.state;
         if (!history[hist_ind].len) {
@@ -84,8 +85,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     while (counter > 0) {
         uint8_t old_hist_ind = (hist_ind - repl_len + counter) % HIST_SIZE;
         history_t old_hist = history[old_hist_ind];
-        steno_debug("  old_hist_ind: %u\n", old_hist_ind);
-        steno_debug("  bspc len: %u\n", old_hist.len);
+        steno_debug("  old_hist_ind: %u, bspc len: %u\n", old_hist_ind, old_hist.len);
         if (!old_hist.len) {
             history[hist_ind].len = 0;
             xprintf("Invalid previous history entry\n");
@@ -125,7 +125,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     read_header();
     read_string();
     uint8_t entry_len = _header.entry_len;
-    steno_debug("  node: %lX\n", output.node);
+    steno_debug("  node: %lX, entry_len: %u\n", output.node, entry_len);
 
     attr_t attr = _header.attrs;
     switch (attr.caps) {
@@ -139,7 +139,6 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     space = space && attr.space_prev && entry_len && !(old_state.prev_glue && state->prev_glue);
     steno_debug("  attr:\n");
     steno_debug("    glue: %u\n", attr.glue);
-    steno_debug("  entry_len: %u\n", entry_len);
     steno_debug("  output:\n");
 
     uint8_t has_raw_key = 0;

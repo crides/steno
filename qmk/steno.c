@@ -29,7 +29,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     history_t new_hist;
     search_node_t *hist_nodes = malloc(search_nodes_len * sizeof(search_node_t));
     if (!hist_nodes) {
-        xprintf("Can't allocate memory for history!\n");
+        xprintf("No memory for history!\n");
         return false;
     }
     memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t));
@@ -51,16 +51,16 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     }
     if (new_hist.repl_len) {
         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
-        steno_debug("  steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     }
     new_hist.state = state;
+    steno_debug("steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
-    steno_debug("  steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
+    steno_debug("steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     if (new_hist.len) {
         hist_add(new_hist);
     }
 
-    steno_debug("\n");
+    steno_debug("--------\n\n");
     return false;
 }
 

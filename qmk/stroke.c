@@ -1,5 +1,5 @@
 // To deal with operations related with strokes, and the file system
-#include "quantum.h"
+#include "steno.h"
 #include "stroke.h"
 #include "stdbool.h"
 #include "hist.h"
@@ -162,8 +162,7 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             *max_level_node = next_node;
             read_string();
         }
-        steno_debug("  next_level: %u\n", next_level);
-        steno_debug("  node_num: %u\n", node_num);
+        steno_debug("  node_num: %u, next_level: %u\n", node_num, next_level);
         if (node_num) {
             nodes[*size].node = next_node;
             nodes[*size].level = next_level;
