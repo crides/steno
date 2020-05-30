@@ -47,7 +47,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     uint32_t node_num : 24;
-    uint8_t str_len;
+    uint8_t entry_len;
     attr_t attrs;
 } header_t;
 
@@ -56,10 +56,10 @@ typedef struct __attribute__((packed)) {
     uint8_t level;
 } search_node_t;
 
-struct fat_file_struct *file;
-header_t _header;
-child_t _child;
-char _buf[128];
+extern struct fat_file_struct *file;
+extern header_t _header;
+extern child_t _child;
+extern char _buf[128];
 
 void seek(int32_t addr);
 void read_string(void);

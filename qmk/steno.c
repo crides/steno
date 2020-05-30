@@ -10,9 +10,9 @@
 #include "hist.h"
 #include "flash.h"
 
-/* search_node_t search_nodes[SEARCH_NODES_SIZE]; */
-/* uint8_t search_nodes_len = 0; */
-/* state_t state = {.space = 0, .cap = 1, .prev_glue = 0}; */
+search_node_t search_nodes[SEARCH_NODES_SIZE];
+uint8_t search_nodes_len = 0;
+state_t state = {.space = 0, .cap = 1, .prev_glue = 0};
 
 /* bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) { */
 /*     uint32_t stroke = qmk_chord_to_stroke(chord); */
@@ -26,13 +26,12 @@
 /*     history_t new_hist; */
 /*     search_node_t *hist_nodes = malloc(search_nodes_len * sizeof(search_node_t)); */
 /*     if (!hist_nodes) { */
-/*         xprintf("Can't allocate memory for history!\n"); */
+/*         xprintf("No memory for history!\n"); */
 /*         return false; */
 /*     } */
 /*     memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t)); */
 /*     new_hist.search_nodes = hist_nodes; */
 /*     new_hist.search_nodes_len = search_nodes_len; */
-/*     new_hist.state = state; */
 
 /*     uint32_t max_level_node = 0; */
 /*     uint8_t max_level = 0; */
@@ -50,9 +49,15 @@
 /*     if (new_hist.repl_len) { */
 /*         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state; */
 /*     } */
+/*     new_hist.state = state; */
+/*     steno_debug("steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue); */
 /*     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len); */
-/*     hist_add(new_hist); */
+/*     steno_debug("steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue); */
+/*     if (new_hist.len) { */
+/*         hist_add(new_hist); */
+/*     } */
 
+/*     steno_debug("--------\n\n"); */
 /*     return false; */
 /* } */
 

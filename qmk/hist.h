@@ -2,7 +2,7 @@
 
 #include "stroke.h"
 
-#define HIST_SIZE 30
+#define HIST_SIZE 32
 
 typedef enum {
     RAW_STROKE,
