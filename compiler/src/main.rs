@@ -10,17 +10,22 @@ mod dict;
 mod hashmap;
 mod rule;
 mod stroke;
+mod flash;
+mod bar;
 
 use std::fs::File;
 use std::io::{Seek, SeekFrom};
-use std::time::Duration;
+use std::io::prelude::*;
 
 use clap::{App, Arg, SubCommand};
+use chrono::{Local, DateTime};
 
 use compile::IR;
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
+use flash::{Device, OUTMessage, INMessage};
+use bar::progress_bar;
 
 // use stroke::Stroke;
 
@@ -49,6 +54,15 @@ fn main() {
             SubCommand::with_name("flash-read")
                 .arg(Arg::with_name("addr").required(true))
                 .arg(Arg::with_name("len").required(true)),
+        )
+        .subcommand(
+            SubCommand::with_name("flash-dump")
+                .arg(Arg::with_name("addr").required(true))
+                .arg(Arg::with_name("len").required(true)),
+        )
+        .subcommand(
+            SubCommand::with_name("download")
+                .arg(Arg::with_name("file").required(true)),
         )
         .subcommand(
             SubCommand::with_name("compile")
@@ -96,68 +110,88 @@ fn main() {
         }
         ("flash-write", Some(m)) => {
             let addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
-            let data = m.value_of("data").unwrap().as_bytes();
+            let data = m.value_of("data").unwrap().into();
             let manager = hid::init().unwrap();
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
                 if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-                    println!("serial: {:?}", device.serial_number());
-                    println!("path: {:?}", device.path());
-                    println!("manu_string: {:?}", device.manufacturer_string());
-                    println!("prod_string: {:?}", device.product_string());
-                    println!("release: {:?}", device.release_number());
-                    println!("interface: {:?}", device.interface_number());
-                    println!("usage_page: {:x}", device.usage_page());
-                    println!("usage: {:x}", device.usage());
-                    let mut handle = device.open_by_path().unwrap();
-
-                    let mut buf = vec![];
-                    buf.extend(&addr.to_le_bytes()[0..3]);
-                    let len = data.len().min(16);
-                    let data = &data[..len];
-                    buf.push(len as u8);
-                    buf.extend(data);
-                    buf.resize(33, 0);
-                    println!("write: {:?}", buf);
-                    handle.data().write(&buf).unwrap();
-                    handle
-                        .data()
-                        .read(&mut buf, Duration::from_secs(0))
-                        .unwrap();
-                    println!("read: {:?}", buf);
+                    let device = Device::new(device);
+                    println!("Reply: {:?}", device.send_message(OUTMessage::Write { addr, data }));
                     break;
                 }
             }
         }
-        // ("flash-read", Some(m)) => {
-        //     let addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
-        //     let len: u8 = m.value_of("len").unwrap().parse().unwrap();
-        //     let manager = hid::init().unwrap();
-        //     for device in manager.find(Some(0xFEED), Some(0x6061)) {
-        //         if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-        //             println!("serial: {:?}", device.serial_number());
-        //             println!("path: {:?}", device.path());
-        //             println!("manu_string: {:?}", device.manufacturer_string());
-        //             println!("prod_string: {:?}", device.product_string());
-        //             println!("release: {:?}", device.release_number());
-        //             println!("interface: {:?}", device.interface_number());
-        //             println!("usage_page: {:x}", device.usage_page());
-        //             println!("usage: {:x}", device.usage());
-        //             let mut handle = device.open_by_path().unwrap();
-        //             handle.data().write(&addr.to_le_bytes()[0..3]).unwrap();
-        //             let len = data.len().min(16);
-        //             let data = &data[..len];
-        //             handle.data().write(&[len as u8]).unwrap();
-        //             handle.data().write(data).unwrap();
-        //             let mut buf = vec![0; 32];
-        //             handle
-        //                 .data()
-        //                 .read(&mut buf, Duration::from_secs(0))
-        //                 .unwrap();
-        //             println!("read: {:?}", buf);
-        //             break;
-        //         }
-        //     }
-        // }
+        ("flash-read", Some(m)) => {
+            let addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
+            let len: u8 = m.value_of("len").unwrap().parse().unwrap();
+
+            let manager = hid::init().unwrap();
+            for device in manager.find(Some(0xFEED), Some(0x6061)) {
+                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
+                    let device = Device::new(device);
+                    println!("Reply: {:?}", device.send_message(OUTMessage::Read { addr, len }));
+                    break;
+                }
+            }
+        }
+        ("flash-dump", Some(m)) => {
+            let mut addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
+            let mut len: usize = m.value_of("len").unwrap().parse().unwrap();
+
+            let manager = hid::init().unwrap();
+            for device in manager.find(Some(0xFEED), Some(0x6061)) {
+                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
+                    let device = Device::new(device);
+                    while len > 0 {
+                        let msg_len = std::cmp::min(len, 16);
+                        let in_msg = device.send_message(OUTMessage::Read { addr, len: msg_len as u8 });
+                        if let INMessage::Read { data, .. } = in_msg {
+                            for b in data {
+                                print!("{:02x} ", b);
+                            }
+                        }
+                        len -= msg_len;
+                        addr += msg_len as u32;
+                    }
+                    break;
+                }
+            }
+        }
+        ("download", Some(m)) => {
+            let file_name = m.value_of("file").unwrap();
+            let mut file = File::open(file_name).unwrap();
+            let mut file_len = file.seek(SeekFrom::End(0)).unwrap() as usize;
+            dbg!(file_len);
+            assert!(file_len < 0x1_0000_0000_0000);
+            file.seek(SeekFrom::Start(0)).unwrap();
+            let manager = hid::init().unwrap();
+            for device in manager.find(Some(0xFEED), Some(0x6061)) {
+                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
+                    let device = Device::new(device);
+                    let bar = progress_bar(file_len, "Erasing");
+                    for i in (0..file_len).step_by(65536) {
+                        device.send_message(OUTMessage::Erase(i as u32));
+                        bar.inc(65536);
+                    }
+                    bar.finish_with_message("Done erasing");
+
+                    let mut addr = 0;
+                    let mut buf = [0; 16];
+                    let bar = progress_bar(file_len, "Downloading dictionary");
+                    while file_len > 0 {
+                        let msg_len = std::cmp::min(file_len, 16);
+                        assert_eq!(file.read(&mut buf).unwrap(), msg_len);
+                        bar.inc(msg_len as u64);
+                        let in_msg = device.send_message(OUTMessage::Write { addr, data: buf.to_vec() });
+                        assert!(matches!(in_msg, INMessage::Ack));
+                        file_len -= msg_len;
+                        addr += msg_len as u32;
+                        println!("");
+                    }
+                    bar.finish_with_message("Downloaded");
+                    break;
+                }
+            }
+        }
         (cmd, _) => panic!("{}", cmd),
     }
 
