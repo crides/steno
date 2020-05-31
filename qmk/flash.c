@@ -46,11 +46,11 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
     unselect_card();
 
     select_card();
-    xprintf("addr: %lX, len: %u\n", addr, len);
-    for (uint8_t i = 0; i < len; i ++) {
-        xprintf(" %02X", buf[i]);
-    }
-    xprintf("\n");
+    /* xprintf("addr: %lX, len: %u\n", addr, len); */
+    /* for (uint8_t i = 0; i < len; i ++) { */
+    /*     xprintf(" %02X", buf[i]); */
+    /* } */
+    /* xprintf("\n"); */
     spi_send_byte(0x02);    // program
     spi_send_byte((addr >> 16) & 0xFF);
     spi_send_byte((addr >> 8) & 0xFF);
@@ -69,5 +69,18 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
             break;
         }
     }
+    unselect_card();
+}
+
+void flash_erase_page(uint32_t addr) {
+    select_card();
+    spi_send_byte(0x06);    // write enable
+    unselect_card();
+
+    select_card();
+    spi_send_byte(0xD8);
+    spi_send_byte((addr >> 16) & 0xFF);
+    spi_send_byte((addr >> 8) & 0xFF);
+    spi_send_byte(addr & 0xFF);
     unselect_card();
 }
