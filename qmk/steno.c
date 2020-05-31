@@ -71,18 +71,74 @@ void matrix_init_user() {
     steno_set_mode(STENO_MODE_GEMINI);
 }
 
-void raw_hid_receive(uint8_t *data, uint8_t length) {
-    xprintf("recv: ");
-    xprintf("  length: %u\n  ", length);
-    for (uint8_t i = 0; i < length; i ++) {
-        xprintf(" %02X", data[i]);
+uint16_t crc16(uint8_t *data, uint8_t len) {
+    uint16_t crc = 0xFFFF;
+    for (uint8_t i = 0; i < len; i ++) {
+        crc ^= data[i];
+        for (uint8_t i = 0; i < 8; ++i) {
+            if (crc & 1) {
+                crc = (crc >> 1) ^ 0xA001;
+            } else {
+                crc = (crc >> 1);
+            }
+        }
     }
-    xprintf("\n");
-    uint32_t addr = (uint32_t) data[0] | (uint32_t) data[1] << 8 | (uint32_t) data[2] << 16;
-    flash_write(addr, data + 4, data[3]);
-    flash_read(addr, data + 4, data[3]);
+    return crc;
+}
+
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+    /* xprintf("recv: "); */
+    /* for (uint8_t i = 0; i < 24; i ++) { */
+    /*     xprintf(" %02X", data[i]); */
+    /* } */
+    /* xprintf("\n"); */
+    /* static uint16_t time = 0; */
+
+    /* xprintf("from last: %u\n\n", timer_elapsed(time)); */
+    /* time = timer_read(); */
+    if (data[0] != 0xAA) {
+        xprintf("head\n");
+        return;
+    }
+    uint16_t crc = crc16(data, 22);
+    if (crc != ((uint16_t) data[22] | (uint16_t) data[23] << 8)) {
+        xprintf("CRC: %X\n", crc);
+        return;
+    }
+    /* xprintf("after crc: %u\n", timer_elapsed(time)); */
+    uint32_t addr;
+    uint8_t len;
+    switch (data[1]) {
+        case 0x01:;
+            addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
+            flash_write(addr, data + 6, data[2]);
+            memset(data, 0, 32);
+            data[0] = 0x55;
+            data[1] = 0x01;
+            break;
+        case 0x02:;
+            addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
+            len = data[2];
+            memset(data, 0, 32);
+            data[0] = 0x55;
+            data[1] = 0x02;
+            data[2] = len;
+            flash_read(addr, data + 6, len);
+            break;
+        case 0x03:;
+            addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
+            flash_erase_page(addr);
+            memset(data, 0, 32);
+            data[0] = 0x55;
+            data[1] = 0x01;
+            break;
+    }
+    /* xprintf("after op: %u\n", timer_elapsed(time)); */
+    crc = crc16(data, 22);
+    data[22] = crc & 0xFF;
+    data[23] = (crc >> 8) & 0xFF;
     raw_hid_send(data, 32);
-    xprintf("Sent?!\n");
+    /* xprintf("after send: %u\n", timer_elapsed(time)); */
 }
 
 #endif
