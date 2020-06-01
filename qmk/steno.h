@@ -11,4 +11,8 @@
 #define steno_debug(...)
 #endif
 
+#define PACKET_SIZE 64
+#define PAYLOAD_SIZE (PACKET_SIZE - 8)
+#define MSG_SIZE (PAYLOAD_SIZE + 8 - 2)
+
 #endif

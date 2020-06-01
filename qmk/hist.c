@@ -105,7 +105,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     state->space = 1;
 
     if (output.type == RAW_STROKE) {
-        xprintf("  stroke: %lX\n", output.stroke);
+        steno_debug("  stroke: %lX\n", output.stroke);
         if (stroke_to_string(output.stroke, _buf, &len)) {
             state->prev_glue = 1;
         }
@@ -121,11 +121,12 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         return len;
     }
 
-    seek(output.node);
+    uint32_t node = output.node;
+    seek(node);
     read_header();
     read_string();
     uint8_t entry_len = _header.entry_len;
-    steno_debug("  node: %lX, entry_len: %u\n", output.node, entry_len);
+    steno_debug("  node: %lX, entry_len: %u\n", node, entry_len);
 
     attr_t attr = _header.attrs;
     switch (attr.caps) {

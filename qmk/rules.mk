@@ -4,7 +4,7 @@ ARCH = AVR8
 F_USB = $(F_CPU)
 BOOTLOADER = caterina
 
-SRC += flash.c
+SRC += flash.c hist.c stroke.c
 
 MOUSEKEY_ENABLE = no
 EXTRAKEY_ENABLE = no

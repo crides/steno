@@ -61,7 +61,7 @@ extern header_t _header;
 extern child_t _child;
 extern char _buf[128];
 
-void seek(int32_t addr);
+void seek(uint32_t addr);
 void read_string(void);
 void read_header(void);
 void read_child(void);

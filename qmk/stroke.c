@@ -1,30 +1,31 @@
 // To deal with operations related with strokes, and the file system
 #include "steno.h"
 #include "stroke.h"
-#include "stdbool.h"
 #include "hist.h"
-#include "sdcard/fat.h"
+#include "flash.h"
 
-struct fat_file_struct *file;
 header_t _header;
 child_t _child;
 char _buf[128];
+static uint32_t flash_addr = 0;
 
-void seek(int32_t addr) {
-    fat_seek_file(file, &addr, FAT_SEEK_SET);
+void seek(uint32_t addr) {
+    flash_addr = addr;
 }
 
 void read_string(void) {
-    fat_read_file(file, (uint8_t *) _buf, _header.entry_len);
+    flash_read(flash_addr, (uint8_t *) _buf, _header.entry_len);
     _buf[_header.entry_len] = 0;
 }
 
 void read_header(void) {
-    fat_read_file(file, (uint8_t *) &_header, sizeof(header_t));
+    flash_read(flash_addr, (uint8_t *) &_header, sizeof(header_t));
+    seek(flash_addr + sizeof(header_t));
 }
 
 void read_child(void) {
-    fat_read_file(file, (uint8_t *) &_child, sizeof(child_t));
+    flash_read(flash_addr, (uint8_t *) &_child, sizeof(child_t));
+    seek(flash_addr + sizeof(child_t));
 }
 
 uint32_t hash_stroke(uint32_t stroke) {
@@ -57,7 +58,7 @@ uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
         if (stroke == _child.stroke) {
             return _child.addr;
         }
-        if (!_child.stroke) {
+        if (_child.stroke == 0xffffff) {
             return 0;
         }
         collisions ++;
@@ -133,8 +134,10 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
     // We want the next non-root result node to have 1 more level than the current/last node; if
     // that can't be achieved, we'll use the root-based node.
     // See commit for details
+#if STENO_DEBUG
     uint8_t last_level = history[hist_ind].repl_len + 1;
     steno_debug("  last_level: %u\n", last_level);
+#endif
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
         bool last = i == _size;

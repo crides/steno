@@ -12,18 +12,18 @@ void flash_init(void) {
 
     unselect_card();
 
-    SPCR = _BV(MSTR) | _BV(SPE) | _BV(SPR1) | _BV(SPR0);
-    SPSR = 0;
+    SPCR = _BV(MSTR) | _BV(SPE);
+    SPSR = _BV(SPI2X);
 }
 
 void spi_send_byte(uint8_t b) {
     SPDR = b;
-    while(!(SPSR & (1 << SPIF)));
+    while(!(SPSR & _BV(SPIF)));
 }
 
 uint8_t spi_recv_byte(void) {
     SPDR = 0xff;
-    while(!(SPSR & (1 << SPIF)));
+    while(!(SPSR & _BV(SPIF)));
 
     return SPDR;
 }
@@ -46,11 +46,6 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
     unselect_card();
 
     select_card();
-    /* xprintf("addr: %lX, len: %u\n", addr, len); */
-    /* for (uint8_t i = 0; i < len; i ++) { */
-    /*     xprintf(" %02X", buf[i]); */
-    /* } */
-    /* xprintf("\n"); */
     spi_send_byte(0x02);    // program
     spi_send_byte((addr >> 16) & 0xFF);
     spi_send_byte((addr >> 8) & 0xFF);
@@ -64,7 +59,6 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
     while (1) {
         spi_send_byte(0x05);    // read status reg
         uint8_t status = spi_recv_byte();
-        xprintf("status: %X\n", status);
         if (!(status & 0x01)) {
             break;
         }
@@ -82,5 +76,15 @@ void flash_erase_page(uint32_t addr) {
     spi_send_byte((addr >> 16) & 0xFF);
     spi_send_byte((addr >> 8) & 0xFF);
     spi_send_byte(addr & 0xFF);
+    unselect_card();
+
+    select_card();
+    while (1) {
+        spi_send_byte(0x05);    // read status reg
+        uint8_t status = spi_recv_byte();
+        if (!(status & 0x01)) {
+            break;
+        }
+    }
     unselect_card();
 }
