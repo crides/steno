@@ -28,7 +28,7 @@ impl LPHashMap {
             let (_, map_size) = PRIMES.lock().unwrap().find(size as u64 * 6);
             let map_size = map_size as usize;
             Self {
-                map: vec![(0, 0); map_size],
+                map: vec![(0xffffff, 0xffffff); map_size],
                 original_size: size,
                 max_collisions: 0,
             }
@@ -50,7 +50,7 @@ impl LPHashMap {
         }
         let mut ind = LPHashMap::hash(input) as usize % self.map.len();
         let mut collisions = 0;
-        while self.map[ind].0 != 0 {
+        while self.map[ind].0 != 0xffffff {
             ind += 1;
             if ind == self.map.len() {
                 ind = 0;
