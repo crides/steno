@@ -14,11 +14,11 @@ mod flash;
 mod bar;
 
 use std::fs::File;
-use std::io::{Seek, SeekFrom};
+use std::io::{Seek, SeekFrom, BufReader, self};
 use std::io::prelude::*;
+use std::cmp::min;
 
 use clap::{App, Arg, SubCommand};
-use chrono::{Local, DateTime};
 
 use compile::IR;
 use dict::Dict;
@@ -134,8 +134,8 @@ fn main() {
         }
         ("download", Some(m)) => {
             let file_name = m.value_of("file").unwrap();
-            let mut file = File::open(file_name).unwrap();
-            let mut file_len = file.seek(SeekFrom::End(0)).unwrap() as usize;
+            let mut file = BufReader::new(File::open(file_name).unwrap());
+            let file_len = file.seek(SeekFrom::End(0)).unwrap() as usize;
             dbg!(file_len);
             assert!(file_len < 0x1_0000_0000_0000);
             file.seek(SeekFrom::Start(0)).unwrap();
@@ -151,28 +151,30 @@ fn main() {
                     bar.finish_with_message("Done erasing");
 
                     let mut addr = 0u32;
-                    let mut buf = vec![0; PAYLOAD_SIZE];
+                    let mut write_count = 0;
                     let bar = progress_bar(file_len, "Downloading dictionary");
-                    while file_len > 0 {
-                        let msg_len = std::cmp::min(file_len, PAYLOAD_SIZE);
-                        assert_eq!(file.read(&mut buf).unwrap(), msg_len);
-                        if addr / PAGE_SIZE != (addr + msg_len as u32) / PAGE_SIZE {
-                            let bound = ((addr / PAGE_SIZE) + 1) * PAGE_SIZE;
-                            let mut front = buf.to_vec();
-                            let back = front.split_off((bound - addr) as usize);
-                            let in_msg = device.send_message(OUTMessage::Write { addr, data: front });
-                            assert!(matches!(in_msg, INMessage::Ack));
-                            let in_msg = device.send_message(OUTMessage::Write { addr: bound, data: back });
-                            assert!(matches!(in_msg, INMessage::Ack));
-                        } else {
-                            let in_msg = device.send_message(OUTMessage::Write { addr, data: buf.to_vec() });
-                            assert!(matches!(in_msg, INMessage::Ack));
+                    for mut block in file.split(0xff).map(io::Result::unwrap) {
+                        let block_len = block.len();
+                        if block_len > 0 {
+                            let mut rem_len = block_len;
+                            while rem_len > 0 {
+                                let next_bound = ((addr / PAGE_SIZE) + 1) * PAGE_SIZE;
+                                let msg_len = min((next_bound - addr) as usize, min(PAYLOAD_SIZE, rem_len));
+                                let mut data = block.split_off(msg_len);
+                                std::mem::swap(&mut data, &mut block);
+                                // bar.println(format!("{} {:?}", addr, data));
+                                let in_msg = device.send_message(OUTMessage::Write { addr, data });
+                                write_count += 1;
+                                assert!(matches!(in_msg, INMessage::Ack));
+                                rem_len -= msg_len;
+                                addr += msg_len as u32;
+                            }
                         }
-                        file_len -= msg_len;
-                        addr += msg_len as u32;
-                        bar.inc(msg_len as u64);
+                        addr += 1;
+                        bar.inc(block_len as u64 + 1);
                     }
                     bar.finish_with_message("Downloaded");
+                    dbg!(write_count);
                     break;
                 }
             }
