@@ -42,6 +42,16 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 
 void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
     select_card();
+    while (1) {
+        spi_send_byte(0x05);    // read status reg
+        uint8_t status = spi_recv_byte();
+        if (!(status & 0x01)) {
+            break;
+        }
+    }
+    unselect_card();
+
+    select_card();
     spi_send_byte(0x06);    // write enable
     unselect_card();
 
@@ -54,7 +64,9 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
         spi_send_byte(buf[i]);
     }
     unselect_card();
+}
 
+void flash_erase_page(uint32_t addr) {
     select_card();
     while (1) {
         spi_send_byte(0x05);    // read status reg
@@ -64,9 +76,7 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
         }
     }
     unselect_card();
-}
 
-void flash_erase_page(uint32_t addr) {
     select_card();
     spi_send_byte(0x06);    // write enable
     unselect_card();
@@ -76,15 +86,5 @@ void flash_erase_page(uint32_t addr) {
     spi_send_byte((addr >> 16) & 0xFF);
     spi_send_byte((addr >> 8) & 0xFF);
     spi_send_byte(addr & 0xFF);
-    unselect_card();
-
-    select_card();
-    while (1) {
-        spi_send_byte(0x05);    // read status reg
-        uint8_t status = spi_recv_byte();
-        if (!(status & 0x01)) {
-            break;
-        }
-    }
     unselect_card();
 }
