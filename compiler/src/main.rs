@@ -24,7 +24,7 @@ use compile::IR;
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
-use flash::{Device, OUTMessage, INMessage};
+use flash::{Device, OUTMessage, INMessage, PAYLOAD_SIZE, PAGE_SIZE};
 use bar::progress_bar;
 
 // use stroke::Stroke;
@@ -108,46 +108,22 @@ fn main() {
             let stroke: Stroke = m.value_of("stroke").unwrap().parse().unwrap();
             println!("{:x}", stroke.raw());
         }
-        ("flash-write", Some(m)) => {
-            let addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
-            let data = m.value_of("data").unwrap().into();
-            let manager = hid::init().unwrap();
-            for device in manager.find(Some(0xFEED), Some(0x6061)) {
-                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-                    let device = Device::new(device);
-                    println!("Reply: {:?}", device.send_message(OUTMessage::Write { addr, data }));
-                    break;
-                }
-            }
-        }
-        ("flash-read", Some(m)) => {
-            let addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
-            let len: u8 = m.value_of("len").unwrap().parse().unwrap();
-
-            let manager = hid::init().unwrap();
-            for device in manager.find(Some(0xFEED), Some(0x6061)) {
-                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-                    let device = Device::new(device);
-                    println!("Reply: {:?}", device.send_message(OUTMessage::Read { addr, len }));
-                    break;
-                }
-            }
-        }
         ("flash-dump", Some(m)) => {
             let mut addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
             let mut len: usize = m.value_of("len").unwrap().parse().unwrap();
 
             let manager = hid::init().unwrap();
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
-                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-                    let device = Device::new(device);
+                if device.usage_page() == 0xff60 && device.usage() == 0x61 {
+                    let mut device = Device::new(device.open_by_path().unwrap());
                     while len > 0 {
-                        let msg_len = std::cmp::min(len, 16);
+                        let msg_len = std::cmp::min(len, PAYLOAD_SIZE);
                         let in_msg = device.send_message(OUTMessage::Read { addr, len: msg_len as u8 });
                         if let INMessage::Read { data, .. } = in_msg {
                             for b in data {
                                 print!("{:02x} ", b);
                             }
+                            println!("");
                         }
                         len -= msg_len;
                         addr += msg_len as u32;
@@ -165,8 +141,8 @@ fn main() {
             file.seek(SeekFrom::Start(0)).unwrap();
             let manager = hid::init().unwrap();
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
-                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-                    let device = Device::new(device);
+                if device.usage_page() == 0xff60 && device.usage() == 0x61 {
+                    let mut device = Device::new(device.open_by_path().unwrap());
                     let bar = progress_bar(file_len, "Erasing");
                     for i in (0..file_len).step_by(65536) {
                         device.send_message(OUTMessage::Erase(i as u32));
@@ -174,18 +150,27 @@ fn main() {
                     }
                     bar.finish_with_message("Done erasing");
 
-                    let mut addr = 0;
-                    let mut buf = [0; 16];
+                    let mut addr = 0u32;
+                    let mut buf = vec![0; PAYLOAD_SIZE];
                     let bar = progress_bar(file_len, "Downloading dictionary");
                     while file_len > 0 {
-                        let msg_len = std::cmp::min(file_len, 16);
+                        let msg_len = std::cmp::min(file_len, PAYLOAD_SIZE);
                         assert_eq!(file.read(&mut buf).unwrap(), msg_len);
-                        bar.inc(msg_len as u64);
-                        let in_msg = device.send_message(OUTMessage::Write { addr, data: buf.to_vec() });
-                        assert!(matches!(in_msg, INMessage::Ack));
+                        if addr / PAGE_SIZE != (addr + msg_len as u32) / PAGE_SIZE {
+                            let bound = ((addr / PAGE_SIZE) + 1) * PAGE_SIZE;
+                            let mut front = buf.to_vec();
+                            let back = front.split_off((bound - addr) as usize);
+                            let in_msg = device.send_message(OUTMessage::Write { addr, data: front });
+                            assert!(matches!(in_msg, INMessage::Ack));
+                            let in_msg = device.send_message(OUTMessage::Write { addr: bound, data: back });
+                            assert!(matches!(in_msg, INMessage::Ack));
+                        } else {
+                            let in_msg = device.send_message(OUTMessage::Write { addr, data: buf.to_vec() });
+                            assert!(matches!(in_msg, INMessage::Ack));
+                        }
                         file_len -= msg_len;
                         addr += msg_len as u32;
-                        println!("");
+                        bar.inc(msg_len as u64);
                     }
                     bar.finish_with_message("Downloaded");
                     break;
