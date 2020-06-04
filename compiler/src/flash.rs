@@ -3,23 +3,24 @@ use std::time::Duration;
 use hid::Handle;
 
 pub mod consts {
+    #![allow(dead_code)]
     pub const PAGE_SIZE: u32 = 256;
     pub const PACKET_SIZE: usize = 64;
     pub const PAYLOAD_SIZE: usize = PACKET_SIZE - 8;
     pub const MSG_SIZE: usize = PAYLOAD_SIZE + 8 - 2;
-    pub const MASSWRITE_PACKET_NUM: usize = 16;
+    pub const MASSWRITE_PACKET_NUM: usize = 28;
     pub const MASSWRITE_MAX_SIZE: usize = MASSWRITE_PACKET_NUM * PACKET_SIZE;
 }
 
 use consts::*;
 
-pub fn crc16(d: &[u8]) -> u16 {
-    let mut crc = 0xffffu16;
+pub fn crc8(d: &[u8]) -> u8 {
+    let mut crc = 0;
     for b in d {
-        crc ^= *b as u16;
+        crc ^= *b;
         for _ in 0..8 {
             if crc & 1 != 0 {
-                crc = (crc >> 1) ^ 0xA001;
+                crc = (crc >> 1) ^ 0x8C;
             } else {
                 crc = crc >> 1;
             }
@@ -30,12 +31,12 @@ pub fn crc16(d: &[u8]) -> u16 {
 
 #[derive(Clone, Copy, Debug)]
 pub struct MassWritePacketInfo {
-    crc: u16,
+    crc: u8,
     len: u8,
 }
 
 impl MassWritePacketInfo {
-    pub fn new(crc: u16, len: u8) -> Self {
+    pub fn new(crc: u8, len: u8) -> Self {
         Self {
             crc,
             len,
@@ -51,6 +52,7 @@ impl MassWritePacketInfo {
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub enum OUTMessage {
     Write { addr: u32, data: Vec<u8> },
     Read { addr: u32, len: u8 },
@@ -112,13 +114,13 @@ impl Device {
                 while data.len() >= PACKET_SIZE {
                     let mut front = data.split_off(PACKET_SIZE);
                     std::mem::swap(&mut front, &mut data);
-                    let crc = crc16(&front);
+                    let crc = crc8(&front);
                     let len = front.len() as u8;
                     data_packets.push(front);
                     packet_infos.push(MassWritePacketInfo::new(crc, len));
                 }
                 if !data.is_empty() {
-                    let crc = crc16(&data);
+                    let crc = crc8(&data);
                     let len = data.len() as u8;
                     data_packets.push(data);
                     packet_infos.push(MassWritePacketInfo::new(crc, len));
@@ -145,7 +147,8 @@ impl Device {
                 buf[2] = packet_infos.len() as u8;
                 buf[3..=5].copy_from_slice(&addr.to_le_bytes()[0..3]);
                 for (i, info) in packet_infos.into_iter().enumerate() {
-                    buf[(6 + 3 * i)..(6 + 3 * (i + 1))].copy_from_slice(&info.to_bytes());
+                    let info_size = std::mem::size_of::<MassWritePacketInfo>();
+                    buf[(6 + info_size * i)..(6 + info_size * (i + 1))].copy_from_slice(&info.to_bytes());
                 }
             }
             OUTMessage::Raw(data) => {
@@ -153,8 +156,8 @@ impl Device {
             }
         }
         if !is_raw {
-            let crc = crc16(&buf[..=(MSG_SIZE - 1)]);
-            buf[MSG_SIZE..=(MSG_SIZE + 1)].copy_from_slice(&crc.to_le_bytes());
+            let crc = crc8(&buf[..=(MSG_SIZE - 1)]);
+            buf[PACKET_SIZE - 1] = crc;
         }
         let mut data_handle = self.0.data();
         data_handle.write_to(0, &buf).unwrap();
@@ -162,10 +165,8 @@ impl Device {
         let mut buf = vec![0u8; PACKET_SIZE];
         data_handle.read(&mut buf, Duration::from_secs(0)).unwrap();
         assert_eq!(buf[0], 0x55);
-        let crc = crc16(&buf[..=(MSG_SIZE - 1)]);
-        let mut bytes = [0u8; 2];
-        bytes.copy_from_slice(&buf[MSG_SIZE..=(MSG_SIZE + 1)]);
-        assert_eq!(crc, u16::from_le_bytes(bytes));
+        let crc = crc8(&buf[..=(MSG_SIZE - 1)]);
+        assert_eq!(crc, buf[PACKET_SIZE - 1]);
         let ret = match buf[1] {
             0x01 => {
                 INMessage::Ack
