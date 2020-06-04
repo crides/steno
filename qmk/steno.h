@@ -14,10 +14,10 @@
 #define PACKET_SIZE 64
 #define PAYLOAD_SIZE (PACKET_SIZE - 8)
 #define MSG_SIZE (PAYLOAD_SIZE + 8 - 2)
-#define MASS_WRITE_PACKET_NUM 16
+#define MASS_WRITE_PACKET_NUM 28
 
 typedef struct {
-    uint16_t crc;
+    uint8_t crc;
     uint8_t len;
 } mass_write_info_t;
 

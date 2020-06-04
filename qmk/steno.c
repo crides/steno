@@ -71,13 +71,13 @@ void matrix_init_user() {
     steno_set_mode(STENO_MODE_GEMINI);
 }
 
-uint16_t crc16(uint8_t *data, uint8_t len) {
-    uint16_t crc = 0xFFFF;
+uint16_t crc8(uint8_t *data, uint8_t len) {
+    uint8_t crc = 0;
     for (uint8_t i = 0; i < len; i ++) {
         crc ^= data[i];
         for (uint8_t i = 0; i < 8; ++i) {
             if (crc & 1) {
-                crc = (crc >> 1) ^ 0xA001;
+                crc = (crc >> 1) ^ 0x8C;
             } else {
                 crc = (crc >> 1);
             }
@@ -87,13 +87,10 @@ uint16_t crc16(uint8_t *data, uint8_t len) {
 }
 
 #define nack(reason) \
-    memset(data, 0, PACKET_SIZE); \
     data[0] = 0x55; \
     data[1] = 0xFF; \
     data[2] = (reason); \
-    uint16_t __crc = crc16(data, MSG_SIZE); \
-    data[MSG_SIZE] = __crc & 0xFF; \
-    data[MSG_SIZE + 1] = (__crc >> 8) & 0xFF; \
+    data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE); \
     raw_hid_send(data, PACKET_SIZE);
 
 void raw_hid_receive(uint8_t *data, uint8_t length) {
@@ -102,16 +99,11 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
     static uint8_t mass_write_packet_ind = 0;
     static uint32_t mass_write_addr = 0;
 
-    /* xprintf("recv: "); */
-    /* for (uint8_t i = 0; i < PACKET_SIZE; i ++) { */
-    /*     xprintf(" %02X", data[i]); */
-    /* } */
-    /* xprintf("\n"); */
     if (mass_write_packet_num) {
         mass_write_info_t info = mass_write_infos[mass_write_packet_ind];
-        uint16_t crc = crc16(data, info.len);
+        uint8_t crc = crc8(data, info.len);
         if (crc != info.crc) {
-            /* xprintf("calc: %X, info: %X\n", crc, info.crc); */
+            xprintf("calc: %X, info: %X\n", crc, info.crc);
             nack(0x04);
             return;
         }
@@ -122,12 +114,9 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
             mass_write_packet_num = 0;
         }
 
-        memset(data, 0, PACKET_SIZE);
         data[0] = 0x55;
         data[1] = 0x01;
-        crc = crc16(data, MSG_SIZE);
-        data[MSG_SIZE] = crc & 0xFF;
-        data[MSG_SIZE + 1] = (crc >> 8) & 0xFF;
+        data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE);
         raw_hid_send(data, PACKET_SIZE);
         return;
     }
@@ -137,8 +126,8 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
         nack(0x01);
         return;
     }
-    uint16_t crc = crc16(data, MSG_SIZE);
-    if (crc != ((uint16_t) data[MSG_SIZE] | (uint16_t) data[MSG_SIZE + 1] << 8)) {
+    uint8_t crc = crc8(data, MSG_SIZE);
+    if (crc != data[PACKET_SIZE - 1]) {
         xprintf("CRC: %X\n", crc);
         nack(0x02);
         return;
@@ -151,15 +140,12 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
             addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
             len = data[2];
             flash_write(addr, data + 6, len);
-            memset(data, 0, PACKET_SIZE);
             data[0] = 0x55;
             data[1] = 0x01;
             break;
         case 0x02:;
             addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
             len = data[2];
-            memset(data, 0, PACKET_SIZE);
-            data[0] = 0x55;
             data[1] = 0x02;
             data[2] = len;
             flash_read(addr, data + 6, len);
@@ -167,27 +153,21 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
         case 0x03:;
             addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
             flash_erase_page(addr);
-            memset(data, 0, PACKET_SIZE);
-            data[0] = 0x55;
             data[1] = 0x01;
             break;
         case 0x04:;
             mass_write_addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
             mass_write_packet_num = data[2];
             mass_write_packet_ind = 0;
-            /* xprintf("packet_num: %u, addr: %lX\n", mass_write_packet_num, mass_write_addr); */
             memcpy(mass_write_infos, data + 6, sizeof(mass_write_infos));
-            memset(data, 0, PACKET_SIZE);
-            data[0] = 0x55;
             data[1] = 0x01;
             break;
         default:;
             nack(0x03);
             return;
     }
-    crc = crc16(data, MSG_SIZE);
-    data[MSG_SIZE] = crc & 0xFF;
-    data[MSG_SIZE + 1] = (crc >> 8) & 0xFF;
+    data[0] = 0x55;
+    data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE);
     raw_hid_send(data, PACKET_SIZE);
 }
 
