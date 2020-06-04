@@ -14,7 +14,7 @@ mod flash;
 mod bar;
 
 use std::fs::File;
-use std::io::{Seek, SeekFrom, BufReader, self};
+use std::io::{Seek, SeekFrom};
 use std::io::prelude::*;
 use std::cmp::min;
 
@@ -24,7 +24,7 @@ use compile::IR;
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
-use flash::{Device, OUTMessage, INMessage, PAYLOAD_SIZE, PAGE_SIZE};
+use flash::{Device, OUTMessage, INMessage, consts::*};
 use bar::progress_bar;
 
 // use stroke::Stroke;
@@ -134,8 +134,8 @@ fn main() {
         }
         ("download", Some(m)) => {
             let file_name = m.value_of("file").unwrap();
-            let mut file = BufReader::new(File::open(file_name).unwrap());
-            let file_len = file.seek(SeekFrom::End(0)).unwrap() as usize;
+            let mut file = File::open(file_name).unwrap();
+            let mut file_len = file.seek(SeekFrom::End(0)).unwrap() as usize;
             dbg!(file_len);
             assert!(file_len < 0x1_0000_0000_0000);
             file.seek(SeekFrom::Start(0)).unwrap();
@@ -145,36 +145,26 @@ fn main() {
                     let mut device = Device::new(device.open_by_path().unwrap());
                     let bar = progress_bar(file_len, "Erasing");
                     for i in (0..file_len).step_by(65536) {
-                        device.send_message(OUTMessage::Erase(i as u32));
+                        let in_msg = device.send_message(OUTMessage::Erase(i as u32));
+                        assert!(matches!(in_msg, INMessage::Ack));
                         bar.inc(65536);
                     }
                     bar.finish_with_message("Done erasing");
 
                     let mut addr = 0u32;
-                    let mut write_count = 0;
                     let bar = progress_bar(file_len, "Downloading dictionary");
-                    for mut block in file.split(0xff).map(io::Result::unwrap) {
-                        let block_len = block.len();
-                        if block_len > 0 {
-                            let mut rem_len = block_len;
-                            while rem_len > 0 {
-                                let next_bound = ((addr / PAGE_SIZE) + 1) * PAGE_SIZE;
-                                let msg_len = min((next_bound - addr) as usize, min(PAYLOAD_SIZE, rem_len));
-                                let mut data = block.split_off(msg_len);
-                                std::mem::swap(&mut data, &mut block);
-                                // bar.println(format!("{} {:?}", addr, data));
-                                let in_msg = device.send_message(OUTMessage::Write { addr, data });
-                                write_count += 1;
-                                assert!(matches!(in_msg, INMessage::Ack));
-                                rem_len -= msg_len;
-                                addr += msg_len as u32;
-                            }
-                        }
-                        addr += 1;
-                        bar.inc(block_len as u64 + 1);
+                    while file_len > 0 {
+                        let mut data = vec![0; MASSWRITE_MAX_SIZE];
+                        let msg_len = min(file_len, MASSWRITE_MAX_SIZE);
+                        let read_len = file.read(&mut data).unwrap();
+                        assert_eq!(read_len, msg_len);
+                        let in_msg = device.send_message(OUTMessage::MassWrite { addr, data });
+                        assert!(matches!(in_msg, INMessage::Ack));
+                        file_len -= msg_len;
+                        addr += msg_len as u32;
+                        bar.inc(msg_len as u64);
                     }
                     bar.finish_with_message("Downloaded");
-                    dbg!(write_count);
                     break;
                 }
             }
