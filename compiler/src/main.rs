@@ -25,7 +25,7 @@ use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
 use flash::{Device, OUTMessage, INMessage, consts::*};
-use bar::progress_bar;
+use bar::*;
 
 // use stroke::Stroke;
 
@@ -143,7 +143,7 @@ fn main() {
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
                 if device.usage_page() == 0xff60 && device.usage() == 0x61 {
                     let mut device = Device::new(device.open_by_path().unwrap());
-                    let bar = progress_bar(file_len, "Erasing");
+                    let bar = progress_bar_bytes(file_len, "Erasing");
                     for i in (0..file_len).step_by(65536) {
                         let in_msg = device.send_message(OUTMessage::Erase(i as u32));
                         assert!(matches!(in_msg, INMessage::Ack));
@@ -152,7 +152,7 @@ fn main() {
                     bar.finish_with_message("Done erasing");
 
                     let mut addr = 0u32;
-                    let bar = progress_bar(file_len, "Downloading dictionary");
+                    let bar = progress_bar_bytes(file_len, "Downloading dictionary");
                     while file_len > 0 {
                         let mut data = vec![0; MASSWRITE_MAX_SIZE];
                         let msg_len = min(file_len, MASSWRITE_MAX_SIZE);
