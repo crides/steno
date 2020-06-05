@@ -120,6 +120,18 @@ impl Entry {
         }).sum()
     }
     
+    pub fn strlen(&self) -> Option<usize> {
+        if self.input.len() == 1 {
+            if let Some(Input::String(s)) = self.input.first() {
+                Some(s.len())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     fn parse_atom(mut s: &str) -> (Attr, Input) {
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
         let mut attr = Attr::valid_default();
@@ -197,7 +209,6 @@ impl Entry {
     }
 
     pub fn parse_entry(s: &str) -> Entry {
-        let mut buf = String::new();
         let mut entry = Entry {
             attr: Attr::valid_default(),
             input: Vec::new(),
@@ -221,12 +232,13 @@ impl Entry {
                     entry.input.push(input.clone());
                 }
                 Input::String(s) => {
+                    let mut buf = String::new();
                     if prev_attr.glue && attr.glue || !prev_attr.space_after || !attr.space_prev {
                         if i == 0 {
                             entry.attr.space_prev = false;
                         }
                     } else {
-                        if buf.len() > 0 && !s.is_empty() {
+                        if entry.strlen().unwrap_or(0) > 0 && !s.is_empty() {
                             buf.push(' ');
                         }
                     }
@@ -248,14 +260,14 @@ impl Entry {
                         buf.push_str(&s);
                         last_cap = Caps::Lower;
                     }
-                    if buf.is_empty() && s.is_empty() {
+                    if entry.strlen().unwrap_or(1) == 0 && s.is_empty() {
                         attr.space_after = attr.space_after && prev_attr.space_after;
                         attr.space_prev = attr.space_prev && prev_attr.space_prev;
                     }
                     if let Some(Input::String(prev_str)) = entry.input.last_mut() {
-                        prev_str.push_str(&s);
+                        prev_str.push_str(&buf);
                     } else {
-                        entry.input.push(input.clone());
+                        entry.input.push(Input::String(buf.into()));
                     }
                 }
             }
@@ -263,7 +275,14 @@ impl Entry {
         let last_attr = atoms.last().map(|(a, _s)| a).copied().unwrap_or(Attr::valid_default());
         entry.attr.caps = last_attr.caps;
         entry.attr.space_after = last_attr.space_after;
-        if !buf.is_empty() && buf.chars().all(|c| c.is_ascii_digit()) || atoms.iter().any(|(a, _s)| a.glue) {
+        if entry.input.len() == 1 {
+            if let Some(Input::String(s)) = entry.input.first() {
+                if !s.is_empty() && s.chars().all(|c| c.is_ascii_digit()) {
+                    entry.attr.glue = true;
+                }
+            }
+        }
+        if atoms.iter().any(|(a, _s)| a.glue) {
             entry.attr.glue = true;
         }
         entry
@@ -377,4 +396,17 @@ fn test_cap_star() {
 #[test]
 fn test_entry_len() {
     assert_eq!(Entry::parse_entry("{^}{#Return}{^}{-|}").len(), 2);
+}
+
+#[test]
+fn test_command() {
+    assert_eq!(
+        Entry::parse_entry("oh yeah{,}babe"),
+        (
+            Entry {
+                attr: Attr::valid_default(),
+                input: vec![Input::String("oh yeah, babe".into())],
+            }
+        )
+    );
 }
