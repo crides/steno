@@ -23,12 +23,18 @@
 #define LOCKING_RESYNC_ENABLE
 #define PREVENT_STUCK_MODIFIERS
 #define CUSTOM_STENO
-#define STENO_DEBUG 0
+/* #define STENO_DEBUG */
 
 #define NO_ACTION_LAYER
 #define NO_ACTION_TAPPING
 #define NO_ACTION_ONESHOT
 #define NO_ACTION_MACRO
 #define NO_ACTION_FUNCTION
+
+#ifdef STENO_DEBUG
+#define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)
+#else
+#define steno_debug(...)
+#endif
 
 #endif

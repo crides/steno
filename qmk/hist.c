@@ -17,7 +17,7 @@ void hist_add(history_t hist) {
         free(history[hist_ind].search_nodes);
     }
 
-#if STENO_DEBUG
+#ifdef STENO_DEBUG
     xprintf("hist[%u]:\n", hist_ind);
     xprintf("  len: %u, repl_len: %u\n", hist.len, hist.repl_len);
     state_t state = hist.state;
@@ -121,11 +121,12 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         return len;
     }
 
-    seek(output.node);
+    uint32_t node = output.node;
+    seek(node);
     read_header();
     read_string();
     uint8_t entry_len = _header.entry_len;
-    steno_debug("  node: %lX, entry_len: %u\n", output.node, entry_len);
+    steno_debug("  node: %lX, entry_len: %u\n", node, entry_len);
 
     attr_t attr = _header.attrs;
     switch (attr.caps) {

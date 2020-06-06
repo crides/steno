@@ -130,18 +130,13 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
     steno_debug("search_on_nodes()\n");
     uint8_t _size = *size;
-    // We want the next non-root result node to have 1 more level than the current/last node; if
-    // that can't be achieved, we'll use the root-based node.
-    // See commit for details
-    uint8_t last_level = history[hist_ind].repl_len + 1;
-    steno_debug("  last_level: %u\n", last_level);
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
         bool last = i == _size;
         // Search root node at the end
         uint32_t node = last ? 0 : nodes[i].node;
         uint32_t next_node = node_find_stroke(node, stroke);
-#if STENO_DEBUG
+#ifdef STENO_DEBUG
         char buf[24];
         uint8_t _len = 0;
         stroke_to_string(stroke, buf, &_len);
@@ -162,15 +157,13 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             *max_level_node = next_node;
             read_string();
         }
-        steno_debug("  node_num: %u, next_level: %u\n", node_num, next_level);
-        if (node_num) {
-            nodes[*size].node = next_node;
-            nodes[*size].level = next_level;
-            (*size)++;
-            if (*size >= SEARCH_NODES_SIZE) {
-                xprintf("Search nodes full!\n");
-                return;
-            }
+        xprintf("    node_num: %lu, next_level: %u\n", node_num, next_level);
+        nodes[*size].node = next_node;
+        nodes[*size].level = next_level;
+        (*size)++;
+        if (*size >= SEARCH_NODES_SIZE) {
+            xprintf("Search nodes full!\n");
+            return;
         }
     }
     steno_debug("  -> max_level: %u, max_level_node: %lX\n", *max_level, *max_level_node);
