@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include "stroke.h"
 
+#define CUSTOM_STENO
+#define USE_SPI_FLASH
+/* #define STENO_DEBUG */
+
 #ifdef STENO_DEBUG
 #define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)
 #else

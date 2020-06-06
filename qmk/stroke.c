@@ -1,5 +1,4 @@
 // To deal with operations related with strokes, and the file system
-#include "steno.h"
 #include "stroke.h"
 #include "hist.h"
 #include "stdbool.h"

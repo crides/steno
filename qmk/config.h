@@ -3,9 +3,6 @@
 
 #include "config_common.h"
 
-#define CUSTOM_STENO
-/* #define STENO_DEBUG */
-
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0x6061
@@ -38,11 +35,5 @@
 #define NO_ACTION_ONESHOT
 #define NO_ACTION_MACRO
 #define NO_ACTION_FUNCTION
-
-#ifdef STENO_DEBUG
-#define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)
-#else
-#define steno_debug(...)
-#endif
 
 #endif

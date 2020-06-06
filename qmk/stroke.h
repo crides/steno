@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include "steno.h"
 
 #define MAX_COLLISIONS 8
 #define SEARCH_NODES_SIZE 8
