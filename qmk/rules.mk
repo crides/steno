@@ -4,7 +4,7 @@ ARCH = AVR8
 F_USB = $(F_CPU)
 BOOTLOADER = caterina
 
-SRC += hist.c stroke.c sdcard/fat.c sdcard/partition.c sdcard/sd_raw.c sdcard/byteordering.c
+SRC += flash.c hist.c stroke.c sdcard/fat.c sdcard/partition.c sdcard/sd_raw.c sdcard/byteordering.c
 
 MOUSEKEY_ENABLE = no
 EXTRAKEY_ENABLE = no

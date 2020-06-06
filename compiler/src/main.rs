@@ -10,10 +10,13 @@ mod dict;
 mod hashmap;
 mod rule;
 mod stroke;
+mod flash;
+mod bar;
 
 use std::fs::File;
 use std::io::{Seek, SeekFrom};
-use std::time::Duration;
+use std::io::prelude::*;
+use std::cmp::min;
 
 use clap::{App, Arg, SubCommand};
 
@@ -21,6 +24,8 @@ use compile::IR;
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
+use flash::{Device, OUTMessage, INMessage, consts::*};
+use bar::*;
 
 // use stroke::Stroke;
 
@@ -40,7 +45,15 @@ use stroke::Stroke;
 fn main() {
     let matches = App::new("compile-steno")
         .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
-        .subcommand(SubCommand::with_name("test2").arg(Arg::with_name("input").required(true)))
+        .subcommand(
+            SubCommand::with_name("flash-dump")
+                .arg(Arg::with_name("addr").required(true))
+                .arg(Arg::with_name("len").required(true)),
+        )
+        .subcommand(
+            SubCommand::with_name("download")
+                .arg(Arg::with_name("file").required(true)),
+        )
         .subcommand(
             SubCommand::with_name("compile")
                 .arg(Arg::with_name("input").required(true))
@@ -85,24 +98,63 @@ fn main() {
             let stroke: Stroke = m.value_of("stroke").unwrap().parse().unwrap();
             println!("{:x}", stroke.raw());
         }
-        ("test2", Some(m)) => {
-            let input = m.value_of("input").unwrap();
+        ("flash-dump", Some(m)) => {
+            let mut addr: u32 = m.value_of("addr").unwrap().parse().unwrap();
+            let mut len: usize = m.value_of("len").unwrap().parse().unwrap();
+
             let manager = hid::init().unwrap();
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
-                if device.usage_page() == 0xFF60 && device.usage() == 0x61 {
-                    println!("serial: {:?}", device.serial_number());
-                    println!("path: {:?}", device.path());
-                    println!("manu_string: {:?}", device.manufacturer_string());
-                    println!("prod_string: {:?}", device.product_string());
-                    println!("release: {:?}", device.release_number());
-                    println!("interface: {:?}", device.interface_number());
-                    println!("usage_page: {:x}", device.usage_page());
-                    println!("usage: {:x}", device.usage());
-                    let mut handle = device.open_by_path().unwrap();
-                    handle.data().write(input).unwrap();
-                    let mut buf = vec![0; 32];
-                    handle.data().read(&mut buf, Duration::from_secs(0)).unwrap();
-                    dbg!(buf);
+                if device.usage_page() == 0xff60 && device.usage() == 0x61 {
+                    let mut device = Device::new(device.open_by_path().unwrap());
+                    while len > 0 {
+                        let msg_len = std::cmp::min(len, PAYLOAD_SIZE);
+                        let in_msg = device.send_message(OUTMessage::Read { addr, len: msg_len as u8 });
+                        if let INMessage::Read { data, .. } = in_msg {
+                            for b in data {
+                                print!("{:02x} ", b);
+                            }
+                            println!("");
+                        }
+                        len -= msg_len;
+                        addr += msg_len as u32;
+                    }
+                    break;
+                }
+            }
+        }
+        ("download", Some(m)) => {
+            let file_name = m.value_of("file").unwrap();
+            let mut file = File::open(file_name).unwrap();
+            let mut file_len = file.seek(SeekFrom::End(0)).unwrap() as usize;
+            dbg!(file_len);
+            assert!(file_len < 0x1_0000_0000_0000);
+            file.seek(SeekFrom::Start(0)).unwrap();
+            let manager = hid::init().unwrap();
+            for device in manager.find(Some(0xFEED), Some(0x6061)) {
+                if device.usage_page() == 0xff60 && device.usage() == 0x61 {
+                    let mut device = Device::new(device.open_by_path().unwrap());
+                    let bar = progress_bar_bytes(file_len, "Erasing");
+                    for i in (0..file_len).step_by(65536) {
+                        let in_msg = device.send_message(OUTMessage::Erase(i as u32));
+                        assert!(matches!(in_msg, INMessage::Ack));
+                        bar.inc(65536);
+                    }
+                    bar.finish_with_message("Done erasing");
+
+                    let mut addr = 0u32;
+                    let bar = progress_bar_bytes(file_len, "Downloading dictionary");
+                    while file_len > 0 {
+                        let mut data = vec![0; MASSWRITE_MAX_SIZE];
+                        let msg_len = min(file_len, MASSWRITE_MAX_SIZE);
+                        let read_len = file.read(&mut data).unwrap();
+                        assert_eq!(read_len, msg_len);
+                        let in_msg = device.send_message(OUTMessage::MassWrite { addr, data });
+                        assert!(matches!(in_msg, INMessage::Ack));
+                        file_len -= msg_len;
+                        addr += msg_len as u32;
+                        bar.inc(msg_len as u64);
+                    }
+                    bar.finish_with_message("Downloaded");
                     break;
                 }
             }

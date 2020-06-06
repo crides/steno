@@ -3,13 +3,23 @@
 
 #include "config_common.h"
 
+#define CUSTOM_STENO
+/* #define STENO_DEBUG */
+
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
-#define PRODUCT_ID      0x6060
+#define PRODUCT_ID      0x6061
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    Crides
 #define PRODUCT         Steno
+#define SERIAL_NUMBER   v2
 #define DESCRIPTION     28 key steno board
+#define RAW_USAGE_PAGE  0xFF60
+#define RAW_USAGE_ID    0x61
+
+#ifdef CUSTOM_STENO
+#undef VIRTSER_ENABLE
+#endif
 
 #define MATRIX_ROWS 3
 #define MATRIX_COLS 10
@@ -22,8 +32,6 @@
 #define LOCKING_SUPPORT_ENABLE
 #define LOCKING_RESYNC_ENABLE
 #define PREVENT_STUCK_MODIFIERS
-#define CUSTOM_STENO
-/* #define STENO_DEBUG */
 
 #define NO_ACTION_LAYER
 #define NO_ACTION_TAPPING

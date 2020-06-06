@@ -61,7 +61,12 @@ extern header_t _header;
 extern child_t _child;
 extern char _buf[128];
 
+#ifdef USE_SPI_FLASH
+void seek(uint32_t addr);
+#else
 void seek(int32_t addr);
+#endif
+
 void read_string(void);
 void read_header(void);
 void read_child(void);

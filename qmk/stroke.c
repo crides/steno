@@ -1,30 +1,59 @@
 // To deal with operations related with strokes, and the file system
 #include "steno.h"
 #include "stroke.h"
-#include "stdbool.h"
 #include "hist.h"
-#include "sdcard/fat.h"
+#include "stdbool.h"
 
-struct fat_file_struct *file;
+#ifdef USE_SPI_FLASH
+#include "flash.h"
+#else
+#include "sdcard/fat.h"
+#endif
+
 header_t _header;
 child_t _child;
 char _buf[128];
+#ifdef USE_SPI_FLASH
+static uint32_t flash_addr = 0;
+#else
+struct fat_file_struct *file;
+#endif
 
+#ifdef USE_SPI_FLASH
+void seek(uint32_t addr) {
+    flash_addr = addr;
+}
+#else
 void seek(int32_t addr) {
     fat_seek_file(file, &addr, FAT_SEEK_SET);
 }
+#endif
 
 void read_string(void) {
+#ifdef USE_SPI_FLASH
+    flash_read(flash_addr, (uint8_t *) _buf, _header.entry_len);
+#else
     fat_read_file(file, (uint8_t *) _buf, _header.entry_len);
+#endif
     _buf[_header.entry_len] = 0;
 }
 
 void read_header(void) {
+#ifdef USE_SPI_FLASH
+    flash_read(flash_addr, (uint8_t *) &_header, sizeof(header_t));
+    seek(flash_addr + sizeof(header_t));
+#else
     fat_read_file(file, (uint8_t *) &_header, sizeof(header_t));
+#endif
 }
 
 void read_child(void) {
+#ifdef USE_SPI_FLASH
+    flash_read(flash_addr, (uint8_t *) &_child, sizeof(child_t));
+    seek(flash_addr + sizeof(child_t));
+#else
     fat_read_file(file, (uint8_t *) &_child, sizeof(child_t));
+#endif
 }
 
 uint32_t hash_stroke(uint32_t stroke) {
@@ -57,7 +86,7 @@ uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
         if (stroke == _child.stroke) {
             return _child.addr;
         }
-        if (!_child.stroke) {
+        if (_child.stroke == 0xffffff) {
             return 0;
         }
         collisions ++;
