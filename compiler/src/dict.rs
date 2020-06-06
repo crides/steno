@@ -71,6 +71,7 @@ pub struct Attr {
     pub space_after: bool,
     pub glue: bool,
     pub present: bool,
+    pub str_only: bool,
 }
 
 impl Attr {
@@ -81,6 +82,7 @@ impl Attr {
             space_after: false,
             glue: false,
             present: false,
+            str_only: false,
         }
     }
 
@@ -91,6 +93,7 @@ impl Attr {
             space_after: true,
             glue: false,
             present: true,
+            str_only: false,
         }
     }
 }
@@ -111,7 +114,13 @@ impl Default for Entry {
 }
 
 impl Entry {
-    pub fn len(&self) -> usize {
+    pub fn byte_len(&self) -> usize {
+        if self.input.len() == 1 {
+            if let Input::String(s) = &self.input[0] {
+                return s.len();
+            }
+        }
+
         self.input.iter().map(|i| {
             match i {
                 Input::String(s) => if s.is_empty() { 0 } else { s.len() + 1 },
@@ -266,7 +275,7 @@ impl Entry {
                     }
                     if let Some(Input::String(prev_str)) = entry.input.last_mut() {
                         prev_str.push_str(&buf);
-                    } else {
+                    } else if !buf.is_empty() {
                         entry.input.push(Input::String(buf.into()));
                     }
                 }
@@ -277,6 +286,7 @@ impl Entry {
         entry.attr.space_after = last_attr.space_after;
         if entry.input.len() == 1 {
             if let Some(Input::String(s)) = entry.input.first() {
+                entry.attr.str_only = true;
                 if !s.is_empty() && s.chars().all(|c| c.is_ascii_digit()) {
                     entry.attr.glue = true;
                 }

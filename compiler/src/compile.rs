@@ -59,6 +59,7 @@ bitfield! {
     space_after, set_space_after: 3, 3;
     glue, set_glue: 4, 4;
     present, set_present: 5, 5;
+    str_only, set_str_only: 6, 6;
 }
 
 impl From<Attr> for RawAttr {
@@ -74,6 +75,7 @@ impl From<Attr> for RawAttr {
         ra.set_space_prev(a.space_prev.into());
         ra.set_space_after(a.space_after.into());
         ra.set_present(a.present.into());
+        ra.set_str_only(a.str_only.into());
         ra
     }
 }
@@ -170,7 +172,7 @@ impl IR {
     }
 
     pub fn add_node(&mut self, node_num: u32, entry: Entry) {
-        let len = entry.len();
+        let len = entry.byte_len();
         // eprintln!("{:x}: {}", self.cur_addr, string);
         let new_node = IRNode::new(node_num, entry);
         self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 5;
@@ -210,9 +212,6 @@ impl IR {
                 }
                 child_addr
             } else {
-                // if hash.children.len() > 0 {
-                //     println!("{}, {:#?}", child.0, hash);
-                // }
                 node_cache.get(&hash).copied().unwrap()
             };
             self.nodes[cur_ind].add_child(child.0.raw(), child_addr);
@@ -228,14 +227,18 @@ impl IR {
         let mut bytes: Vec<u8> = Vec::new();
         for node in self.nodes.iter() {
             bytes.clear();
-            let len = node.entry.len();
             // Note: this is 3 bytes long. MSB is at the end cuz LE.
             bytes.extend_from_slice(&(node.children.total_size() as u32).to_le_bytes()[0..3]);
-            bytes.push(len as u8);
-            let raw_attr: RawAttr = node.entry.attr.into();
+            bytes.push(node.entry.byte_len() as u8);
+            let attr = node.entry.attr;
+            let raw_attr: RawAttr = attr.into();
             bytes.push(raw_attr.0);
             let raw_entry: RawEntry = node.entry.clone().into();
-            bytes.extend_from_slice(raw_entry.as_bytes());
+            if attr.str_only {
+                bytes.extend_from_slice(&raw_entry.as_bytes()[1..]);
+            } else {
+                bytes.extend_from_slice(raw_entry.as_bytes());
+            }
             w.write_all(&bytes)?;
             node.children.write_all_to(w)?;
         }

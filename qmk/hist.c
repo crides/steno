@@ -99,12 +99,13 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 
     state_t old_state = *state;
     steno_debug("  old_state: space: %u, cap: %u, glue: %u\n", old_state.space, old_state.cap, old_state.prev_glue);
-    uint8_t len = 0, space = old_state.space, cap = old_state.cap;
+    uint8_t space = old_state.space, cap = old_state.cap;
     state->cap = 0;
     state->prev_glue = 0;
     state->space = 1;
 
     if (output.type == RAW_STROKE) {
+        uint8_t len;
         steno_debug("  stroke: %lX\n", output.stroke);
         if (stroke_to_string(output.stroke, _buf, &len)) {
             state->prev_glue = 1;
@@ -142,7 +143,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     steno_debug("    glue: %u\n", attr.glue);
     steno_debug("  output:\n");
 
-    uint8_t has_raw_key = 0;
+    uint8_t has_raw_key = 0, len = 0;
     for (uint8_t i = 0; i < entry_len; i ++) {
         if (_buf[i] & 0x80) {
             space = 0;
@@ -152,20 +153,26 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
             steno_debug("    key: %X\n", _buf[i]);
             tap_code(_buf[i]);
         } else {
-            uint8_t str_end = _buf[i] + i;
-            len += _buf[i];
-            steno_debug("    str: len: %u, '", _buf[i]);
+            uint8_t str_end;
+            if (attr.str_only) {
+                str_end = entry_len;
+                len = entry_len;
+            } else {
+                str_end = _buf[i] + i;
+                len = _buf[i];
+                i ++;
+            }
+            steno_debug("    str: len: %u, '", len);
             if (space) {
                 steno_debug(" ");
                 len ++;
                 send_char(' ');
             }
             if (cap) {      // TODO handle ALL CAPS
-                _buf[i + 1] = toupper(_buf[i + 1]);
+                _buf[i] = toupper(_buf[i]);
                 cap = 0;
             }
-            while (i < str_end) {
-                i ++;
+            for (; i < str_end; i ++) {
                 steno_debug("%c", _buf[i]);
                 send_char(_buf[i]);
             }
