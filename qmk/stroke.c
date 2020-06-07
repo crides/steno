@@ -183,14 +183,18 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         if (_header.attrs.present && next_level > *max_level) {
             *max_level = next_level;
             *max_level_node = next_node;
-            read_string();
         }
         xprintf("    node_num: %lu, next_level: %u\n", node_num, next_level);
-        nodes[*size].node = next_node;
-        nodes[*size].level = next_level;
-        (*size)++;
-        if (*size >= SEARCH_NODES_SIZE) {
-            xprintf("Search nodes full!\n");
+        if (node_num) {
+            nodes[*size].node = next_node;
+            nodes[*size].level = next_level;
+            (*size)++;
+            if (*size >= SEARCH_NODES_SIZE) {
+                xprintf("Search nodes full!\n");
+                return;
+            }
+        } else {
+            *size = 0;
             return;
         }
     }
