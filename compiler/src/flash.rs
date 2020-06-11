@@ -19,10 +19,9 @@ pub fn crc8(d: &[u8]) -> u8 {
     for b in d {
         crc ^= *b;
         for _ in 0..8 {
+            crc >>= 1;
             if crc & 1 != 0 {
-                crc = (crc >> 1) ^ 0x8C;
-            } else {
-                crc = crc >> 1;
+                crc ^= 0x8C;
             }
         }
     }
@@ -37,10 +36,7 @@ pub struct MassWritePacketInfo {
 
 impl MassWritePacketInfo {
     pub fn new(crc: u8, len: u8) -> Self {
-        Self {
-            crc,
-            len,
-        }
+        Self { crc, len }
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
@@ -54,12 +50,24 @@ impl MassWritePacketInfo {
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub enum OUTMessage {
-    Write { addr: u32, data: Vec<u8> },
-    Read { addr: u32, len: u8 },
+    Write {
+        addr: u32,
+        data: Vec<u8>,
+    },
+    Read {
+        addr: u32,
+        len: u8,
+    },
     Erase(u32),
     /// Pseudo packet
-    MassWrite { addr: u32, data: Vec<u8> },
-    MassWriteHeader { addr: u32, packet_infos: Vec<MassWritePacketInfo> },
+    MassWrite {
+        addr: u32,
+        data: Vec<u8>,
+    },
+    MassWriteHeader {
+        addr: u32,
+        packet_infos: Vec<MassWritePacketInfo>,
+    },
     Raw(Vec<u8>),
 }
 
@@ -77,7 +85,7 @@ impl Device {
     pub fn new(d: Handle) -> Device {
         Device(d)
     }
-    
+
     pub fn send_message(&mut self, msg: OUTMessage) -> INMessage {
         let mut buf = vec![0u8; PACKET_SIZE];
         // Message format:
@@ -125,7 +133,8 @@ impl Device {
                     data_packets.push(data);
                     packet_infos.push(MassWritePacketInfo::new(crc, len));
                 }
-                let mut in_msg = self.send_message(OUTMessage::MassWriteHeader { addr, packet_infos });
+                let mut in_msg =
+                    self.send_message(OUTMessage::MassWriteHeader { addr, packet_infos });
                 assert!(matches!(in_msg, INMessage::Ack));
                 for packet in data_packets {
                     in_msg = self.send_message(OUTMessage::Raw(packet.clone()));
@@ -148,7 +157,8 @@ impl Device {
                 buf[3..=5].copy_from_slice(&addr.to_le_bytes()[0..3]);
                 for (i, info) in packet_infos.into_iter().enumerate() {
                     let info_size = std::mem::size_of::<MassWritePacketInfo>();
-                    buf[(6 + info_size * i)..(6 + info_size * (i + 1))].copy_from_slice(&info.to_bytes());
+                    buf[(6 + info_size * i)..(6 + info_size * (i + 1))]
+                        .copy_from_slice(&info.to_bytes());
                 }
             }
             OUTMessage::Raw(data) => {
@@ -156,7 +166,7 @@ impl Device {
             }
         }
         if !is_raw {
-            let crc = crc8(&buf[..=(MSG_SIZE - 1)]);
+            let crc = crc8(&buf[..MSG_SIZE]);
             buf[PACKET_SIZE - 1] = crc;
         }
         let mut data_handle = self.0.data();
@@ -165,12 +175,10 @@ impl Device {
         let mut buf = vec![0u8; PACKET_SIZE];
         data_handle.read(&mut buf, Duration::from_secs(0)).unwrap();
         assert_eq!(buf[0], 0x55);
-        let crc = crc8(&buf[..=(MSG_SIZE - 1)]);
+        let crc = crc8(&buf[..MSG_SIZE]);
         assert_eq!(crc, buf[PACKET_SIZE - 1]);
-        let ret = match buf[1] {
-            0x01 => {
-                INMessage::Ack
-            }
+        match buf[1] {
+            0x01 => INMessage::Ack,
             0x02 => {
                 assert!(matches!(msg, OUTMessage::Read { .. }));
                 let len = buf[2];
@@ -179,7 +187,7 @@ impl Device {
                 bytes[0..3].copy_from_slice(&buf[3..=5]);
                 let addr = u32::from_le_bytes(bytes);
                 let mut data = Vec::new();
-                data.extend(buf[6..=(MSG_SIZE - 1)].iter().take(len as usize));
+                data.extend(buf[6..MSG_SIZE].iter().take(len as usize));
                 INMessage::Read { addr, data }
             }
             0xFF => {
@@ -187,7 +195,6 @@ impl Device {
                 INMessage::Nack
             }
             _ => panic!(),
-        };
-        ret
+        }
     }
 }

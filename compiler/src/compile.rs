@@ -10,8 +10,10 @@ pub struct RawEntry(Vec<u8>);
 
 impl From<Entry> for RawEntry {
     fn from(e: Entry) -> RawEntry {
-        let bytes = e.input.iter().flat_map(|i| {
-            match i {
+        let bytes = e
+            .input
+            .iter()
+            .flat_map(|i| match i {
                 Input::String(s) => {
                     assert!(s.len() <= 127);
                     if !s.is_empty() {
@@ -38,8 +40,8 @@ impl From<Entry> for RawEntry {
                     }
                     vec![mods, k.key]
                 }
-            }
-        }).collect();
+            })
+            .collect();
         RawEntry(bytes)
     }
 }
@@ -108,10 +110,7 @@ impl PartialEq for HashableDict {
 
 impl HashableDict {
     pub fn from_dict(d: &Dict) -> Self {
-        let Dict {
-            entry,
-            children,
-        } = d;
+        let Dict { entry, children } = d;
         let mut children: Vec<(Stroke, Option<_>)> = children
             .iter()
             .map(|(k, v)| (*k, v.entry.clone()))
@@ -139,10 +138,7 @@ struct IRNode {
 impl IRNode {
     fn new(node_num: u32, entry: Entry) -> Self {
         let children = LPHashMap::new(node_num as usize);
-        Self {
-            entry,
-            children,
-        }
+        Self { entry, children }
     }
 
     fn add_child(&mut self, input: u32, addr: u32) {
@@ -198,10 +194,7 @@ impl IR {
         let mut children: Vec<(Stroke, Dict)> = dict.children.into_iter().collect();
         children.sort_by(|a, b| a.0.cmp(&b.0));
         let cur_ind = self.len();
-        self.add_node(
-            children.len() as u32,
-            dict.entry.unwrap_or_default(),
-        );
+        self.add_node(children.len() as u32, dict.entry.unwrap_or_default());
 
         for child in children.into_iter() {
             let hash = HashableDict::from_dict(&child.1);

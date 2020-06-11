@@ -5,42 +5,27 @@ extern crate lazy_static;
 #[macro_use]
 extern crate bitfield;
 
+mod bar;
 mod compile;
 mod dict;
+mod flash;
 mod hashmap;
 mod rule;
 mod stroke;
-mod flash;
-mod bar;
 
-use std::fs::File;
-use std::io::{Seek, SeekFrom};
-use std::io::prelude::*;
 use std::cmp::min;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::{Seek, SeekFrom};
 
 use clap::{App, Arg, SubCommand};
 
+use bar::*;
 use compile::IR;
 use dict::Dict;
+use flash::{consts::*, Device, INMessage, OUTMessage};
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
-use flash::{Device, OUTMessage, INMessage, consts::*};
-use bar::*;
-
-// use stroke::Stroke;
-
-// fn hash_strokes(input: &str) -> u32 {
-//     let bytes = input
-//         .split('/')
-//         .flat_map(|stroke| stroke.parse::<Stroke>().unwrap().raw().to_le_bytes().to_vec().into_iter())
-//         .collect::<Vec<_>>();
-//     let mut hash = 0x811c9dc5u32;
-//     for byte in bytes.into_iter() {
-//         hash *= 0x01000193;
-//         hash ^= byte as u32;
-//     }
-//     hash
-// }
 
 fn main() {
     let matches = App::new("compile-steno")
@@ -50,10 +35,7 @@ fn main() {
                 .arg(Arg::with_name("addr").required(true))
                 .arg(Arg::with_name("len").required(true)),
         )
-        .subcommand(
-            SubCommand::with_name("download")
-                .arg(Arg::with_name("file").required(true)),
-        )
+        .subcommand(SubCommand::with_name("download").arg(Arg::with_name("file").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
                 .arg(Arg::with_name("input").required(true))
@@ -108,12 +90,15 @@ fn main() {
                     let mut device = Device::new(device.open_by_path().unwrap());
                     while len > 0 {
                         let msg_len = std::cmp::min(len, PAYLOAD_SIZE);
-                        let in_msg = device.send_message(OUTMessage::Read { addr, len: msg_len as u8 });
+                        let in_msg = device.send_message(OUTMessage::Read {
+                            addr,
+                            len: msg_len as u8,
+                        });
                         if let INMessage::Read { data, .. } = in_msg {
                             for b in data {
                                 print!("{:02x} ", b);
                             }
-                            println!("");
+                            println!();
                         }
                         len -= msg_len;
                         addr += msg_len as u32;
@@ -133,16 +118,16 @@ fn main() {
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
                 if device.usage_page() == 0xff60 && device.usage() == 0x61 {
                     let mut device = Device::new(device.open_by_path().unwrap());
-                    let bar = progress_bar_bytes(file_len, "Erasing");
+                    let pbar = progress_bar_bytes(file_len, "Erasing");
                     for i in (0..file_len).step_by(65536) {
                         let in_msg = device.send_message(OUTMessage::Erase(i as u32));
                         assert!(matches!(in_msg, INMessage::Ack));
-                        bar.inc(65536);
+                        pbar.inc(65536);
                     }
-                    bar.finish_with_message("Done erasing");
+                    pbar.finish_with_message("Done erasing");
 
                     let mut addr = 0u32;
-                    let bar = progress_bar_bytes(file_len, "Downloading dictionary");
+                    let pbar = progress_bar_bytes(file_len, "Downloading dictionary");
                     while file_len > 0 {
                         let mut data = vec![0; MASSWRITE_MAX_SIZE];
                         let msg_len = min(file_len, MASSWRITE_MAX_SIZE);
@@ -152,9 +137,9 @@ fn main() {
                         assert!(matches!(in_msg, INMessage::Ack));
                         file_len -= msg_len;
                         addr += msg_len as u32;
-                        bar.inc(msg_len as u64);
+                        pbar.inc(msg_len as u64);
                     }
-                    bar.finish_with_message("Downloaded");
+                    pbar.finish_with_message("Downloaded");
                     break;
                 }
             }

@@ -25,11 +25,12 @@ pub struct Rules {
 }
 
 pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
-    let bar = progress_bar(source.len(), "Extracting suffixes");
+    let pbar = progress_bar(source.len(), "Extracting suffixes");
+    pbar.set_draw_delta(source.len() as u64 / 100);
     let suffixes: Dict = source
         .iter()
         .filter_map(|(stroke, entry)| {
-            bar.inc(1);
+            pbar.inc(1);
             if ENTRY_SUFFIX.is_match(entry) {
                 Some((
                     stroke.clone(),
@@ -40,12 +41,13 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
             }
         })
         .collect();
-    bar.finish_with_message("Done extracting suffixes");
+    pbar.finish_with_message("Done extracting suffixes");
 
     let mut cached_res = HashMap::new();
     let mut output: Dict = HashMap::new();
-    let bar = progress_bar(source.len(), "Applying rules");
-    for (stroke, entry) in source.into_iter() {
+    let pbar = progress_bar(source.len(), "Applying rules");
+    pbar.set_draw_delta(source.len() as u64 / 200);
+    for (stroke, entry) in source.iter() {
         output.insert(stroke.clone(), entry.clone());
         for rule in rules.simple.iter() {
             if &rule.word == entry {
@@ -90,8 +92,8 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
                 }
             }
         }
-        bar.inc(1);
+        pbar.inc(1);
     }
-    bar.finish_with_message("Done applying rules");
+    pbar.finish_with_message("Done applying rules");
     output
 }

@@ -1,7 +1,9 @@
 use std::collections::{hash_map::Entry as MapEntry, HashMap};
 
-use crate::stroke::Stroke;
 use regex::Regex;
+
+use crate::stroke::Stroke;
+use crate::bar::progress_bar;
 
 lazy_static! {
     static ref META_RE: Regex = Regex::new(r"[^{}]+|\{[^{}]*\}").unwrap();
@@ -121,14 +123,21 @@ impl Entry {
             }
         }
 
-        self.input.iter().map(|i| {
-            match i {
-                Input::String(s) => if s.is_empty() { 0 } else { s.len() + 1 },
+        self.input
+            .iter()
+            .map(|i| match i {
+                Input::String(s) => {
+                    if s.is_empty() {
+                        0
+                    } else {
+                        s.len() + 1
+                    }
+                }
                 Input::Keycode(_) => 2,
-            }
-        }).sum()
+            })
+            .sum()
     }
-    
+
     pub fn strlen(&self) -> Option<usize> {
         if self.input.len() == 1 {
             if let Some(Input::String(s)) = self.input.first() {
@@ -246,10 +255,8 @@ impl Entry {
                         if i == 0 {
                             entry.attr.space_prev = false;
                         }
-                    } else {
-                        if entry.strlen().unwrap_or(0) > 0 && !s.is_empty() {
-                            buf.push(' ');
-                        }
+                    } else if entry.strlen().unwrap_or(0) > 0 && !s.is_empty() {
+                        buf.push(' ');
                     }
                     if prev_attr.caps == Caps::Caps
                         || last_cap == Caps::Caps && prev_attr.caps == Caps::Keep
@@ -269,19 +276,23 @@ impl Entry {
                         buf.push_str(&s);
                         last_cap = Caps::Lower;
                     }
-                    if entry.strlen().unwrap_or(1) == 0 && s.is_empty() {
+                    if entry.strlen().unwrap_or(0) == 0 && s.is_empty() {
                         attr.space_after = attr.space_after && prev_attr.space_after;
                         attr.space_prev = attr.space_prev && prev_attr.space_prev;
                     }
                     if let Some(Input::String(prev_str)) = entry.input.last_mut() {
                         prev_str.push_str(&buf);
                     } else if !buf.is_empty() {
-                        entry.input.push(Input::String(buf.into()));
+                        entry.input.push(Input::String(buf));
                     }
                 }
             }
         }
-        let last_attr = atoms.last().map(|(a, _s)| a).copied().unwrap_or(Attr::valid_default());
+        let last_attr = atoms
+            .last()
+            .map(|(a, _s)| a)
+            .copied()
+            .unwrap_or_else(Attr::valid_default);
         entry.attr.caps = last_attr.caps;
         entry.attr.space_after = last_attr.space_after;
         if entry.input.len() == 1 {
@@ -326,6 +337,8 @@ impl Dict {
 
     pub fn parse_from_json(m: &JsonDict) -> Result<Dict, InvalidStroke> {
         let mut root = Dict::new(None);
+        let pbar = progress_bar(m.len(), "Parsing dictionary");
+        pbar.set_draw_delta(m.len() as u64 / 100);
         for (strokes, entry) in m.iter() {
             let mut cur_dict = &mut root;
             for stroke in strokes
@@ -337,7 +350,9 @@ impl Dict {
             }
             let entry = Entry::parse_entry(entry);
             cur_dict.set_entry(entry);
+            pbar.inc(1);
         }
+        pbar.finish_with_message("Dictionary parsed");
         Ok(root)
     }
 }
@@ -350,22 +365,30 @@ impl Default for Dict {
 
 #[test]
 fn test_plain() {
-    assert_eq!(Entry::parse_entry("a"), Entry { attr: Attr::valid_default(), input: vec![Input::String("a".into())] });
+    assert_eq!(
+        Entry::parse_entry("a"),
+        Entry {
+            attr: Attr {
+                str_only: true,
+                ..Attr::valid_default()
+            },
+            input: vec![Input::String("a".into())]
+        }
+    );
 }
 
 #[test]
 fn test_finger_spell() {
     assert_eq!(
         Entry::parse_entry("{>}{&c}"),
-        (
-            Entry {
-                attr: Attr {
-                    glue: true,
-                    ..Attr::valid_default()
-                },
-                input: vec![Input::String("c".into())],
-            }
-        )
+        Entry {
+            attr: Attr {
+                glue: true,
+                str_only: true,
+                ..Attr::valid_default()
+            },
+            input: vec![Input::String("c".into())],
+        }
     );
 }
 
@@ -373,15 +396,13 @@ fn test_finger_spell() {
 fn test_cap() {
     assert_eq!(
         Entry::parse_entry("{-|}"),
-        (
-            Entry {
-                attr: Attr {
-                    caps: Caps::Caps,
-                    ..Attr::valid_default()
-                },
-                input: vec![Input::String("".into())],
-            }
-        )
+        Entry {
+            attr: Attr {
+                caps: Caps::Caps,
+                ..Attr::valid_default()
+            },
+            input: vec![],
+        }
     );
 }
 
@@ -389,34 +410,33 @@ fn test_cap() {
 fn test_cap_star() {
     assert_eq!(
         Entry::parse_entry("{^}{-|}"),
-        (
-            Entry {
-                attr: Attr {
-                    caps: Caps::Caps,
-                    space_prev: false,
-                    space_after: false,
-                    ..Attr::valid_default()
-                },
-                input: vec![Input::String("".into())],
-            }
-        )
+        Entry {
+            attr: Attr {
+                caps: Caps::Caps,
+                space_prev: false,
+                space_after: false,
+                ..Attr::valid_default()
+            },
+            input: vec![],
+        }
     );
 }
 
 #[test]
 fn test_entry_len() {
-    assert_eq!(Entry::parse_entry("{^}{#Return}{^}{-|}").len(), 2);
+    assert_eq!(Entry::parse_entry("{^}{#Return}{^}{-|}").byte_len(), 2);
 }
 
 #[test]
 fn test_command() {
     assert_eq!(
         Entry::parse_entry("oh yeah{,}babe"),
-        (
-            Entry {
-                attr: Attr::valid_default(),
-                input: vec![Input::String("oh yeah, babe".into())],
-            }
-        )
+        Entry {
+            attr: Attr {
+                str_only: true,
+                ..Attr::valid_default()
+            },
+            input: vec![Input::String("oh yeah, babe".into())],
+        }
     );
 }

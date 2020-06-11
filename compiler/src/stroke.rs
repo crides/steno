@@ -1,7 +1,7 @@
 use std::fmt::{self, Debug, Display, Formatter};
 use std::str::FromStr;
 
-pub static KEYS: &'static str = "#STKPWHRAO*EUFRPBLGTSDZ";
+pub static KEYS: &str = "#STKPWHRAO*EUFRPBLGTSDZ";
 
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Copy)]
 pub struct Stroke(u32);
@@ -105,7 +105,7 @@ impl FromStr for Stroke {
                 '-' => ind = KEYS.find('*').unwrap(),
                 '#' => res.set(KEYS.len() - 1),
                 _ => {
-                    ind += KEYS[ind..].find(c).ok_or(StrokeParseError(s.clone(), c))?;
+                    ind += KEYS[ind..].find(c).ok_or_else(|| StrokeParseError(s.clone(), c))?;
                     res.set(KEYS.len() - ind - 1);
                 }
             }
