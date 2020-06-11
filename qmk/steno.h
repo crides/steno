@@ -6,8 +6,10 @@
 #include "stroke.h"
 
 #define CUSTOM_STENO
-#define USE_SPI_FLASH
-/* #define STENO_DEBUG */
+/* #define USE_SPI_FLASH */
+#ifdef CONSOLE_ENABLE
+#define STENO_DEBUG
+#endif
 
 #ifdef STENO_DEBUG
 #define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)

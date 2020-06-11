@@ -153,12 +153,9 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
             steno_debug("    key: %X\n", _buf[i]);
             tap_code(_buf[i]);
         } else {
-            uint8_t str_end;
             if (attr.str_only) {
-                str_end = entry_len;
                 len = entry_len;
             } else {
-                str_end = _buf[i] + i;
                 len = _buf[i];
                 i ++;
             }
@@ -172,10 +169,9 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
                 _buf[i] = toupper(_buf[i]);
                 cap = 0;
             }
-            for (; i < str_end; i ++) {
-                steno_debug("%c", _buf[i]);
-                send_char(_buf[i]);
-            }
+            steno_debug("%s", _buf);
+            send_string(_buf + i);
+            i += len;
             steno_debug("'\n");
         }
     }
