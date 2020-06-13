@@ -71,16 +71,18 @@ uint32_t hash_stroke(uint32_t stroke) {
 uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
     seek(header_ptr);
     read_header();
+    uint8_t max_collisions;
     uint32_t children_ptr = header_ptr + sizeof(header_t) + _header.entry_len;
     if (_header.node_num < MAX_COLLISIONS) {
         seek(children_ptr);
+        max_collisions = _header.node_num;
     } else {
         uint32_t child_ptr = children_ptr + (hash_stroke(stroke) % _header.node_num) * sizeof(child_t);
         seek(child_ptr);
+        max_collisions = MAX_COLLISIONS;
     }
 
-    uint8_t collisions = 0;
-    while (collisions < MAX_COLLISIONS) {
+    for (uint8_t collisions = 0; collisions < max_collisions; collisions ++) {
         read_child();
         if (stroke == _child.stroke) {
             return _child.addr;
@@ -88,7 +90,6 @@ uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
         if (_child.stroke == 0xffffff) {
             return 0;
         }
-        collisions ++;
     }
     return 0;
 }
@@ -194,7 +195,6 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
                 return;
             }
         } else {
-            *size = 0;
             return;
         }
     }
