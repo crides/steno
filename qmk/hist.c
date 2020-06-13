@@ -144,14 +144,33 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     steno_debug("  output:\n");
 
     uint8_t has_raw_key = 0, len = 0;
+    uint8_t mods = 0;
     for (uint8_t i = 0; i < entry_len; i ++) {
         if (_buf[i] & 0x80) {
             space = 0;
             has_raw_key = 1;
-            // TODO use mods
+            uint8_t key_end = _buf[i] & 0x7F;
             i ++;
-            steno_debug("    key: %X\n", _buf[i]);
-            tap_code(_buf[i]);
+            steno_debug("    keys: len: %u,", key_end);
+            key_end += i;
+            for ( ; i < key_end; i ++) {
+                steno_debug(" %02X", _buf[i]);
+                if ((_buf[i] & 0xFC) == 0xE0) {
+                    uint8_t mod_mask = 1 << (_buf[i] & 0x03);
+                    if (mods & mod_mask) {
+                        unregister_code(_buf[i]);
+                        steno_debug("^");
+                        mods &= ~mod_mask;
+                    } else {
+                        register_code(_buf[i]);
+                        steno_debug("v");
+                        mods |= mod_mask;
+                    }
+                } else {
+                    tap_code(_buf[i]);
+                }
+            }
+            steno_debug("\n");
         } else {
             if (attr.str_only) {
                 len = entry_len;
