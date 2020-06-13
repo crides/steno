@@ -24,21 +24,15 @@ impl From<Entry> for RawEntry {
                         vec![]
                     }
                 }
-                Input::Keycode(k) => {
-                    let mut mods = 0x80;
-                    if k.ctrl {
-                        mods |= 0x08;
+                Input::Keycodes(keycodes) => {
+                    assert!(keycodes.len() <= 127);
+                    if keycodes.is_empty() {
+                        vec![]
+                    } else {
+                        let mut bytes = vec![(keycodes.len() as u8) | 0x80];
+                        bytes.extend(keycodes);
+                        bytes
                     }
-                    if k.shift {
-                        mods |= 0x04;
-                    }
-                    if k.alt {
-                        mods |= 0x02;
-                    }
-                    if k.gui {
-                        mods |= 0x01;
-                    }
-                    vec![mods, k.key]
                 }
             })
             .collect();

@@ -5,6 +5,8 @@ authors = ["crides <zhuhaoqing@live.cn>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[build-dependencies]
+lalrpop = { version = "0.19.0", features = ["lexer"] }
 
 [dependencies]
 clap = "2.33.1"
@@ -20,3 +22,4 @@ hidapi-sys = { path = "lib/rust-hidapi-sys", features = ["build"] }
 hid = { path = "lib/rust-hid" }
 indicatif = "*"
 chrono = "*"
+lalrpop-util = "0.19.0"

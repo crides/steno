@@ -1,9 +1,12 @@
 use std::collections::{hash_map::Entry as MapEntry, HashMap};
+use std::fmt::Display;
 
+use lalrpop_util::ParseError;
 use regex::Regex;
 
-use crate::stroke::Stroke;
 use crate::bar::progress_bar;
+use crate::keycode::TermListParser;
+use crate::stroke::Stroke;
 
 lazy_static! {
     static ref META_RE: Regex = Regex::new(r"[^{}]+|\{[^{}]*\}").unwrap();
@@ -11,50 +14,9 @@ lazy_static! {
 
 pub type JsonDict = HashMap<String, String>;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Keycode {
-    pub ctrl: bool,
-    pub shift: bool,
-    pub alt: bool,
-    pub gui: bool,
-    pub key: u8,
-}
-
-impl Keycode {
-    pub fn new(key: u8) -> Keycode {
-        Keycode {
-            ctrl: false,
-            shift: false,
-            alt: false,
-            gui: false,
-            key,
-        }
-    }
-
-    pub fn ctrl(mut self) -> Self {
-        self.ctrl = true;
-        self
-    }
-
-    pub fn shift(mut self) -> Self {
-        self.shift = true;
-        self
-    }
-
-    pub fn alt(mut self) -> Self {
-        self.alt = true;
-        self
-    }
-
-    pub fn gui(mut self) -> Self {
-        self.gui = true;
-        self
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Input {
-    Keycode(Keycode),
+    Keycodes(Vec<u8>),
     String(String),
 }
 
@@ -133,7 +95,7 @@ impl Entry {
                         s.len() + 1
                     }
                 }
-                Input::Keycode(_) => 2,
+                Input::Keycodes(k) => k.len() + 1,
             })
             .sum()
     }
@@ -150,30 +112,18 @@ impl Entry {
         }
     }
 
-    fn parse_atom(mut s: &str) -> (Attr, Input) {
+    fn parse_atom(mut s: &str) -> Result<(Attr, Input), ParseDictError> {
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
         let mut attr = Attr::valid_default();
         if s.starts_with('{') && s.ends_with('}') {
             s = &s[1..(s.len() - 1)];
             if s.starts_with('#') {
-                let key = match &s[1..] {
-                    "BackSpace" => 0x2a,
-                    "Delete" => 0x4c,
-                    "End" => 0x4d,
-                    "Escape" => 0x29,
-                    "Home" => 0x4a,
-                    "Insert" => 0x49,
-                    "Page_Down" => 0x4e,
-                    "Page_Up" => 0x4b,
-                    "Return" => 0x28,
-                    "Right" => 0x4f,
-                    "Left" => 0x50,
-                    "Down" => 0x51,
-                    "Up" => 0x52,
-                    "Tab" => 0x2b,
-                    _ => 0,
-                };
-                (attr, Input::Keycode(Keycode::new(key)))
+                let keycodes = TermListParser::new()
+                    .parse(&s[1..])?
+                    .into_iter()
+                    .flat_map(|t| t.into_keycodes())
+                    .collect();
+                Ok((attr, Input::Keycodes(keycodes)))
             } else {
                 match s {
                     "?" | "!" | "." => {
@@ -219,14 +169,14 @@ impl Entry {
                         }
                     }
                 }
-                (attr, Input::String(s.into()))
+                Ok((attr, Input::String(s.into())))
             }
         } else {
-            (attr, Input::String(s.into()))
+            Ok((attr, Input::String(s.into())))
         }
     }
 
-    pub fn parse_entry(s: &str) -> Entry {
+    pub fn parse_entry(s: &str) -> Result<Entry, ParseDictError> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
             input: Vec::new(),
@@ -236,7 +186,7 @@ impl Entry {
         let mut atoms = META_RE
             .find_iter(s)
             .map(|m| Entry::parse_atom(m.as_str()))
-            .collect::<Vec<_>>();
+            .collect::<Result<Vec<(Attr, Input)>, ParseDictError>>()?;
         let len = atoms.len();
         for i in 0..len {
             let prev_attr = if i == 0 {
@@ -246,8 +196,12 @@ impl Entry {
             };
             let (attr, input) = &mut atoms[i];
             match input {
-                Input::Keycode(_) => {
-                    entry.input.push(input.clone());
+                Input::Keycodes(keycodes) => {
+                    if let Some(Input::Keycodes(prev_keycodes)) = entry.input.last_mut() {
+                        prev_keycodes.extend(keycodes.iter());
+                    } else {
+                        entry.input.push(input.clone());
+                    }
                 }
                 Input::String(s) => {
                     let mut buf = String::new();
@@ -306,12 +260,26 @@ impl Entry {
         if atoms.iter().any(|(a, _s)| a.glue) {
             entry.attr.glue = true;
         }
-        entry
+        Ok(entry)
     }
 }
 
 #[derive(Debug)]
-pub struct InvalidStroke(String);
+pub enum ParseDictError {
+    InvalidStroke(String),
+    InvalidKeycode(String),
+    ParseError(String),
+}
+
+impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
+    fn from(e: ParseError<L, T, String>) -> ParseDictError {
+        if let ParseError::User { error } = e {
+            ParseDictError::InvalidKeycode(error)
+        } else {
+            ParseDictError::ParseError(e.to_string())
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Dict {
@@ -335,21 +303,21 @@ impl Dict {
         self.children.entry(stroke)
     }
 
-    pub fn parse_from_json(m: &JsonDict) -> Result<Dict, InvalidStroke> {
+    pub fn parse_from_json(m: &JsonDict) -> Result<Dict, ParseDictError> {
         let mut root = Dict::new(None);
         let pbar = progress_bar(m.len(), "Parsing dictionary");
         pbar.set_draw_delta(m.len() as u64 / 100);
         for (strokes, entry) in m.iter() {
             let mut cur_dict = &mut root;
-            for stroke in strokes
-                .split('/')
-                .map(|stroke| stroke.parse().map_err(|_| InvalidStroke(strokes.clone())))
-            {
+            for stroke in strokes.split('/').map(|stroke| {
+                stroke
+                    .parse()
+                    .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
+            }) {
                 let stroke = stroke?;
                 cur_dict = cur_dict.entry(stroke).or_default();
             }
-            let entry = Entry::parse_entry(entry);
-            cur_dict.set_entry(entry);
+            cur_dict.set_entry(Entry::parse_entry(entry)?);
             pbar.inc(1);
         }
         pbar.finish_with_message("Dictionary parsed");
@@ -366,7 +334,7 @@ impl Default for Dict {
 #[test]
 fn test_plain() {
     assert_eq!(
-        Entry::parse_entry("a"),
+        Entry::parse_entry("a").unwrap(),
         Entry {
             attr: Attr {
                 str_only: true,
@@ -380,7 +348,7 @@ fn test_plain() {
 #[test]
 fn test_finger_spell() {
     assert_eq!(
-        Entry::parse_entry("{>}{&c}"),
+        Entry::parse_entry("{>}{&c}").unwrap(),
         Entry {
             attr: Attr {
                 glue: true,
@@ -395,7 +363,7 @@ fn test_finger_spell() {
 #[test]
 fn test_cap() {
     assert_eq!(
-        Entry::parse_entry("{-|}"),
+        Entry::parse_entry("{-|}").unwrap(),
         Entry {
             attr: Attr {
                 caps: Caps::Caps,
@@ -409,7 +377,7 @@ fn test_cap() {
 #[test]
 fn test_cap_star() {
     assert_eq!(
-        Entry::parse_entry("{^}{-|}"),
+        Entry::parse_entry("{^}{-|}").unwrap(),
         Entry {
             attr: Attr {
                 caps: Caps::Caps,
@@ -424,13 +392,18 @@ fn test_cap_star() {
 
 #[test]
 fn test_entry_len() {
-    assert_eq!(Entry::parse_entry("{^}{#Return}{^}{-|}").byte_len(), 2);
+    assert_eq!(
+        Entry::parse_entry("{^}{#Return}{^}{-|}")
+            .unwrap()
+            .byte_len(),
+        2
+    );
 }
 
 #[test]
 fn test_command() {
     assert_eq!(
-        Entry::parse_entry("oh yeah{,}babe"),
+        Entry::parse_entry("oh yeah{,}babe").unwrap(),
         Entry {
             attr: Attr {
                 str_only: true,

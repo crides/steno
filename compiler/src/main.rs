@@ -10,6 +10,7 @@ mod compile;
 mod dict;
 mod flash;
 mod hashmap;
+mod keycode;
 mod rule;
 mod stroke;
 

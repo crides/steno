@@ -105,7 +105,9 @@ impl FromStr for Stroke {
                 '-' => ind = KEYS.find('*').unwrap(),
                 '#' => res.set(KEYS.len() - 1),
                 _ => {
-                    ind += KEYS[ind..].find(c).ok_or_else(|| StrokeParseError(s.clone(), c))?;
+                    ind += KEYS[ind..]
+                        .find(c)
+                        .ok_or_else(|| StrokeParseError(s.clone(), c))?;
                     res.set(KEYS.len() - ind - 1);
                 }
             }
