@@ -37,72 +37,68 @@ F 5 "V" H 2600 1550 50  0001 L CNN "Spice_Primitive"
 	1    2600 1550
 	0    -1   1    0   
 $EndComp
-Text GLabel 9650 4600 0    50   Input ~ 0
+Text GLabel 7600 1550 0    50   Input ~ 0
 GND
-Text GLabel 9650 4700 0    50   BiDi ~ 0
+Text GLabel 8650 1950 2    50   BiDi ~ 0
 ROW1
-Text GLabel 9650 4800 0    50   BiDi ~ 0
+Text GLabel 8650 2050 2    50   BiDi ~ 0
 ROW2
-Text GLabel 9650 4900 0    50   BiDi ~ 0
+Text GLabel 8650 2450 2    50   BiDi ~ 0
 ROW3
-Text GLabel 9650 5600 0    50   BiDi ~ 0
+Text GLabel 7600 1950 0    50   BiDi ~ 0
 COL4
-Text GLabel 9650 5700 0    50   BiDi ~ 0
+Text GLabel 7600 2050 0    50   BiDi ~ 0
 COL5
-Text GLabel 9650 4300 0    50   Input ~ 0
+Text GLabel 7600 1250 0    50   Input ~ 0
 RST
-Text GLabel 9650 5200 0    50   BiDi ~ 0
+Text GLabel 7600 1850 0    50   BiDi ~ 0
 COL3
-Text GLabel 9650 5100 0    50   BiDi ~ 0
+Text GLabel 7600 1750 0    50   BiDi ~ 0
 COL2
-Text GLabel 9650 5000 0    50   BiDi ~ 0
+Text GLabel 7600 1650 0    50   BiDi ~ 0
 COL1
-Text GLabel 10700 5500 2    50   BiDi ~ 0
+Text GLabel 7600 2150 0    50   BiDi ~ 0
 COL6
-NoConn ~ 10700 5400
-NoConn ~ 9650 5800
-NoConn ~ 10700 4900
-Text GLabel 10700 4000 0    50   Input ~ 0
-GND
-Text GLabel 10700 4700 2    50   Input ~ 0
-BAT
-Text GLabel 10700 3700 0    50   Input ~ 0
+NoConn ~ 8650 2350
+NoConn ~ 7600 2750
+NoConn ~ 8650 1850
+Text GLabel 8650 1650 2    50   Input ~ 0
 BAT
 $Comp
 L steno-rescue:Adafruit_Feather-ProMicro U1
 U 1 1 5E4CA943
-P 10150 4650
-F 0 "U1" H 10175 5247 60  0000 C CNN
-F 1 "Adafruit_Feather" H 10175 5141 60  0000 C CNN
-F 2 "Downloads:ADAFRUIT_FEATHER" H 10150 4650 60  0001 C CNN
-F 3 "" H 10150 4650 60  0001 C CNN
-	1    10150 4650
+P 8100 1600
+F 0 "U1" H 8125 2197 60  0000 C CNN
+F 1 "Adafruit_Feather" H 8125 2091 60  0000 C CNN
+F 2 "Downloads:ADAFRUIT_FEATHER" H 8100 1600 60  0001 C CNN
+F 3 "" H 8100 1600 60  0001 C CNN
+	1    8100 1600
 	1    0    0    -1  
 $EndComp
 $Comp
 L Connector_Generic:Conn_01x04 J2
 U 1 1 5EB05CC7
-P 10550 6200
-F 0 "J2" H 10630 6192 50  0000 L CNN
-F 1 "Conn_01x04" H 10630 6101 50  0000 L CNN
-F 2 "steno:OLED" H 10550 6200 50  0001 C CNN
-F 3 "~" H 10550 6200 50  0001 C CNN
-	1    10550 6200
+P 8500 3150
+F 0 "J2" H 8580 3142 50  0000 L CNN
+F 1 "Conn_01x04" H 8580 3051 50  0000 L CNN
+F 2 "steno:OLED" H 8500 3150 50  0001 C CNN
+F 3 "~" H 8500 3150 50  0001 C CNN
+	1    8500 3150
 	1    0    0    -1  
 $EndComp
-Text GLabel 10700 5700 2    50   Input ~ 0
+Text GLabel 8650 2650 2    50   Input ~ 0
 SCL
-Text GLabel 10700 5800 2    50   Input ~ 0
+Text GLabel 8650 2750 2    50   Input ~ 0
 SDA
-Text GLabel 10350 6100 0    50   Input ~ 0
+Text GLabel 8300 3050 0    50   Input ~ 0
 SDA
-Text GLabel 10350 6200 0    50   Input ~ 0
+Text GLabel 8300 3150 0    50   Input ~ 0
 SCL
-Text GLabel 10350 6400 0    50   Input ~ 0
+Text GLabel 8300 3350 0    50   Input ~ 0
 GND
-Text GLabel 9650 4400 0    50   Input ~ 0
+Text GLabel 7600 1350 0    50   Input ~ 0
 VCC
-Text GLabel 10350 6300 0    50   Input ~ 0
+Text GLabel 8300 3250 0    50   Input ~ 0
 VCC
 Text GLabel 2000 1850 0    50   BiDi ~ 0
 ROW2
@@ -518,60 +514,31 @@ Wire Wire Line
 Connection ~ 3350 2250
 Text GLabel 2000 2400 0    50   BiDi ~ 0
 ROW3
-Text GLabel 10700 5300 2    50   BiDi ~ 0
-COL7
-Text GLabel 10700 5200 2    50   BiDi ~ 0
-COL8
-Text GLabel 10700 5100 2    50   BiDi ~ 0
-COL9
-Text GLabel 10700 5000 2    50   BiDi ~ 0
-COL10
 $Comp
 L steno:MT25QL128ABA1ESE U2
 U 1 1 5ECCCE62
-P 5650 5550
-F 0 "U2" H 5725 5875 50  0000 C CNN
-F 1 "MT25QL128ABA1ESE" H 5725 5784 50  0000 C CNN
-F 2 "Package_SO:SOP-8_5.28x5.23mm_P1.27mm" H 5650 5150 50  0001 C CNN
-F 3 "" H 5650 5150 50  0001 C CNN
-	1    5650 5550
+P 7500 3750
+F 0 "U2" H 7575 4075 50  0000 C CNN
+F 1 "MT25QL128ABA1ESE" H 7575 3984 50  0000 C CNN
+F 2 "Package_SO:SOP-8_5.28x5.23mm_P1.27mm" H 7500 3350 50  0001 C CNN
+F 3 "" H 7500 3350 50  0001 C CNN
+	1    7500 3750
 	1    0    0    -1  
 $EndComp
-Text GLabel 6900 5050 0    50   Input ~ 0
+Text GLabel 8050 3650 2    50   Input ~ 0
 VCC
-Text GLabel 6200 5450 2    50   Input ~ 0
-VCC
-Text GLabel 6900 5250 0    50   Input ~ 0
+Text GLabel 7100 3950 0    50   Input ~ 0
 GND
-Text GLabel 5250 5750 0    50   Input ~ 0
-GND
-Text GLabel 10700 5600 2    50   BiDi ~ 0
+Text GLabel 8650 2550 2    50   BiDi ~ 0
 CS
-Text GLabel 6900 4850 0    50   BiDi ~ 0
+Text GLabel 7600 2250 0    50   BiDi ~ 0
+SCLK
+Text GLabel 7100 3650 0    50   BiDi ~ 0
 CS
-Text GLabel 9650 5300 0    50   BiDi ~ 0
+Text GLabel 8050 3850 2    50   BiDi ~ 0
 SCLK
-Text GLabel 6900 5150 0    50   BiDi ~ 0
-SCLK
-NoConn ~ 6900 5450
-NoConn ~ 6900 4750
-Text GLabel 5250 5450 0    50   BiDi ~ 0
-CS
-Text GLabel 6200 5650 2    50   BiDi ~ 0
-SCLK
-Text GLabel 5250 5550 0    50   BiDi ~ 0
+Text GLabel 7100 3750 0    50   BiDi ~ 0
 MISO_DQ1
-$Comp
-L 503182-1852:503182-1852 J1
-U 1 1 5ED2196F
-P 7100 5350
-F 0 "J1" H 7630 5396 50  0000 L CNN
-F 1 "503182-1852" H 7630 5305 50  0000 L CNN
-F 2 "misc:MOLEX_503182-1852" H 7100 5350 50  0001 L BNN
-F 3 "Molex" H 7100 5350 50  0001 L BNN
-	1    7100 5350
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	2000 2500 2000 2400
 $Comp
@@ -631,18 +598,7 @@ Wire Wire Line
 Connection ~ 2700 2400
 Wire Wire Line
 	2700 2400 3400 2400
-NoConn ~ 10700 4800
-$Comp
-L Device:Battery_Cell BT1
-U 1 1 5EC9EBF8
-P 10700 3900
-F 0 "BT1" H 10818 3996 50  0000 L CNN
-F 1 "Battery_Cell" H 10818 3905 50  0000 L CNN
-F 2 "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal" V 10700 3960 50  0001 C CNN
-F 3 "~" V 10700 3960 50  0001 C CNN
-	1    10700 3900
-	1    0    0    -1  
-$EndComp
+NoConn ~ 8650 1750
 $Comp
 L canadian_parts:KEYSW K6
 U 1 1 5EF1490E
@@ -1157,15 +1113,15 @@ Wire Wire Line
 	2650 3300 2650 2800
 Connection ~ 2650 3300
 Connection ~ 2650 2800
-Text GLabel 6200 5750 2    50   BiDi ~ 0
+Text GLabel 8050 3950 2    50   BiDi ~ 0
 MOSI_DQ0
-Text GLabel 6200 5550 2    50   BiDi ~ 0
+Text GLabel 8050 3750 2    50   BiDi ~ 0
 DQ3
-Text GLabel 5250 5650 0    50   BiDi ~ 0
+Text GLabel 7100 3850 0    50   BiDi ~ 0
 DQ2
-Text GLabel 9650 5400 0    50   BiDi ~ 0
+Text GLabel 7600 2350 0    50   BiDi ~ 0
 MOSI_DQ0
-Text GLabel 9650 5500 0    50   BiDi ~ 0
+Text GLabel 7600 2450 0    50   BiDi ~ 0
 MISO_DQ1
 Text GLabel 2600 3850 3    50   BiDi ~ 0
 COL1
@@ -1179,8 +1135,27 @@ Text GLabel 5400 3850 3    50   BiDi ~ 0
 COL5
 Text GLabel 6100 3850 3    50   BiDi ~ 0
 COL6
-Text GLabel 6900 5350 0    50   BiDi ~ 0
-MISO_DQ1
-Text GLabel 6900 4950 0    50   BiDi ~ 0
-MOSI_DQ0
+Text GLabel 8650 2150 2    50   BiDi ~ 0
+ROW4
+Text GLabel 8650 2250 2    50   BiDi ~ 0
+ROW5
+Text GLabel 7600 2550 0    50   BiDi ~ 0
+DQ2
+Text GLabel 7600 2650 0    50   BiDi ~ 0
+DQ3
+$Comp
+L Connector_Generic:Conn_01x02 J1
+U 1 1 5F177638
+P 6900 2900
+F 0 "J1" H 6980 2892 50  0000 L CNN
+F 1 "Conn_01x02" H 6980 2801 50  0000 L CNN
+F 2 "" H 6900 2900 50  0001 C CNN
+F 3 "~" H 6900 2900 50  0001 C CNN
+	1    6900 2900
+	1    0    0    -1  
+$EndComp
+Text GLabel 6700 2900 0    50   Input ~ 0
+BAT
+Text GLabel 6700 3000 0    50   Input ~ 0
+GND
 $EndSCHEMATC
