@@ -100,7 +100,6 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     state_t old_state = *state;
     steno_debug("  old_state: space: %u, cap: %u, glue: %u\n", old_state.space, old_state.cap, old_state.prev_glue);
     uint8_t space = old_state.space, cap = old_state.cap;
-    state->cap = 0;
     state->prev_glue = 0;
     state->space = 1;
 
@@ -130,17 +129,14 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     steno_debug("  node: %lX, entry_len: %u\n", node, entry_len);
 
     attr_t attr = _header.attrs;
-    switch (attr.caps) {
-        case ATTR_CAPS_LOWER: state->cap = 0;             break;
-        case ATTR_CAPS_UPPER: state->cap = 1;             break;
-        case ATTR_CAPS_KEEP:  state->cap = old_state.cap; break;
-        case ATTR_CAPS_CAPS:  state->cap = 1;             break;
+    state->cap = attr.caps;
+    if (state->cap == ATTR_CAPS_KEEP) {
+        state->cap = old_state.cap;
     }
     state->space = attr.space_after;
     state->prev_glue = attr.glue;
     space = space && attr.space_prev && entry_len && !(old_state.prev_glue && state->prev_glue);
-    steno_debug("  attr:\n");
-    steno_debug("    glue: %u\n", attr.glue);
+    steno_debug("  attr: glue: %u, cap: %u\n", attr.glue, attr.caps);
     steno_debug("  output:\n");
 
     uint8_t has_raw_key = 0, len = 0;
@@ -179,14 +175,21 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
                 i ++;
             }
             steno_debug("    str: len: %u, '", len);
+            switch (cap) {
+                case ATTR_CAPS_UPPER:
+                    for (uint8_t j = 0; j < len; j ++) {
+                        _buf[j] = toupper(_buf[j]);
+                    }
+                    break;
+                case ATTR_CAPS_CAPS:
+                    _buf[i] = toupper(_buf[i]);
+                    break;
+            }
+            cap = ATTR_CAPS_LOWER;
             if (space) {
                 steno_debug(" ");
                 len ++;
                 send_char(' ');
-            }
-            if (cap) {      // TODO handle ALL CAPS
-                _buf[i] = toupper(_buf[i]);
-                cap = 0;
             }
             steno_debug("%s", _buf);
             send_string(_buf + i);

@@ -19,7 +19,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     uint8_t space : 1;
-    uint8_t cap : 1;
+    uint8_t cap : 2;
     uint8_t prev_glue : 1;
 } state_t;
 
