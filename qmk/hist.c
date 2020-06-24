@@ -136,13 +136,13 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     state->space = attr.space_after;
     state->prev_glue = attr.glue;
     space = space && attr.space_prev && entry_len && !(old_state.prev_glue && state->prev_glue);
-    steno_debug("  attr: glue: %u, cap: %u\n", attr.glue, attr.caps);
+    steno_debug("  attr: glue: %u, cap: %u, str_only: %u\n", attr.glue, attr.caps, attr.str_only);
     steno_debug("  output:\n");
 
     uint8_t has_raw_key = 0, len = 0;
     uint8_t mods = 0;
     for (uint8_t i = 0; i < entry_len; i ++) {
-        if (_buf[i] & 0x80) {
+        if ((_buf[i] & 0x80) && !attr.str_only) {
             space = 0;
             has_raw_key = 1;
             uint8_t key_end = _buf[i] & 0x7F;
