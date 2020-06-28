@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include "process_keycode/process_unicode_common.h"
 
 history_t history[HIST_SIZE];
 uint8_t hist_ind = 0;
@@ -78,6 +79,53 @@ void hist_undo() {
     }
 }
 
+uint16_t hex_to_keycode(uint8_t hex) {
+    if (hex == 0x0) {
+        return KC_0;
+    } else if (hex < 0xA) {
+        return KC_1 + (hex - 0x1);
+    } else {
+        return KC_A + (hex - 0xA);
+    }
+}
+
+void register_hex32(uint32_t hex) {
+    bool onzerostart = true;
+    for (int i = 7; i >= 0; i--) {
+        if (i <= 3) {
+            onzerostart = false;
+        }
+        uint8_t digit = ((hex >> (i * 4)) & 0xF);
+        if (digit == 0) {
+            if (!onzerostart) {
+                tap_code(hex_to_keycode(digit));
+            }
+        } else {
+            tap_code(hex_to_keycode(digit));
+            onzerostart = false;
+        }
+    }
+}
+
+uint8_t _send_unicode_string(char *buf, uint8_t len) {
+    uint8_t str_len = 0;
+    for (uint8_t i = 0; i < len; buf ++, i ++) {
+        if (*buf == 1) {    // Custom unicode start byte
+            uint32_t code_point = (uint32_t) buf[1] | (uint32_t) buf[2] << 8 | (uint32_t) buf[3] << 16;
+            steno_debug("<%lX>", code_point);
+            tap_code16(C(S(KC_U)));
+            register_hex32(code_point);
+            tap_code(KC_ENT);
+            buf += 3;
+            i += 3;
+        } else {
+            send_char(*buf);
+        }
+        str_len ++;
+    }
+    return str_len;
+}
+
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     // TODO optimization: compare beginning of current and string to replace
     steno_debug("process_output()\n");
@@ -139,7 +187,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     steno_debug("  attr: glue: %u, cap: %u, str_only: %u\n", attr.glue, attr.caps, attr.str_only);
     steno_debug("  output:\n");
 
-    uint8_t has_raw_key = 0, len = 0;
+    uint8_t has_raw_key = 0, str_len = 0;
     uint8_t mods = 0;
     for (uint8_t i = 0; i < entry_len; i ++) {
         if ((_buf[i] & 0x80) && !attr.str_only) {
@@ -156,28 +204,27 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
                     if (mods & mod_mask) {
                         unregister_code(_buf[i]);
                         steno_debug("^");
-                        mods &= ~mod_mask;
                     } else {
                         register_code(_buf[i]);
                         steno_debug("v");
-                        mods |= mod_mask;
                     }
+                    mods ^= mod_mask;
                 } else {
                     tap_code(_buf[i]);
                 }
             }
             steno_debug("\n");
         } else {
+            uint8_t byte_len;
             if (attr.str_only) {
-                len = entry_len;
+                byte_len = entry_len;
             } else {
-                len = _buf[i];
+                byte_len = _buf[i];
                 i ++;
             }
-            steno_debug("    str: len: %u, '", len);
             switch (cap) {
                 case ATTR_CAPS_UPPER:
-                    for (uint8_t j = 0; j < len; j ++) {
+                    for (uint8_t j = 0; j < byte_len; j ++) {
                         _buf[j] = toupper(_buf[j]);
                     }
                     break;
@@ -185,18 +232,19 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
                     _buf[i] = toupper(_buf[i]);
                     break;
             }
+
+            steno_debug("    str: '", str_len);
             cap = ATTR_CAPS_LOWER;
             if (space) {
                 steno_debug(" ");
-                len ++;
+                str_len ++;
                 send_char(' ');
             }
-            steno_debug("%s", _buf);
-            send_string(_buf + i);
-            i += len;
-            steno_debug("'\n");
+            str_len += _send_unicode_string(_buf + i, byte_len);
+            steno_debug("%s'\n", _buf + i);
+            i += byte_len;
         }
     }
-    steno_debug("  -> %u\n", len);
-    return has_raw_key ? 0 : len;
+    steno_debug("  -> %u\n", str_len);
+    return has_raw_key ? 0 : str_len;
 }

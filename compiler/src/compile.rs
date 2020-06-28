@@ -14,16 +14,6 @@ impl From<Entry> for RawEntry {
             .input
             .iter()
             .flat_map(|i| match i {
-                Input::String(s) => {
-                    assert!(s.len() <= 127);
-                    if !s.is_empty() {
-                        let mut bytes = vec![s.len() as u8];
-                        bytes.extend_from_slice(s.as_bytes());
-                        bytes
-                    } else {
-                        vec![]
-                    }
-                }
                 Input::Keycodes(keycodes) => {
                     assert!(keycodes.len() <= 127);
                     if keycodes.is_empty() {
@@ -32,6 +22,26 @@ impl From<Entry> for RawEntry {
                         let mut bytes = vec![(keycodes.len() as u8) | 0x80];
                         bytes.extend(keycodes);
                         bytes
+                    }
+                }
+                Input::String(s) => {
+                    assert!(s.len() <= 127);
+                    if !s.is_empty() {
+                        let mut bytes: Vec<u8> = s.chars()
+                            .flat_map(|c| {
+                                if c.is_ascii() {
+                                    vec![c as u8]
+                                } else {
+                                    let mut bytes = vec![1];
+                                    bytes.extend_from_slice(&(c as u32).to_le_bytes()[0..3]);
+                                    bytes
+                                }
+                            })
+                            .collect();
+                        bytes.insert(0, bytes.len() as u8);
+                        bytes
+                    } else {
+                        vec![]
                     }
                 }
             })

@@ -78,10 +78,14 @@ impl Default for Entry {
 }
 
 impl Entry {
+    fn unicode_string_len(s: &str) -> usize {
+        s.chars().map(|c| if c.is_ascii() { 1 } else { 4 }).sum()
+    }
+
     pub fn byte_len(&self) -> usize {
         if self.input.len() == 1 {
             if let Input::String(s) = &self.input[0] {
-                return s.len();
+                return Entry::unicode_string_len(s);
             }
         }
 
@@ -92,7 +96,7 @@ impl Entry {
                     if s.is_empty() {
                         0
                     } else {
-                        s.len() + 1
+                        Entry::unicode_string_len(s) + 1
                     }
                 }
                 Input::Keycodes(k) => k.len() + 1,
