@@ -68,6 +68,7 @@ uint32_t hash_stroke(uint32_t stroke) {
     return hash;
 }
 
+// Find a stroke in the children of a specific node
 uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
     seek(header_ptr);
     read_header();
@@ -156,6 +157,7 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
     return stroke;
 }
 
+// Searches on multiple nodes, for use with the top level, and tries to find the longest match
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
     steno_debug("search_on_nodes()\n");
     uint8_t _size = *size;

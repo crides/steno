@@ -19,6 +19,7 @@ search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
 state_t state = {.space = 0, .cap = ATTR_CAPS_CAPS, .prev_glue = 0};
 
+// Intercept the steno key codes, searches for the stroke, and outputs the output
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     uint32_t stroke = qmk_chord_to_stroke(chord);
 
@@ -89,6 +90,7 @@ uint16_t crc8(uint8_t *data, uint8_t len) {
     data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE); \
     raw_hid_send(data, PACKET_SIZE);
 
+// Handle the HID packets, mostly for downloading and uploading the dictionary.
 void raw_hid_receive(uint8_t *data, uint8_t length) {
     static mass_write_info_t mass_write_infos[PACKET_SIZE];
     static uint8_t mass_write_packet_num = 0;
@@ -189,6 +191,8 @@ static struct fat_file_struct* open_file_in_dir(struct fat_fs_struct* fs, struct
 }
 #endif
 
+// Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize
+// the keyboard
 void keyboard_post_init_user(void) {
     _delay_ms(2000);
 #ifdef USE_SPI_FLASH

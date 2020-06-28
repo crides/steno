@@ -1,3 +1,5 @@
+//! Handles everything related to converting Rust dictionary related values to bytes. Provides raw
+//! counterparts for types in `dict`. 
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::io::{self, prelude::*};
@@ -6,6 +8,8 @@ use crate::dict::{Attr, Caps, Dict, Entry, Input};
 use crate::hashmap::LPHashMap;
 use crate::stroke::Stroke;
 
+/// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
+/// keyboard storage.
 pub struct RawEntry(Vec<u8>);
 
 impl From<Entry> for RawEntry {
@@ -56,6 +60,7 @@ impl RawEntry {
     }
 }
 
+/// Bit level counterpart for `Attr`. Using a bitfield for compact representation
 bitfield! {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     pub struct RawAttr(u8);
@@ -134,6 +139,7 @@ impl Hash for HashableDict {
     }
 }
 
+/// Representation of individual nodes in IR
 struct IRNode {
     entry: Entry,
     children: LPHashMap,
@@ -150,6 +156,9 @@ impl IRNode {
     }
 }
 
+/// A middle layer between `Dict` and the actual bytes. Used for laying nodes in a flattened structure from a
+/// tree like structure in `Dict`, for filling out the addresses of the nodes in the `children` map before
+/// actually being written out. Contains states for building the middle layer representation.
 pub struct IR {
     cur_addr: u32,
     nodes: Vec<IRNode>,
@@ -173,12 +182,13 @@ impl IR {
 
     pub fn add_node(&mut self, node_num: u32, entry: Entry) {
         let len = entry.byte_len();
-        // eprintln!("{:x}: {}", self.cur_addr, string);
         let new_node = IRNode::new(node_num, entry);
         self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 5;
         self.nodes.push(new_node);
     }
 
+    /// Turns a `Dict` into `IR`. Uses some caching to merge the nodes that have the same output for reducing
+    /// storage size
     pub fn from_dict(dict: Dict) -> Self {
         let mut ir = IR::new();
         let mut node_cache = HashMap::new();
@@ -188,6 +198,8 @@ impl IR {
         ir
     }
 
+    /// Recursive helper function. Appends each child node to IR before filling out the addresses in the
+    /// `children` map.
     fn _from_dict(
         &mut self,
         dict: Dict,
@@ -220,6 +232,7 @@ impl IR {
         addr
     }
 
+    /// Write the IR out as bytes
     pub fn write(&self, w: &mut dyn Write) -> io::Result<()> {
         let mut bytes: Vec<u8> = Vec::new();
         for node in self.nodes.iter() {

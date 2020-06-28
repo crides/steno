@@ -1,3 +1,4 @@
+// Functions for interacting with SPI flash
 #include <string.h>
 #include "flash.h"
 #include "steno.h"

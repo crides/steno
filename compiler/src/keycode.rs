@@ -1,3 +1,4 @@
+//! Keycode parsing for use in atom parsing in dictionary
 use std::iter::once;
 
 use lalrpop_util::lalrpop_mod;

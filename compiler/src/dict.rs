@@ -1,3 +1,5 @@
+//! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
+//! values which are already byte level (e.g. keycodes) for simplicity
 use std::collections::{hash_map::Entry as MapEntry, HashMap};
 use std::fmt::Display;
 
@@ -9,6 +11,8 @@ use crate::keycode::TermListParser;
 use crate::stroke::Stroke;
 
 lazy_static! {
+    /// Stolen from somewhere in Plover. Matches against atoms inside a meta string (either `{}` enclosed
+    /// atoms or not enclosed plain strings)
     static ref META_RE: Regex = Regex::new(r"[^{}]+|\{[^{}]*\}").unwrap();
 }
 
@@ -16,25 +20,36 @@ pub type JsonDict = HashMap<String, String>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Input {
+    /// Raw HID keycodes, with `0xE0` to `0xE3` toggling Ctrl, Shift, Alt, Super (GUI/Windows key) respectively
     Keycodes(Vec<u8>),
+    /// Strings, which can contain Unicode characters
     String(String),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Caps {
     Lower,
+    /// Keep capitalization state for the next atom
     Keep,
+    /// Caps
     Caps,
+    /// UPPER
     Upper,
 }
 
+/// Simplified attributes for formatting atoms or entries for easy MCU consumption. Also includes other
+/// properties about the entry itself 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Attr {
     pub caps: Caps,
     pub space_prev: bool,
     pub space_after: bool,
     pub glue: bool,
+    /// Whether this entry has an output or not. Note that 0-length entries can be outputs e.g. ones that
+    /// contain only attribute changes but no printable content.
     pub present: bool,
+    /// Whether the entry contains only strings i.e. no keycodes, which means no header byte required, leading
+    /// to some space savings
     pub str_only: bool,
 }
 
@@ -62,6 +77,7 @@ impl Attr {
     }
 }
 
+/// Entry value associated to a key in the dictionary
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Entry {
     pub attr: Attr,
@@ -82,6 +98,7 @@ impl Entry {
         s.chars().map(|c| if c.is_ascii() { 1 } else { 4 }).sum()
     }
 
+    /// Total length in bytes for the entry. Used to cheaply determine the size of a certain entry
     pub fn byte_len(&self) -> usize {
         if self.input.len() == 1 {
             if let Input::String(s) = &self.input[0] {
@@ -104,6 +121,7 @@ impl Entry {
             .sum()
     }
 
+    /// Length for this entry if it's a string
     pub fn strlen(&self) -> Option<usize> {
         if self.input.len() == 1 {
             if let Some(Input::String(s)) = self.input.first() {
@@ -116,6 +134,7 @@ impl Entry {
         }
     }
 
+    /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
     fn parse_atom(mut s: &str) -> Result<(Attr, Input), ParseDictError> {
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
         let mut attr = Attr::valid_default();
@@ -180,6 +199,8 @@ impl Entry {
         }
     }
 
+    /// Parses the whole entry. Calls `parse_atom` and joins the inputs and attributes together, changing the
+    /// contents when necessary
     pub fn parse_entry(s: &str) -> Result<Entry, ParseDictError> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
@@ -285,6 +306,8 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
     }
 }
 
+/// Parsed value representation for a JSON dictionary. Is of tree like structure to facilitate further
+/// compilation
 #[derive(Debug, Clone)]
 pub struct Dict {
     pub entry: Option<Entry>,

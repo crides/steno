@@ -1,3 +1,6 @@
+//! For applying defined orthographic rules to the dictionary by appending suffixes from the dictionary to the
+//! other words/phrases, and keeping those which appears in a word/phrase list. This is done so that the
+//! keyboard doesn't need to handle the complicated orthographic rules at runtime.
 use std::collections::HashMap;
 
 use regex::Regex;
@@ -60,8 +63,6 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
                 });
                 if let Some(new_stroke) = new_stroke {
                     output.insert(format!("{}/{}", stroke, new_stroke), rule.repl.clone());
-                } else {
-                    // println!("{:?}", rule);
                 }
             }
         }

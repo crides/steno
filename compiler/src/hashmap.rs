@@ -1,3 +1,8 @@
+//! A fixed size linear-probing HashMap mapping from 24 bit integers to 24 bit integers, used only in IR.
+//! Leaves additional space for reducing collision chances, and for modifying the dictionary in-place on the
+//! keyboard. Uses prime numbered sizes to play nicely with hashes. Load factor will be <15%, except for ones
+//! with less than 8 entries, where the entries would be compacted together to reduce space (may need to
+//! change in the future to allow in-place modification).
 use std::io::{self, prelude::*};
 use std::sync::Mutex;
 
@@ -9,7 +14,6 @@ lazy_static! {
 
 pub const MIN_MAP_SIZE: usize = 8;
 
-/// A fixed size linear-probing HashMap, used only in IR
 pub struct LPHashMap {
     map: Vec<(u32, u32)>,
     original_size: usize,

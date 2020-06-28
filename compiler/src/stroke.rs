@@ -1,3 +1,4 @@
+//! Stroke parsing and displaying utilities
 use std::fmt::{self, Debug, Display, Formatter};
 use std::str::FromStr;
 

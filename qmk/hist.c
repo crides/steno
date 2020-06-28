@@ -1,3 +1,4 @@
+// History management and output control
 #include "hist.h"
 #include "steno.h"
 #include <string.h>
@@ -36,6 +37,8 @@ void hist_add(history_t hist) {
     history[hist_ind] = hist;
 }
 
+// Undo the last history entry. First delete the output, and then start from the initial state of the
+// multi-stage input, and rebuild the output from there.
 void hist_undo() {
     steno_debug("hist_undo()\n");
     history_t hist = history[hist_ind];
@@ -107,6 +110,7 @@ void register_hex32(uint32_t hex) {
     }
 }
 
+// Custom version of `send_string` that takes care of custom Unicode formats
 uint8_t _send_unicode_string(char *buf, uint8_t len) {
     uint8_t str_len = 0;
     for (uint8_t i = 0; i < len; buf ++, i ++) {
@@ -126,6 +130,9 @@ uint8_t _send_unicode_string(char *buf, uint8_t len) {
     return str_len;
 }
 
+// Process the output. If it's a raw stroke (no nodes found for the input), then just output the stroke;
+// otherwise, load the entry, perform the necessary transformations for capitalization, and output according
+// to the bytes. Also takes care of outputting key codes and Unicode characters.
 uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
     // TODO optimization: compare beginning of current and string to replace
     steno_debug("process_output()\n");

@@ -30,7 +30,6 @@ use stroke::Stroke;
 
 fn main() {
     let matches = App::new("compile-steno")
-        .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
         .subcommand(
             SubCommand::with_name("flash-dump")
                 .arg(Arg::with_name("addr").required(true))
@@ -86,6 +85,8 @@ fn main() {
             let mut len: usize = m.value_of("len").unwrap().parse().unwrap();
 
             let manager = hid::init().unwrap();
+            // FEED:6061 is the VID:PID in the current firmware
+            // TODO: Make it adjustable
             for device in manager.find(Some(0xFEED), Some(0x6061)) {
                 if device.usage_page() == 0xff60 && device.usage() == 0x61 {
                     let mut device = Device::new(device.open_by_path().unwrap());
@@ -147,11 +148,4 @@ fn main() {
         }
         (cmd, _) => panic!("{}", cmd),
     }
-
-    // let app = App::new("compile-steno")
-    //     .arg(Arg::with_name("test").required(true));
-    // let matches = app.get_matches();
-    // let test_str = matches.value_of("test").unwrap();
-    // let (attr, s) = Dict::parse_entry(test_str);
-    // println!("attr: {:?}, str: {}", attr, s);
 }

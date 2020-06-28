@@ -1,9 +1,12 @@
+//! Provides safe types for interacting with the keyboard using raw HID, primarily to download and upload
+//! firmware to and from the keyboard.
 use std::time::Duration;
 
 use hid::Handle;
 
 pub mod consts {
     #![allow(dead_code)]
+    /// Program page size for the SPI flash
     pub const PAGE_SIZE: u32 = 256;
     pub const PACKET_SIZE: usize = 64;
     pub const PAYLOAD_SIZE: usize = PACKET_SIZE - 8;
