@@ -3,6 +3,12 @@
 #include <stdbool.h>
 #include "steno.h"
 
+#ifdef USE_SPI_FLASH
+#include "flash.h"
+#else
+#include "sd/pff.h"
+#endif
+
 #define MAX_COLLISIONS 8
 #define SEARCH_NODES_SIZE 8
 
@@ -58,17 +64,12 @@ typedef struct __attribute__((packed)) {
     uint8_t level;
 } search_node_t;
 
-extern struct fat_file_struct *file;
+extern FATFS fat_fs;
 extern header_t _header;
 extern child_t _child;
 extern char _buf[128];
 
-#ifdef USE_SPI_FLASH
 void seek(uint32_t addr);
-#else
-void seek(int32_t addr);
-#endif
-
 void read_string(void);
 void read_header(void);
 void read_child(void);

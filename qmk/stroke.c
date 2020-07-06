@@ -3,36 +3,29 @@
 #include "hist.h"
 #include "stdbool.h"
 
-#ifdef USE_SPI_FLASH
-#include "flash.h"
-#else
-#include "sdcard/fat.h"
-#endif
-
 header_t _header;
 child_t _child;
 char _buf[128];
 #ifdef USE_SPI_FLASH
 static uint32_t flash_addr = 0;
 #else
-struct fat_file_struct *file;
+FATFS fat_fs;
 #endif
 
-#ifdef USE_SPI_FLASH
 void seek(uint32_t addr) {
+#ifdef USE_SPI_FLASH
     flash_addr = addr;
-}
 #else
-void seek(int32_t addr) {
-    fat_seek_file(file, &addr, FAT_SEEK_SET);
-}
+    uprintf("seek: %X\n", pf_lseek(addr));
 #endif
+}
 
 void read_string(void) {
 #ifdef USE_SPI_FLASH
     flash_read(flash_addr, (uint8_t *) _buf, _header.entry_len);
 #else
-    fat_read_file(file, (uint8_t *) _buf, _header.entry_len);
+    UINT br;
+    pf_read(_buf, _header.entry_len, &br);
 #endif
     _buf[_header.entry_len] = 0;
 }
@@ -42,7 +35,8 @@ void read_header(void) {
     flash_read(flash_addr, (uint8_t *) &_header, sizeof(header_t));
     seek(flash_addr + sizeof(header_t));
 #else
-    fat_read_file(file, (uint8_t *) &_header, sizeof(header_t));
+    UINT br;
+    pf_read(&_header, sizeof(header_t), &br);
 #endif
 }
 
@@ -51,7 +45,8 @@ void read_child(void) {
     flash_read(flash_addr, (uint8_t *) &_child, sizeof(child_t));
     seek(flash_addr + sizeof(child_t));
 #else
-    fat_read_file(file, (uint8_t *) &_child, sizeof(child_t));
+    UINT br;
+    pf_read(&_child, sizeof(child_t), &br);
 #endif
 }
 

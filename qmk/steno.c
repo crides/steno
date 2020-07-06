@@ -7,14 +7,6 @@
 
 #include "hist.h"
 
-#ifdef USE_SPI_FLASH
-#include "flash.h"
-#else
-#include "sdcard/fat.h"
-#include "sdcard/partition.h"
-#include "sdcard/sd_raw.h"
-#endif
-
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
 state_t state = {.space = 0, .cap = ATTR_CAPS_CAPS, .prev_glue = 0};
@@ -171,24 +163,6 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
     data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE);
     raw_hid_send(data, PACKET_SIZE);
 }
-#else
-static uint8_t find_file_in_dir(struct fat_fs_struct* fs, struct fat_dir_struct* dd, const char* name, struct fat_dir_entry_struct* dir_entry) {
-    while (fat_read_dir(dd, dir_entry)) {
-        if (strcmp(dir_entry->long_name, name) == 0) {
-            fat_reset_dir(dd);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static struct fat_file_struct* open_file_in_dir(struct fat_fs_struct* fs, struct fat_dir_struct* dd, const char* name) {
-    struct fat_dir_entry_struct file_entry;
-    if (!find_file_in_dir(fs, dd, name, &file_entry)) {
-        return 0;
-    }
-    return fat_open_file(fs, &file_entry);
-}
 #endif
 
 // Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize
@@ -198,33 +172,15 @@ void keyboard_post_init_user(void) {
 #ifdef USE_SPI_FLASH
     flash_init();
 #else
-    if (!sd_raw_init()) {
+    extern FATFS fat_fs;
+    if (pf_mount(&fat_fs)) {
+        xprintf("Volume\n");
         goto error;
     }
 
-    struct partition_struct *partition = partition_open();
-    if (!partition) {
-        goto error;
-    }
-
-    /* open file system */
-    struct fat_fs_struct *fs = fat_open(partition);
-    if (!fs) {
-        goto error;
-    }
-
-    /* open root directory */
-    struct fat_dir_entry_struct directory;
-    fat_get_dir_entry_of_path(fs, "/", &directory);
-
-    struct fat_dir_struct *dd = fat_open_dir(fs, &directory);
-    if (!dd) {
-        goto error;
-    }
-    
-    /* search file in current directory and open it */
-    file = open_file_in_dir(fs, dd, "steno.bin");
-    if (!file) {
+    FRESULT res = pf_open("STENO.BIN");
+    if (res) {
+        xprintf("File: %X\n", res);
         goto error;
     }
 
