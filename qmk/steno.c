@@ -2,18 +2,52 @@
 #include "steno.h"
 #include "keymap_steno.h"
 #include "raw_hid.h"
+#include "flash.h"
+#include <stdio.h>
 
 #ifdef CUSTOM_STENO
 
 #include "hist.h"
+/* #include "analog.h" */
+
+#ifndef __AVR__
+#include "app_ble_func.h"
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
+
+void tap_code(uint8_t code) {
+    register_code(code);
+    unregister_code(code);
+}
+
+void tap_code16(uint16_t code) {
+    register_code16(code);
+    unregister_code16(code);
+}
+
+void _delay_ms(uint16_t ms) {
+    nrf_delay_ms(ms);
+}
+#endif
 
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
 state_t state = {.space = 0, .cap = ATTR_CAPS_CAPS, .prev_glue = 0};
+#ifdef OLED_DRIVER_ENABLE
+char last_stroke[24];
+char last_trans[128];
+uint8_t last_trans_size;
+#endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     uint32_t stroke = qmk_chord_to_stroke(chord);
+#ifdef OLED_DRIVER_ENABLE
+    last_trans_size = 0;
+    memset(last_trans, 0, 128);
+    stroke_to_string(stroke, last_stroke, NULL);
+#endif
 
     if (stroke == 0x1000) {  // Asterisk
         hist_undo();
@@ -65,10 +99,9 @@ uint16_t crc8(uint8_t *data, uint8_t len) {
     for (uint8_t i = 0; i < len; i ++) {
         crc ^= data[i];
         for (uint8_t i = 0; i < 8; ++i) {
+            crc = crc >> 1;
             if (crc & 1) {
-                crc = (crc >> 1) ^ 0x8C;
-            } else {
-                crc = (crc >> 1);
+                crc = crc ^ 0x8C;
             }
         }
     }
@@ -168,7 +201,7 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
 // Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize
 // the keyboard
 void keyboard_post_init_user(void) {
-    _delay_ms(2000);
+    /* _delay_ms(2000); */
 #ifdef USE_SPI_FLASH
     flash_init();
 #else
@@ -188,15 +221,38 @@ void keyboard_post_init_user(void) {
     oled_set_contrast(0);
 #endif
 
+    xprintf("init\n");
     return;
 error:
     xprintf("Can't init\n");
     while(1);
 #endif
+#ifndef __AVR__
+#ifdef OLED_DRIVER_ENABLE
+    steno_debug("oled_init: %u", oled_init(0));
+#endif
+#endif
 }
 
 void matrix_init_user() {
     steno_set_mode(STENO_MODE_GEMINI);
+#ifndef __AVR__
+    set_usb_enabled(true);
+#endif
 }
+
+#ifdef OLED_DRIVER_ENABLE
+void oled_task_user(void) {
+#ifdef __AVR__
+    uint16_t adc = analogReadPin(B5);
+    char buf[32];
+    uint16_t volt = (uint32_t) adc * 33 * 2 * 10 / 1024;
+    sprintf(buf, "BAT: %u.%uV\n", volt / 100, volt % 100);
+    oled_write(buf, false);
+#endif
+    oled_write_ln(last_stroke, false);
+    oled_write_ln(last_trans, false);
+}
+#endif
 
 #endif

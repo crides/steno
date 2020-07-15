@@ -64,7 +64,6 @@ typedef struct __attribute__((packed)) {
     uint8_t level;
 } search_node_t;
 
-extern FATFS fat_fs;
 extern header_t _header;
 extern child_t _child;
 extern char _buf[128];

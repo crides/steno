@@ -16,7 +16,7 @@ void seek(uint32_t addr) {
 #ifdef USE_SPI_FLASH
     flash_addr = addr;
 #else
-    uprintf("seek: %X\n", pf_lseek(addr));
+    steno_debug("seek: %X\n", pf_lseek(addr));
 #endif
 }
 
@@ -106,7 +106,9 @@ bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
         if (stroke & ((uint32_t) 1 << 5)) buf[len++] = '8';
         if (stroke & ((uint32_t) 1 << 3)) buf[len++] = '9';
         buf[len] = 0;
-        *ret_len = len;
+        if (ret_len) {
+            *ret_len = len;
+        }
         return true;
     }
 
@@ -116,17 +118,21 @@ bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
         if (stroke & ((uint32_t) 1 << i)) {
             if (i < 10) {
                 if (!has_mid) {
-                    buf[len++] = '-';
+                    buf[len] = '-';
+                    len ++;
                     has_mid = true;
                 }
             } else if (i <= 14) {
                 has_mid = true;
             }
-            buf[len++] = KEYS[22 - i];
+            buf[len] = KEYS[22 - i];
+            len ++;
         }
     }
     buf[len] = 0;
-    *ret_len = len;
+    if (ret_len) {
+        *ret_len = len;
+    }
     return false;
 }
 
@@ -164,9 +170,8 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         uint32_t next_node = node_find_stroke(node, stroke);
 #ifdef STENO_DEBUG
         char buf[24];
-        uint8_t _len = 0;
-        stroke_to_string(stroke, buf, &_len);
-        xprintf("  %lX + %s -> %lX\n", node, buf, next_node);
+        stroke_to_string(stroke, buf, NULL);
+        steno_debug("  %lX + %s -> %lX\n", node, buf, next_node);
 #endif
         if (!next_node) {
             if (!last) {

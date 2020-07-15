@@ -2,111 +2,36 @@
 /* Low level disk I/O module skeleton for Petit FatFs (C)ChaN, 2014      */
 /*-----------------------------------------------------------------------*/
 
+
 #include "diskio.h"
 #include <string.h>
-#include <avr/io.h>
 #include "steno.h"
 
-/* commands available in SPI mode */
-
+#ifdef __AVR__
+#include <avr/io.h>
 /* CMD0: response R1 */
 #define CMD_GO_IDLE_STATE 0x00
 /* CMD1: response R1 */
 #define CMD_SEND_OP_COND 0x01
 /* CMD8: response R7 */
 #define CMD_SEND_IF_COND 0x08
-/* CMD9: response R1 */
-#define CMD_SEND_CSD 0x09
-/* CMD10: response R1 */
-#define CMD_SEND_CID 0x0a
-/* CMD12: response R1 */
-#define CMD_STOP_TRANSMISSION 0x0c
-/* CMD13: response R2 */
-#define CMD_SEND_STATUS 0x0d
 /* CMD16: arg0[31:0]: block length, response R1 */
 #define CMD_SET_BLOCKLEN 0x10
 /* CMD17: arg0[31:0]: data address, response R1 */
 #define CMD_READ_SINGLE_BLOCK 0x11
-/* CMD18: arg0[31:0]: data address, response R1 */
-#define CMD_READ_MULTIPLE_BLOCK 0x12
 /* CMD24: arg0[31:0]: data address, response R1 */
 #define CMD_WRITE_SINGLE_BLOCK 0x18
-/* CMD25: arg0[31:0]: data address, response R1 */
-#define CMD_WRITE_MULTIPLE_BLOCK 0x19
-/* CMD27: response R1 */
-#define CMD_PROGRAM_CSD 0x1b
-/* CMD28: arg0[31:0]: data address, response R1b */
-#define CMD_SET_WRITE_PROT 0x1c
-/* CMD29: arg0[31:0]: data address, response R1b */
-#define CMD_CLR_WRITE_PROT 0x1d
-/* CMD30: arg0[31:0]: write protect data address, response R1 */
-#define CMD_SEND_WRITE_PROT 0x1e
-/* CMD32: arg0[31:0]: data address, response R1 */
-#define CMD_TAG_SECTOR_START 0x20
-/* CMD33: arg0[31:0]: data address, response R1 */
-#define CMD_TAG_SECTOR_END 0x21
-/* CMD34: arg0[31:0]: data address, response R1 */
-#define CMD_UNTAG_SECTOR 0x22
-/* CMD35: arg0[31:0]: data address, response R1 */
-#define CMD_TAG_ERASE_GROUP_START 0x23
-/* CMD36: arg0[31:0]: data address, response R1 */
-#define CMD_TAG_ERASE_GROUP_END 0x24
-/* CMD37: arg0[31:0]: data address, response R1 */
-#define CMD_UNTAG_ERASE_GROUP 0x25
-/* CMD38: arg0[31:0]: stuff bits, response R1b */
-#define CMD_ERASE 0x26
 /* ACMD41: arg0[31:0]: OCR contents, response R1 */
 #define CMD_SD_SEND_OP_COND 0x29
-/* CMD42: arg0[31:0]: stuff bits, response R1b */
-#define CMD_LOCK_UNLOCK 0x2a
 /* CMD55: arg0[31:0]: stuff bits, response R1 */
 #define CMD_APP 0x37
 /* CMD58: arg0[31:0]: stuff bits, response R3 */
 #define CMD_READ_OCR 0x3a
-/* CMD59: arg0[31:1]: stuff bits, arg0[0:0]: crc option, response R1 */
-#define CMD_CRC_ON_OFF 0x3b
 
 /* command responses */
 /* R1: size 1 byte */
 #define R1_IDLE_STATE 0
-#define R1_ERASE_RESET 1
 #define R1_ILL_COMMAND 2
-#define R1_COM_CRC_ERR 3
-#define R1_ERASE_SEQ_ERR 4
-#define R1_ADDR_ERR 5
-#define R1_PARAM_ERR 6
-/* R1b: equals R1, additional busy bytes */
-/* R2: size 2 bytes */
-#define R2_CARD_LOCKED 0
-#define R2_WP_ERASE_SKIP 1
-#define R2_ERR 2
-#define R2_CARD_ERR 3
-#define R2_CARD_ECC_FAIL 4
-#define R2_WP_VIOLATION 5
-#define R2_INVAL_ERASE 6
-#define R2_OUT_OF_RANGE 7
-#define R2_CSD_OVERWRITE 7
-#define R2_IDLE_STATE (R1_IDLE_STATE + 8)
-#define R2_ERASE_RESET (R1_ERASE_RESET + 8)
-#define R2_ILL_COMMAND (R1_ILL_COMMAND + 8)
-#define R2_COM_CRC_ERR (R1_COM_CRC_ERR + 8)
-#define R2_ERASE_SEQ_ERR (R1_ERASE_SEQ_ERR + 8)
-#define R2_ADDR_ERR (R1_ADDR_ERR + 8)
-#define R2_PARAM_ERR (R1_PARAM_ERR + 8)
-/* R3: size 5 bytes */
-#define R3_OCR_MASK (0xffffffffUL)
-#define R3_IDLE_STATE (R1_IDLE_STATE + 32)
-#define R3_ERASE_RESET (R1_ERASE_RESET + 32)
-#define R3_ILL_COMMAND (R1_ILL_COMMAND + 32)
-#define R3_COM_CRC_ERR (R1_COM_CRC_ERR + 32)
-#define R3_ERASE_SEQ_ERR (R1_ERASE_SEQ_ERR + 32)
-#define R3_ADDR_ERR (R1_ADDR_ERR + 32)
-#define R3_PARAM_ERR (R1_PARAM_ERR + 32)
-/* Data Response: size 1 byte */
-#define DR_STATUS_MASK 0x0e
-#define DR_STATUS_ACCEPTED 0x05
-#define DR_STATUS_CRC_ERR 0x0a
-#define DR_STATUS_WRITE_ERR 0x0c
 
 /* status bits for card types */
 #define SD_RAW_SPEC_1 0
@@ -387,16 +312,65 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length) {
     }
     return 1;
 }
+#else
+#include "app_sdcard.h"
+void sdc_handler(sdc_evt_t const *p_event) { }
+uint8_t sdcard_cache[SDC_SECTOR_SIZE];
+uint32_t sdcard_cache_block_addr;
+static const app_sdc_config_t sdc_cfg = {
+    .mosi_pin = 13, // 0.13
+    .miso_pin = 15, // 0.15
+    .sck_pin  = 14, // 0.14
+    .cs_pin   = 40, // 1.08
+};
+
+uint8_t nrf_sdcard_init(void) {
+    ret_code_t err_code = app_sdc_init(&sdc_cfg, sdc_handler);
+    return err_code == NRF_SUCCESS;
+}
+
+uint8_t nrf_sdcard_read(uint8_t *buf, uint32_t addr, uint16_t length) {
+    while (length > 0) {
+        /* determine byte count to read at once */
+        uint16_t block_offset = addr & 0x01ff;
+        uint32_t block_address = addr - block_offset;
+        uint16_t read_length = 512 - block_offset; /* read up to block border */
+        if (read_length > length) {
+            read_length = length;
+        }
+        
+        /* check if the requested data is cached */
+        if (block_address != sdcard_cache_block_addr) {
+            if (app_sdc_block_read(sdcard_cache, block_address / 512, 1) != NRF_SUCCESS) {
+                return 0;
+            }
+            sdcard_cache_block_addr = block_address;
+            memcpy(sdcard_cache, sdcard_cache + block_offset, read_length);
+            buf += read_length;
+        } else {
+            memcpy(sdcard_cache, sdcard_cache + block_offset, read_length);
+            buf += read_length;
+        }
+        length -= read_length;
+        addr += read_length;
+    }
+    return 1;
+}
+#endif
 
 /*-----------------------------------------------------------------------*/
 /* Initialize Disk Drive                                                 */
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_initialize (void) {
-    if (!sd_raw_init()) {
-        return STA_NOINIT;
+#ifdef __AVR__
+    if (sd_raw_init()) {
+#else
+    if (nrf_sdcard_init()) {
+#endif
+        return 0;
     }
-	return 0;
+	return STA_NOINIT;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -410,10 +384,14 @@ DRESULT disk_readp (
 	UINT count		/* Byte count (bit15:destination) */
 ) {
     offset_t off = (offset_t) sector * 512 + offset;
-    if (!sd_raw_read(off, buff, count)) {
-        return RES_ERROR;
+#ifdef __AVR__
+    if (sd_raw_read(off, buff, count)) {
+#else
+    if (nrf_sdcard_read(buff, off, count)) {
+#endif
+        return RES_OK;
     }
-    return RES_OK;
+    return RES_ERROR;
 }
 
 /*-----------------------------------------------------------------------*/

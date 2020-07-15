@@ -25,9 +25,9 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     uint8_t len;
-    uint8_t repl_len;
     state_t state;
-    uint8_t search_nodes_len;
+    uint8_t repl_len : 4;
+    uint8_t search_nodes_len : 4;
     search_node_t *search_nodes;
     output_t output;
 } history_t;

@@ -48,10 +48,10 @@ extern "C" {
 #define configure_pin_sck() DDRB |= (1 << DDB1)
 #define configure_pin_mosi() DDRB |= (1 << DDB2)
 #define configure_pin_miso() DDRB &= ~(1 << DDB3)
-#define configure_pin_ss() DDRC |= (1 << DDC6)
+#define configure_pin_ss() DDRB |= (1 << DDB5)
 
-#define select_card() PORTC &= ~(1 << PORTC6)
-#define unselect_card() PORTC |= (1 << PORTC6)
+#define select_card() PORTB &= ~(1 << PORTB5)
+#define unselect_card() PORTB |= (1 << PORTB5)
 
 typedef uint32_t offset_t;
 

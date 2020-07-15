@@ -26,8 +26,7 @@ void hist_add(history_t hist) {
     xprintf("  space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
     if (hist.output.type == RAW_STROKE) {
         char buf[24];
-        uint8_t _len = 0;
-        stroke_to_string(hist.output.stroke, buf, &_len);
+        stroke_to_string(hist.output.stroke, buf, NULL);
         xprintf("  output: %s\n", buf);
     } else {
         uint32_t node = hist.output.node;
@@ -110,6 +109,10 @@ void register_hex32(uint32_t hex) {
     }
 }
 
+#ifdef OLED_DRIVER_ENABLE
+extern char last_trans[128];
+extern uint8_t last_trans_size;
+#endif
 // Custom version of `send_string` that takes care of custom Unicode formats
 uint8_t _send_unicode_string(char *buf, uint8_t len) {
     uint8_t str_len = 0;
@@ -117,12 +120,15 @@ uint8_t _send_unicode_string(char *buf, uint8_t len) {
         if (*buf == 1) {    // Custom unicode start byte
             uint32_t code_point = (uint32_t) buf[1] | (uint32_t) buf[2] << 8 | (uint32_t) buf[3] << 16;
             steno_debug("<%lX>", code_point);
-            tap_code16(C(S(KC_U)));
+            tap_code16(LCTL(LSFT(KC_U)));
             register_hex32(code_point);
             tap_code(KC_ENT);
             buf += 3;
             i += 3;
         } else {
+#ifdef OLED_DRIVER_ENABLE
+            last_trans[last_trans_size++] = *buf;
+#endif
             send_char(*buf);
         }
         str_len ++;
@@ -160,7 +166,10 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 
     if (output.type == RAW_STROKE) {
         uint8_t len;
-        steno_debug("  stroke: %lX\n", output.stroke);
+#ifdef STENO_DEBUG
+        uint32_t stroke = output.stroke;
+        steno_debug("  stroke: %lX\n", stroke);
+#endif
         if (stroke_to_string(output.stroke, _buf, &len)) {
             state->prev_glue = 1;
         }
