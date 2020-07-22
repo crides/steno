@@ -11,10 +11,14 @@
 /* #include "analog.h" */
 
 #ifndef __AVR__
+#include "adc.h"
 #include "app_ble_func.h"
+#include "nrf_pwr_mgmt.h"
 #include "nrf_log.h"
+#include "nrf_gpio.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+#include "nrf_ble_gatt.h"
 
 void tap_code(uint8_t code) {
     register_code(code);
@@ -24,10 +28,6 @@ void tap_code(uint8_t code) {
 void tap_code16(uint16_t code) {
     register_code16(code);
     unregister_code16(code);
-}
-
-void _delay_ms(uint16_t ms) {
-    nrf_delay_ms(ms);
 }
 #endif
 
@@ -39,9 +39,16 @@ char last_stroke[24];
 char last_trans[128];
 uint8_t last_trans_size;
 #endif
+#ifndef __AVR__
+static bt_state_t bt_state = BT_ACTIVE;
+static uint32_t bt_state_time;
+#endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
+    bt_state = BT_ACTIVE;
+    bt_state_time = timer_read32();
+
     uint32_t stroke = qmk_chord_to_stroke(chord);
 #ifdef OLED_DRIVER_ENABLE
     last_trans_size = 0;
@@ -49,10 +56,13 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     stroke_to_string(stroke, last_stroke, NULL);
 #endif
 
+    extern int usbd_send_consumer(uint16_t data);
     if (stroke == 0x1000) {  // Asterisk
         hist_undo();
+        tap_code(KC_VOLU);
         return false;
     }
+
 
     // TODO free up the next entry for boundary
     history_t new_hist;
@@ -201,7 +211,6 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
 // Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize
 // the keyboard
 void keyboard_post_init_user(void) {
-    /* _delay_ms(2000); */
 #ifdef USE_SPI_FLASH
     flash_init();
 #else
@@ -217,41 +226,94 @@ void keyboard_post_init_user(void) {
         goto error;
     }
 
-#ifdef OLED_DRIVER_ENABLE
-    oled_set_contrast(0);
-#endif
-
     xprintf("init\n");
     return;
 error:
     xprintf("Can't init\n");
     while(1);
 #endif
+    
 #ifndef __AVR__
-#ifdef OLED_DRIVER_ENABLE
-    steno_debug("oled_init: %u", oled_init(0));
-#endif
+    nrf_gpio_cfg_input(BUTTON, NRF_GPIO_PIN_PULLUP);
+    bt_state_time = timer_read32();
 #endif
 }
 
 void matrix_init_user() {
     steno_set_mode(STENO_MODE_GEMINI);
-#ifndef __AVR__
-    set_usb_enabled(true);
-#endif
 }
 
 #ifdef OLED_DRIVER_ENABLE
 void oled_task_user(void) {
+#ifndef __AVR__
+    static uint8_t button_last;
+    static uint8_t device_id = 0;
+    static disp_state_t state;
+    static uint32_t status_time = 0;
+    static uint32_t status_button_time = 0;
+#endif
+
+    if (bt_state != BT_ACTIVE) {
+        nrf_pwr_mgmt_run();
+    } else {
+        if (timer_elapsed32(bt_state_time) > BT_ACTIVE_HOLD_TIME) {
+            NRF_LOG_INFO("Going into idle");
+            bt_state = BT_IDLE;
+        }
+    }
+
+    oled_set_contrast(0);
+    char buf[32];
 #ifdef __AVR__
     uint16_t adc = analogReadPin(B5);
-    char buf[32];
     uint16_t volt = (uint32_t) adc * 33 * 2 * 10 / 1024;
     sprintf(buf, "BAT: %u.%uV\n", volt / 100, volt % 100);
-    oled_write(buf, false);
+#else
+    uint8_t button = !nrf_gpio_pin_read(BUTTON);
+    switch (state) {
+        case DISP_NORMAL:
+            if (button && !button_last) {
+                state = DISP_STATUS;
+                status_time = timer_read32();
+            }
+            oled_write_ln(last_stroke, false);
+            oled_write_ln(last_trans, false);
+            oled_advance_page(true);
+            oled_advance_page(true);
+            break;
+        case DISP_STATUS:
+            if (timer_elapsed32(status_time) > STATUS_STAY_TIME) {
+                state = DISP_NORMAL;
+                status_button_time = 0;
+            }
+            if (button) {
+                status_time = timer_read32();
+                if (!button_last) {
+                    status_button_time = status_time;
+                }
+                if (status_button_time && timer_elapsed32(status_button_time) > BUTTON_HOLD_TIME) {
+                    restart_advertising_wo_whitelist();
+                }
+            } else {
+                if (button_last && timer_elapsed32(status_button_time) < BUTTON_HOLD_TIME) {
+                    device_id ++;
+                    if (device_id == 5) {
+                        device_id = 0;
+                    }
+                    restart_advertising_id(device_id);
+                }
+            }
+            uint16_t volt = get_vcc();
+            snprintf(buf, 32, "BAT: %umV", volt);
+            oled_write_ln(buf, false);
+            snprintf(buf, 32, "Device #%u", device_id);
+            oled_write_ln(buf, false);
+            oled_advance_page(true);
+            oled_advance_page(true);
+            break;
+    }
+    button_last = button;
 #endif
-    oled_write_ln(last_stroke, false);
-    oled_write_ln(last_trans, false);
 }
 #endif
 

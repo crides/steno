@@ -32,7 +32,9 @@
 #define BLE_NUS_MIN_INTERVAL 30 // default 60
 #define BLE_NUS_MAX_INTERVAL 60 // default 75
 #define BLE_HID_MAX_INTERVAL 30 // default 90
-#define BLE_HID_SLAVE_LATENCY 10 // default 4
+#define BLE_HID_SLAVE_LATENCY 99 // default 4
+
+#define OLED_TIMEOUT 5000
 
 #ifdef __AVR__
 #define MATRIX_ROW_PINS { F7, F6, F5 }
@@ -40,6 +42,11 @@
 #else
 #define MATRIX_ROW_PINS { 4, 5, 30 }
 #define MATRIX_COL_PINS { 28, 2, 3, 24, 25, 7, 27, 6, 8, 41 }
+
+#define CONFIG_PIN_SCL 11
+#define CONFIG_PIN_SDA 12
+
+#define USE_BATTERY_PIN NRF_SAADC_INPUT_AIN5
 #endif
 
 #define DIODE_DIRECTION COL2ROW

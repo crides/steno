@@ -16,7 +16,6 @@ MCU_SERIES = NRF52840
 NRFSDK_ROOT := $(NRFSDK15_ROOT) #Path to nRF SDK v15.0.0
 CUSTOM_MATRIX = yes
 EXTRAKEY_ENABLE = yes
-SRC += oled/oled.c #oled/i2c_master.c
 
 SRC += flash.c hist.c stroke.c sd/pff.c sd/diskio.c
 
