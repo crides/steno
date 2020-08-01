@@ -7,8 +7,10 @@
 #include "nrf_drv_qspi.h"
 #include "nrf_log.h"
 
-#define QSPI_STD_CMD_RSTEN  0x66
-#define QSPI_STD_CMD_RST    0x99
+#define QSPI_CMD_ENHANCED_REG 0x61
+#define QSPI_CMD_RSTEN  0x66
+#define QSPI_CMD_RST    0x99
+#define QSPI_CMD_QUADIO    0x35
 #endif
 
 void flash_init(void) {
@@ -32,39 +34,68 @@ void flash_init(void) {
            .csn_pin     = 40,
            .io0_pin     = 13,
            .io1_pin     = 15,
+#ifdef STENO_PHONE
+           .io2_pin     = 24,
+           .io3_pin     = 25,
+#else
            .io2_pin     = NRF_QSPI_PIN_NOT_CONNECTED,
            .io3_pin     = NRF_QSPI_PIN_NOT_CONNECTED,
+#endif
         },
         .irq_priority   = (uint8_t) 2,
         .prot_if = {
-            .readoc     = (nrf_qspi_readoc_t) 0,
-            .writeoc    = (nrf_qspi_writeoc_t) 0,
-            .addrmode   = (nrf_qspi_addrmode_t) 0,
+#ifdef STENO_PHONE
+            .readoc     = NRF_QSPI_READOC_READ4O,
+            .writeoc    = NRF_QSPI_WRITEOC_PP4O,
+#else
+            .readoc     = NRF_QSPI_READOC_READ2O,
+            .writeoc    = NRF_QSPI_WRITEOC_PP2O,
+#endif
+            .addrmode   = NRF_QSPI_ADDRMODE_24BIT,
             .dpmconfig  = false,
         },
         .phy_if = {
-            .sck_freq   = (nrf_qspi_frequency_t) 0,
-            .sck_delay  = (uint8_t) 0,
-            .spi_mode   = (nrf_qspi_spi_mode_t) 0,
+            .sck_freq   = NRF_QSPI_FREQ_32MDIV1,
+            .sck_delay  = (uint8_t) 1,
+            .spi_mode   = NRF_QSPI_MODE_0,
             .dpmen      = false
         },
     };
     uint32_t err_code = nrfx_qspi_init(&config, NULL, NULL);
+    steno_debug("qspi_init: %u", err_code);
     APP_ERROR_CHECK(err_code);
 
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
-        .opcode    = QSPI_STD_CMD_RSTEN,
+        .opcode    = QSPI_CMD_RSTEN,
         .length    = NRF_QSPI_CINSTR_LEN_1B,
         .io2_level = true,
         .io3_level = true,
-        .wipwait   = true,
-        .wren      = true
+        .wipwait   = false,
+        .wren      = false
     };
     err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
+    steno_debug("cinstr");
     APP_ERROR_CHECK(err_code);
-    cinstr_cfg.opcode = QSPI_STD_CMD_RST;
+    cinstr_cfg.opcode = QSPI_CMD_RST;
     err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
+    steno_debug("cinstr");
     APP_ERROR_CHECK(err_code);
+
+/* #ifdef STENO_PHONE */
+/*     // Switch to QSPI mode */
+/*     uint8_t status = 0x6F; */
+/*     steno_debug("Quad I/O enable"); */
+/*     cinstr_cfg.opcode = QSPI_CMD_ENHANCED_REG; */
+/*     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_2B; */
+/*     err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, &status, NULL); */
+/*     APP_ERROR_CHECK(err_code); */
+
+/*     cinstr_cfg.opcode = QSPI_CMD_QUADIO; */
+/*     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_1B; */
+/*     steno_debug("Quad I/O enter"); */
+/*     err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL); */
+/*     APP_ERROR_CHECK(err_code); */
+/* #endif */
 #endif
 }
 
@@ -97,6 +128,10 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
     uint8_t _buf[128];
     uint32_t read_len = (len / 4 + 1) * 4;
     uint32_t err_code = nrfx_qspi_read(_buf, read_len, addr);
+    steno_debug_ln("flash_read(%x :+ %u) -> %u", addr, len, err_code);
+    for (uint8_t i = 0; i < len; i += 4) {
+        steno_debug("buf[%i :+ 4] = %x %x %x %x", i, _buf[i], _buf[i + 1], _buf[i + 2], _buf[i + 3]);
+    }
     APP_ERROR_CHECK(err_code);
     memcpy(buf, _buf, len);
 #endif

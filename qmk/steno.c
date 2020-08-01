@@ -8,9 +8,10 @@
 #ifdef CUSTOM_STENO
 
 #include "hist.h"
-/* #include "analog.h" */
 
-#ifndef __AVR__
+#ifdef __AVR__
+#include "analog.h"
+#else
 #include "adc.h"
 #include "app_ble_func.h"
 #include "nrf_pwr_mgmt.h"
@@ -46,8 +47,10 @@ static uint32_t bt_state_time;
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
+#ifndef __AVR__
     bt_state = BT_ACTIVE;
     bt_state_time = timer_read32();
+#endif
 
     uint32_t stroke = qmk_chord_to_stroke(chord);
 #ifdef OLED_DRIVER_ENABLE
@@ -68,7 +71,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     history_t new_hist;
     search_node_t *hist_nodes = malloc(search_nodes_len * sizeof(search_node_t));
     if (!hist_nodes) {
-        xprintf("No memory for history!\n");
+        steno_error_ln("No memory for history!");
         return false;
     }
     memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t));
@@ -92,14 +95,14 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
     }
     new_hist.state = state;
-    steno_debug("steno(): state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
+    steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
-    steno_debug("steno(): processed: state: space: %u, cap: %u, glue: %u\n", state.space, state.cap, state.prev_glue);
+    steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
     if (new_hist.len) {
         hist_add(new_hist);
     }
 
-    steno_debug("--------\n\n");
+    steno_debug_ln("--------\n");
     return false;
 }
 
@@ -136,7 +139,7 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
         mass_write_info_t info = mass_write_infos[mass_write_packet_ind];
         uint8_t crc = crc8(data, info.len);
         if (crc != info.crc) {
-            xprintf("calc: %X, info: %X\n", crc, info.crc);
+            steno_error_ln("calc: %X, info: %X", crc, info.crc);
             nack(0x04);
             return;
         }
@@ -155,21 +158,20 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
     }
 
     if (data[0] != 0xAA) {
-        xprintf("head\n");
+        steno_error_ln("head");
         nack(0x01);
         return;
     }
 
     uint8_t crc = crc8(data, MSG_SIZE);
     if (crc != data[PACKET_SIZE - 1]) {
-        xprintf("CRC: %X\n", crc);
+        steno_error_ln("CRC: %X", crc);
         nack(0x02);
         return;
     }
 
     uint32_t addr;
     uint8_t len;
-    /* xprintf("head: %X\n", data[1]); */
     switch (data[1]) {
         case 0x01:;
             addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
@@ -216,20 +218,20 @@ void keyboard_post_init_user(void) {
 #else
     extern FATFS fat_fs;
     if (pf_mount(&fat_fs)) {
-        xprintf("Volume\n");
+        steno_error_ln("Volume");
         goto error;
     }
 
     FRESULT res = pf_open("STENO.BIN");
     if (res) {
-        xprintf("File: %X\n", res);
+        steno_error_ln("File: %X", res);
         goto error;
     }
 
-    xprintf("init\n");
+    steno_error_ln("init");
     return;
 error:
-    xprintf("Can't init\n");
+    steno_error_ln("Can't init");
     while(1);
 #endif
     
@@ -253,21 +255,26 @@ void oled_task_user(void) {
     static uint32_t status_button_time = 0;
 #endif
 
+#ifndef __AVR__
     if (bt_state != BT_ACTIVE) {
         nrf_pwr_mgmt_run();
     } else {
         if (timer_elapsed32(bt_state_time) > BT_ACTIVE_HOLD_TIME) {
-            NRF_LOG_INFO("Going into idle");
+            steno_debug_ln("Going into idle");
             bt_state = BT_IDLE;
         }
     }
+#endif
 
     oled_set_contrast(0);
     char buf[32];
 #ifdef __AVR__
     uint16_t adc = analogReadPin(B5);
     uint16_t volt = (uint32_t) adc * 33 * 2 * 10 / 1024;
-    sprintf(buf, "BAT: %u.%uV\n", volt / 100, volt % 100);
+    sprintf(buf, "BAT: %u.%uV", volt / 100, volt % 100);
+    oled_write_ln(buf, false);
+    oled_write_ln(last_stroke, false);
+    oled_write_ln(last_trans, false);
 #else
     uint8_t button = !nrf_gpio_pin_read(BUTTON);
     switch (state) {

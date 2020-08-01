@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define STENO_PHONE
+
 #ifdef __AVR__
 #include "config_common.h"
 #endif
@@ -22,10 +24,16 @@
 #endif
 #endif
 
+#ifdef STENO_PHONE
+#define MATRIX_ROWS 5
+#define MATRIX_COLS 6
+#else
 #define MATRIX_ROWS 3
 #define MATRIX_COLS 10
-#define THIS_DEVICE_ROWS 3
-#define THIS_DEVICE_COLS 10
+#endif
+
+#define THIS_DEVICE_ROWS MATRIX_ROWS
+#define THIS_DEVICE_COLS MATRIX_COLS
 #define IS_LEFT_HAND true
 #define ENABLE_STARTUP_ADV_NOLIST
 
@@ -37,11 +45,21 @@
 #define OLED_TIMEOUT 5000
 
 #ifdef __AVR__
+#ifdef STENO_PHONE
+#define MATRIX_ROW_PINS { C7, D6, D7, B7, B6 }
+#define MATRIX_COL_PINS { F7, F6, F5, F4, F1, F0 }
+#else
 #define MATRIX_ROW_PINS { F7, F6, F5 }
 #define MATRIX_COL_PINS { F4, F1, F0, D2, D3, D7, B6, B7, D6, C7 }
+#endif
+#else
+#ifdef STENO_PHONE
+#define MATRIX_ROW_PINS { 41, 8, 7, 6, 27 }
+#define MATRIX_COL_PINS { 4, 5, 30, 28, 2, 3 }
 #else
 #define MATRIX_ROW_PINS { 4, 5, 30 }
 #define MATRIX_COL_PINS { 28, 2, 3, 24, 25, 7, 27, 6, 8, 41 }
+#endif
 
 #define CONFIG_PIN_SCL 11
 #define CONFIG_PIN_SDA 12
