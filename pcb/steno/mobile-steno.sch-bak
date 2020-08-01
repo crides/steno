@@ -1159,10 +1159,10 @@ ROW2
 Text GLabel 8650 1950 2    50   BiDi ~ 0
 ROW1
 $Comp
-L Connector_Generic:Conn_01x02 J?
+L Connector_Generic:Conn_01x02 J3
 U 1 1 5F1F240B
 P 6900 3250
-F 0 "J?" H 6980 3242 50  0000 L CNN
+F 0 "J3" H 6980 3242 50  0000 L CNN
 F 1 "Conn_01x02" H 6980 3151 50  0000 L CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 6900 3250 50  0001 C CNN
 F 3 "~" H 6900 3250 50  0001 C CNN

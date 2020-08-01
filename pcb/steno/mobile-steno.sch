@@ -39,7 +39,7 @@ F 5 "V" H 2600 1550 50  0001 L CNN "Spice_Primitive"
 $EndComp
 Text GLabel 7600 1550 0    50   Input ~ 0
 GND
-Text GLabel 8650 2450 2    50   BiDi ~ 0
+Text GLabel 8650 2150 2    50   BiDi ~ 0
 ROW3
 Text GLabel 7600 1950 0    50   BiDi ~ 0
 COL4
@@ -620,10 +620,6 @@ F 5 "V" H 6100 1550 50  0001 L CNN "Spice_Primitive"
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
-	5500 1300 6200 1300
-Wire Wire Line
-	6200 1400 6200 1300
-Wire Wire Line
 	6100 1700 6150 1700
 Wire Wire Line
 	6150 1700 6150 2250
@@ -651,10 +647,6 @@ F 5 "V" H 6100 2100 50  0001 L CNN "Spice_Primitive"
 	1    6100 2100
 	0    -1   1    0   
 $EndComp
-Wire Wire Line
-	5500 1850 6200 1850
-Wire Wire Line
-	6200 1950 6200 1850
 Wire Wire Line
 	6100 2250 6150 2250
 Wire Wire Line
@@ -684,15 +676,8 @@ F 5 "V" H 6100 2650 50  0001 L CNN "Spice_Primitive"
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
-	5500 2400 6200 2400
-Wire Wire Line
-	6200 2500 6200 2400
-Wire Wire Line
 	6100 2800 6150 2800
 Connection ~ 6150 2250
-Connection ~ 5500 2400
-Connection ~ 5500 1850
-Connection ~ 5500 1300
 $Comp
 L canadian_parts:KEYSW K19
 U 1 1 5EF4AFA7
@@ -1044,10 +1029,6 @@ F 5 "V" H 6100 3150 50  0001 L CNN "Spice_Primitive"
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
-	5500 2900 6200 2900
-Wire Wire Line
-	6200 3000 6200 2900
-Wire Wire Line
 	6100 3300 6150 3300
 Wire Wire Line
 	6150 3300 6150 3850
@@ -1076,13 +1057,7 @@ F 5 "V" H 6100 3700 50  0001 L CNN "Spice_Primitive"
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
-	5500 3450 6200 3450
-Wire Wire Line
-	6200 3550 6200 3450
-Wire Wire Line
 	6100 3850 6150 3850
-Connection ~ 5500 3450
-Connection ~ 5500 2900
 Wire Wire Line
 	6150 3300 6150 2800
 Connection ~ 6150 3300
@@ -1131,9 +1106,9 @@ Text GLabel 5400 3850 3    50   BiDi ~ 0
 COL5
 Text GLabel 6100 3850 3    50   BiDi ~ 0
 COL6
-Text GLabel 8650 2150 2    50   BiDi ~ 0
-ROW4
 Text GLabel 8650 2250 2    50   BiDi ~ 0
+ROW4
+Text GLabel 8650 2450 2    50   BiDi ~ 0
 ROW5
 Text GLabel 7600 2550 0    50   BiDi ~ 0
 DQ2
