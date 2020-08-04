@@ -5,18 +5,25 @@
 #include <stdint.h>
 #include "stroke.h"
 
-/* #include "config.h" */
-
-#define CUSTOM_STENO
-#define USE_SPI_FLASH
-#define STENO_PHONE
-#define STENO_DEBUG_FLASH
+#include "config.h"
 
 #ifdef CONSOLE_ENABLE
-#define STENO_DEBUG
+#if defined(STENO_DEBUG) && defined(DEBUG_FLASH)
+#define STENO_DEBUG_FLASH
+#endif
+
+#if defined(STENO_DEBUG) && defined(DEBUG_HIST)
+#define STENO_DEBUG_HIST
+#endif
+
+#if defined(STENO_DEBUG) && defined(DEBUG_STROKE)
+#define STENO_DEBUG_STROKE
+#endif
 #endif
 
 #ifdef __AVR__
+#define nrf_log_push(s)
+
 #define steno_error(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_error_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
 #ifdef STENO_DEBUG
@@ -27,7 +34,7 @@
 #define steno_debug_ln(...)
 #endif
 #else
-/* #define NRF_LOG_MODULE_NAME steno */
+
 #define LED1 47
 #define LED2 42
 #define BUTTON 34
@@ -55,10 +62,6 @@ typedef enum {
     DISP_NORMAL,
     DISP_STATUS,
 } disp_state_t;
-
-#define STATUS_STAY_TIME 2000
-#define BUTTON_HOLD_TIME 1000
-#define BT_ACTIVE_HOLD_TIME 10000
 
 #define PACKET_SIZE 64
 #define PAYLOAD_SIZE (PACKET_SIZE - 8)

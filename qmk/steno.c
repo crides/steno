@@ -44,15 +44,31 @@ uint8_t last_trans_size;
 static bt_state_t bt_state = BT_ACTIVE;
 static uint32_t bt_state_time;
 #endif
+#ifdef STENO_PHONE
+static uint8_t locked = 1;
+#endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #ifndef __AVR__
-    bt_state = BT_ACTIVE;
     bt_state_time = timer_read32();
 #endif
 
     uint32_t stroke = qmk_chord_to_stroke(chord);
+#ifdef STENO_PHONE
+    if (stroke == 0x0CA990) {   //KPROERPG, 2 paws and OE
+        locked = !locked;
+        return false;
+    }
+    if (locked) {
+        return false;
+    }
+#endif
+
+#ifndef __AVR__
+    bt_state = BT_ACTIVE;
+#endif
+
 #ifdef OLED_DRIVER_ENABLE
     last_trans_size = 0;
     memset(last_trans, 0, 128);
@@ -95,14 +111,20 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
     }
     new_hist.state = state;
+#ifdef STENO_DEBUG_HIST
     steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
+#endif
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
+#ifdef STENO_DEBUG_HIST
     steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
+#endif
     if (new_hist.len) {
         hist_add(new_hist);
     }
 
+#if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
     steno_debug_ln("--------\n");
+#endif
     return false;
 }
 
@@ -315,7 +337,13 @@ void oled_task_user(void) {
             oled_write_ln(buf, false);
             snprintf(buf, 32, "Device #%u", device_id);
             oled_write_ln(buf, false);
+#ifdef STENO_PHONE
+            if (locked) {
+                oled_write_ln("Locked", false);
+            }
+#else
             oled_advance_page(true);
+#endif
             oled_advance_page(true);
             break;
     }

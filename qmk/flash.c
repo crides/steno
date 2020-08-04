@@ -128,10 +128,25 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
     uint8_t _buf[128];
     uint32_t read_len = (len / 4 + 1) * 4;
     uint32_t err_code = nrfx_qspi_read(_buf, read_len, addr);
+#ifdef STENO_DEBUG_FLASH
     steno_debug_ln("flash_read(%x :+ %u) -> %u", addr, len, err_code);
     for (uint8_t i = 0; i < len; i += 4) {
-        steno_debug("buf[%i :+ 4] = %x %x %x %x", i, _buf[i], _buf[i + 1], _buf[i + 2], _buf[i + 3]);
+        switch (len - i) {
+            case 1:
+                steno_debug("  %i: %02x", i, _buf[i]);
+                break;
+            case 2:
+                steno_debug("  %i: %02x %02x", i, _buf[i], _buf[i + 1]);
+                break;
+            case 3:
+                steno_debug("  %i: %02x %02x %02x", i, _buf[i], _buf[i + 1], _buf[i + 2]);
+                break;
+            default:
+                steno_debug("  %i: %02x %02x %02x %02x", i, _buf[i], _buf[i + 1], _buf[i + 2], _buf[i + 3]);
+                break;
+        }
     }
+#endif
     APP_ERROR_CHECK(err_code);
     memcpy(buf, _buf, len);
 #endif

@@ -14,10 +14,14 @@ FATFS fat_fs;
 
 void seek(uint32_t addr) {
 #ifdef USE_SPI_FLASH
+#ifdef STENO_DEBUG_STROKE
     steno_debug("seek: %x -> %x", flash_addr, addr);
+#endif
     flash_addr = addr;
 #else
+#ifdef STENO_DEBUG_STROKE
     steno_debug_ln("seek: %X", pf_lseek(addr));
+#endif
 #endif
 }
 
@@ -32,6 +36,9 @@ void read_string(void) {
 }
 
 void read_header(void) {
+#ifdef STENO_DEBUG_FLASH
+    steno_debug("read_header()");
+#endif
 #ifdef USE_SPI_FLASH
     flash_read(flash_addr, (uint8_t *) &_header, sizeof(header_t));
     seek(flash_addr + sizeof(header_t));
@@ -39,7 +46,10 @@ void read_header(void) {
     UINT br;
     pf_read(&_header, sizeof(header_t), &br);
 #endif
-    steno_debug("read_header() -> .node_num = %x, .entry_len = %u", _header.node_num, _header.entry_len);
+
+#ifdef STENO_DEBUG_FLASH
+    steno_debug("  -> .node_num = %x, .entry_len = %u", _header.node_num, _header.entry_len);
+#endif
 }
 
 void read_child(void) {
@@ -83,7 +93,6 @@ uint32_t node_find_stroke(uint32_t header_ptr, uint32_t stroke) {
     for (uint8_t collisions = 0; collisions < max_collisions; collisions ++) {
         read_child();
         if (stroke == _child.stroke) {
-            steno_debug("return: %x", _child.addr);
             return _child.addr;
         }
         if (_child.stroke == 0xffffff) {
@@ -163,7 +172,9 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 
 // Searches on multiple nodes, for use with the top level, and tries to find the longest match
 void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level) {
+#ifdef STENO_DEBUG_STROKE
     steno_debug_ln("search_on_nodes()");
+#endif
     uint8_t _size = *size;
     *size = 0;
     for (uint8_t i = 0; i <= _size; i ++) {
@@ -171,10 +182,10 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
         // Search root node at the end
         uint32_t node = last ? 0 : nodes[i].node;
         uint32_t next_node = node_find_stroke(node, stroke);
-#ifdef STENO_DEBUG
+#ifdef STENO_DEBUG_STROKE
         char buf[24];
         stroke_to_string(stroke, buf, NULL);
-        steno_debug_ln("  %lX + %s -> %lX", node, buf, next_node);
+        steno_debug_ln("  %lX + %s -> %lX", node, nrf_log_push(buf), next_node);
 #endif
         if (!next_node) {
             if (!last) {
@@ -190,7 +201,9 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             *max_level = next_level;
             *max_level_node = next_node;
         }
+#ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    node_num: %lu, next_level: %u", node_num, next_level);
+#endif
         if (node_num) {
             nodes[*size].node = next_node;
             nodes[*size].level = next_level;
@@ -203,5 +216,7 @@ void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint3
             return;
         }
     }
+#ifdef STENO_DEBUG_STROKE
     steno_debug_ln("  -> max_level: %u, max_level_node: %lX", *max_level, *max_level_node);
+#endif
 }

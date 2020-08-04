@@ -1,11 +1,22 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define STENO_PHONE
-
 #ifdef __AVR__
 #include "config_common.h"
 #endif
+
+#define CUSTOM_STENO
+#define USE_SPI_FLASH
+#define STENO_PHONE
+
+#define STENO_DEBUG
+#define DEBUG_FLASH
+/* #define DEBUG_STROKE */
+/* #define DEBUG_HIST */
+
+#define STATUS_STAY_TIME 2000
+#define BUTTON_HOLD_TIME 1000
+#define BT_ACTIVE_HOLD_TIME 10000
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
@@ -43,6 +54,7 @@
 #define BLE_HID_SLAVE_LATENCY 99 // default 4
 
 #define OLED_TIMEOUT 5000
+#define OLED_DISABLE_TIMEOUT
 
 #ifdef __AVR__
 #ifdef STENO_PHONE
