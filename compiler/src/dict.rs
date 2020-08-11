@@ -4,7 +4,7 @@ use std::collections::{hash_map::Entry as MapEntry, HashMap};
 use std::fmt::Display;
 
 use lalrpop_util::ParseError;
-use regex::Regex;
+use onig::Regex;
 
 use crate::bar::progress_bar;
 use crate::keycode::TermListParser;
@@ -210,7 +210,7 @@ impl Entry {
 
         let mut atoms = META_RE
             .find_iter(s)
-            .map(|m| Entry::parse_atom(m.as_str()))
+            .map(|(b, e)| Entry::parse_atom(&s[b..e]))
             .collect::<Result<Vec<(Attr, Input)>, ParseDictError>>()?;
         let len = atoms.len();
         for i in 0..len {

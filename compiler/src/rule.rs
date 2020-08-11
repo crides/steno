@@ -3,14 +3,14 @@
 //! keyboard doesn't need to handle the complicated orthographic rules at runtime.
 use std::collections::HashMap;
 
-use regex::Regex;
+use onig::{Regex, Captures};
 
 use crate::bar::progress_bar;
 
 pub type Dict = HashMap<String, String>;
 
 lazy_static! {
-    static ref ENTRY_SUFFIX: Regex = Regex::new(r"^\{\^([[:alpha:]]*)\}$").unwrap();
+    static ref ENTRY_SUFFIX: Regex = Regex::new(r"\{\^([[:alpha:]]*)\}").unwrap();
 }
 
 #[derive(Debug, Deserialize)]
@@ -27,6 +27,28 @@ pub struct Rules {
     word_list: HashMap<String, u8>,
 }
 
+/// Replace using back references in `repl`
+fn replace(re: &Regex, text: &str, repl: &str) -> String {
+    let back_ref = Regex::new(r"\\(\d)").unwrap();
+    re.replace(text, |caps: &Captures| {
+        let mut poss = vec![0];
+        for (start, end) in back_ref.find_iter(repl) {
+            poss.extend(&[start, start, end, end]);
+        }
+        poss.push(repl.len());
+        let mut pos = poss.into_iter();
+        let mut output = String::new();
+        let (first_start, first_end) = (pos.next().unwrap(), pos.next().unwrap());
+        output.push_str(&repl[first_start..first_end]);
+        while let (Some(group_start), Some(group_end), Some(text_start), Some(text_end)) = (pos.next(), pos.next(), pos.next(), pos.next()) {
+            let group = repl[(group_start + 1)..group_end].parse().unwrap();
+            output.push_str(caps.at(group).unwrap());
+            output.push_str(&repl[text_start..text_end]);
+        }
+        output
+    })
+}
+
 pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
     let pbar = progress_bar(source.len(), "Extracting suffixes");
     pbar.set_draw_delta(source.len() as u64 / 100);
@@ -37,7 +59,7 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
             if ENTRY_SUFFIX.is_match(entry) {
                 Some((
                     stroke.clone(),
-                    ENTRY_SUFFIX.replace(&entry[..], "${1}").into(),
+                    ENTRY_SUFFIX.replace(entry, |caps: &Captures| caps.at(1).unwrap().to_string()),
                 ))
             } else {
                 None
@@ -71,7 +93,7 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
                 cached_res.insert(rule.word.clone(), Regex::new(&rule.word).unwrap());
             }
             let word_re = cached_res.get(&rule.word).unwrap();
-            if word_re.is_match(&entry) {
+            if word_re.find(&entry).is_some() {
                 let pat = format!(
                     "{}\u{ffff}{}",
                     &rule.word[..(rule.word.len() - 1)],
@@ -84,9 +106,9 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
                 for (new_stroke, suffix) in suffixes.iter() {
                     let simple_add = format!("{}\u{ffff}{}", entry, suffix);
                     let pat_re = cached_res.get(&pat).unwrap();
-                    if pat_re.is_match(&simple_add) {
-                        let word = pat_re.replace(&simple_add[..], &rule.repl[..]);
-                        if rules.word_list.contains_key(word.as_ref()) {
+                    if pat_re.find(&simple_add).is_some() {
+                        let word = replace(pat_re, &simple_add[..], &rule.repl[..]);
+                        if rules.word_list.contains_key(&word) && &word != entry {
                             output.insert(format!("{}/{}", stroke, new_stroke), word.into());
                         }
                     }

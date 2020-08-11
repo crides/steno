@@ -60,8 +60,8 @@ impl RawEntry {
     }
 }
 
-/// Bit level counterpart for `Attr`. Using a bitfield for compact representation
 bitfield! {
+    /// Bit level counterpart for `Attr`. Using a bitfield for compact representation
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     pub struct RawAttr(u8);
     impl Debug;
