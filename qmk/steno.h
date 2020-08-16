@@ -22,11 +22,11 @@
 #endif
 
 #ifdef __AVR__
-#define nrf_log_push(s)
+#define nrf_log_push(s) (s)
 
 #define steno_error(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_error_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
-#ifdef STENO_DEBUG
+#if defined(CONSOLE_ENABLE) && defined(STENO_DEBUG)
 #define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_debug_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
 #else
@@ -40,14 +40,16 @@
 #define BUTTON 34
 #define NEO_PIXEL 16
 
-#define steno_error(format, ...) NRF_LOG_WARNING(format, ##__VA_ARGS__)
-#define steno_error_ln(format, ...) NRF_LOG_WARNING(format, ##__VA_ARGS__)
-#ifdef STENO_DEBUG
+#if defined(CONSOLE_ENABLE) && defined(STENO_DEBUG)
 #define steno_debug(format, ...) NRF_LOG_INFO(format, ##__VA_ARGS__)
 #define steno_debug_ln(format, ...) NRF_LOG_INFO(format, ##__VA_ARGS__)
+#define steno_error(format, ...) NRF_LOG_WARNING(format, ##__VA_ARGS__)
+#define steno_error_ln(format, ...) NRF_LOG_WARNING(format, ##__VA_ARGS__)
 #else
 #define steno_debug(...)
 #define steno_debug_ln(...)
+#define steno_error(format, ...)
+#define steno_error_ln(format, ...)
 #endif
 void tap_code(uint8_t code);
 void tap_code16(uint16_t code);

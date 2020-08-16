@@ -56,7 +56,7 @@ void flash_init(void) {
         },
         .phy_if = {
             .sck_freq   = NRF_QSPI_FREQ_32MDIV1,
-            .sck_delay  = (uint8_t) 1,
+            .sck_delay  = (uint8_t) 2,
             .spi_mode   = NRF_QSPI_MODE_0,
             .dpmen      = false
         },
@@ -129,7 +129,7 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
     uint32_t read_len = (len / 4 + 1) * 4;
     uint32_t err_code = nrfx_qspi_read(_buf, read_len, addr);
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("flash_read(%x :+ %u) -> %u", addr, len, err_code);
+    steno_debug_ln("flash_read(%X :+ %u) -> %u", addr, len, err_code);
     for (uint8_t i = 0; i < len; i += 4) {
         switch (len - i) {
             case 1:

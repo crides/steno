@@ -3,12 +3,6 @@
 #include <stdbool.h>
 #include "steno.h"
 
-#ifdef USE_SPI_FLASH
-#include "flash.h"
-#else
-#include "sd/pff.h"
-#endif
-
 #define MAX_COLLISIONS 8
 #define SEARCH_NODES_SIZE 8
 

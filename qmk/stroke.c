@@ -3,6 +3,12 @@
 #include "hist.h"
 #include "stdbool.h"
 
+#ifdef USE_SPI_FLASH
+#include "flash.h"
+#else
+#include "sd/pff.h"
+#endif
+
 header_t _header;
 child_t _child;
 char _buf[128];
@@ -14,13 +20,15 @@ FATFS fat_fs;
 
 void seek(uint32_t addr) {
 #ifdef USE_SPI_FLASH
-#ifdef STENO_DEBUG_STROKE
-    steno_debug("seek: %x -> %x", flash_addr, addr);
+#ifdef STENO_DEBUG_FLASH
+    steno_debug_ln("seek: %X -> %X", flash_addr, addr);
 #endif
     flash_addr = addr;
 #else
-#ifdef STENO_DEBUG_STROKE
+#ifdef STENO_DEBUG_FLASH
     steno_debug_ln("seek: %X", pf_lseek(addr));
+#else
+    pf_lseek(addr);
 #endif
 #endif
 }
@@ -48,7 +56,7 @@ void read_header(void) {
 #endif
 
 #ifdef STENO_DEBUG_FLASH
-    steno_debug("  -> .node_num = %x, .entry_len = %u", _header.node_num, _header.entry_len);
+    steno_debug(" -> .node_num = %X, .entry_len = %u", _header.node_num, _header.entry_len);
 #endif
 }
 

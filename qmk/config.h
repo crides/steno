@@ -14,9 +14,11 @@
 /* #define DEBUG_STROKE */
 /* #define DEBUG_HIST */
 
-#define STATUS_STAY_TIME 2000
+#define STATUS_STAY_TIME 1500
 #define BUTTON_HOLD_TIME 1000
-#define BT_ACTIVE_HOLD_TIME 10000
+#define BT_ACTIVE_HOLD_TIME 3000
+
+#define MATRIX_SCAN_MS 20
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
@@ -49,11 +51,11 @@
 #define ENABLE_STARTUP_ADV_NOLIST
 
 #define BLE_NUS_MIN_INTERVAL 30 // default 60
-#define BLE_NUS_MAX_INTERVAL 60 // default 75
+#define BLE_NUS_MAX_INTERVAL 40 // default 75
 #define BLE_HID_MAX_INTERVAL 30 // default 90
 #define BLE_HID_SLAVE_LATENCY 99 // default 4
 
-#define OLED_TIMEOUT 5000
+#define OLED_TIMEOUT 3000
 #define OLED_DISABLE_TIMEOUT
 
 #ifdef __AVR__
