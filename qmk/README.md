@@ -15,7 +15,7 @@ Shortly after I built the [first version](../pcb/README.md#Version-1) of the ste
 
 Configure the firmware. There are 2 blocks at the top of `rules.mk`, comment one of them and uncomment the other. One of them is for AVR, and the other is for the nRF. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed. Also configure in `config.h` what storage you are using (`USE_SPI_FLASH`). And because of design differences, if you're using a QSPI flash, uncomment `#define STENO_PHONE`.
 
-Put/Link this directory in/from `qmk_firmware/keyboards`. If you're using nRF52840, you need the [`nrf52` branch of sekigon's fork](https://github.com/sekigon-gonnoc/qmk_firmware/tree/nrf52). Compile and load the firmware, and you are good to go!
+Put/Link this directory in/from `qmk_firmware/keyboards`. If you're using nRF52840, you need the [`nrf52` branch of sekigon's fork](https://github.com/sekigon-gonnoc/qmk_firmware/tree/nrf52). Compile and load the firmware, and you will need a compiled dictionary. You can either get one from the repo as `steno.bin` (which is my current compiled dictionary), or grab the [compiler](../compiler) and compile your own. Load the dictionary by either copying to the SDCard, or use the `download` command in the compiler if using a QSPI flash.
 
 ## Implementation
 
