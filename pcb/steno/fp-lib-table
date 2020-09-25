@@ -9,4 +9,5 @@
   (lib (name canadian_footprints)(type KiCad)(uri ${KIPRJMOD}/../libs/KiCad_Libs-master/canadian_footprints.pretty)(options "")(descr ""))
   (lib (name misc)(type KiCad)(uri ${KIPRJMOD}/../libs/misc)(options "")(descr ""))
   (lib (name promicro)(type KiCad)(uri ${KIPRJMOD}/../libs/ProMicroKiCad-master/promicro.pretty)(options "")(descr ""))
+  (lib (name nice-nano-kicad)(type KiCad)(uri /home/steven/gitproj/steno/pcb/libs/nice-nano-kicad)(options "")(descr ""))
 )

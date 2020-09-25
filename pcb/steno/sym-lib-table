@@ -8,5 +8,5 @@
   (lib (name canadian_parts)(type Legacy)(uri ${KIPRJMOD}/../libs/KiCad_Libs-master/canadian_schematics/canadian_parts.lib)(options "")(descr ""))
   (lib (name keyboard_parts)(type Legacy)(uri ${KIPRJMOD}/../libs/KiCad_Libs-master/canadian_schematics/keyboard_parts.lib)(options "")(descr ""))
   (lib (name ProMicro)(type Legacy)(uri ${KIPRJMOD}/../libs/KiCad_Libs-master/canadian_schematics/ProMicro.lib)(options "")(descr ""))
-  (lib (name steno)(type Legacy)(uri /home/steven/gitproj/steno/pcb/libs/steno.lib)(options "")(descr ""))
+  (lib (name nice_nano)(type Legacy)(uri /home/steven/gitproj/steno/pcb/libs/nice-nano-kicad/nice_nano.lib)(options "")(descr ""))
 )
