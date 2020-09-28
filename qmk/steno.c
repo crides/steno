@@ -10,7 +10,9 @@
 #include "hist.h"
 
 #ifdef __AVR__
+#ifdef HAS_BATTERY
 #include "analog.h"
+#endif
 #else
 #include "adc.h"
 #include "app_ble_func.h"
@@ -78,7 +80,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     extern int usbd_send_consumer(uint16_t data);
     if (stroke == 0x1000) {  // Asterisk
         hist_undo();
-        tap_code(KC_VOLU);
         return false;
     }
 
@@ -264,6 +265,10 @@ error:
 }
 
 void matrix_init_user() {
+#ifndef __AVR__
+    set_usb_enabled(true);
+    set_ble_enabled(false);
+#endif
     steno_set_mode(STENO_MODE_GEMINI);
 }
 
@@ -289,15 +294,18 @@ void oled_task_user(void) {
 #endif
 
     oled_set_contrast(0);
-    char buf[32];
 #ifdef __AVR__
+#ifdef HAS_BATTERY
+    char buf[32];
     uint16_t adc = analogReadPin(B5);
     uint16_t volt = (uint32_t) adc * 33 * 2 * 10 / 1024;
     sprintf(buf, "BAT: %u.%uV", volt / 100, volt % 100);
     oled_write_ln(buf, false);
+#endif
     oled_write_ln(last_stroke, false);
     oled_write_ln(last_trans, false);
 #else
+    char buf[32];
     uint8_t button = !nrf_gpio_pin_read(BUTTON);
     switch (state) {
         case DISP_NORMAL:
@@ -333,7 +341,15 @@ void oled_task_user(void) {
                 }
             }
             uint16_t volt = get_vcc();
-            snprintf(buf, 32, "BAT: %umV", volt);
+            uint8_t pers = 0;
+            if (volt < 3300) {
+                pers = 0;
+            } else if (volt < 3600) {
+                pers = (volt - 3300) / 30;
+            } else {
+                pers = 10 + (volt - 3600) * 3 / 20;
+            }
+            snprintf(buf, 32, "BAT: %u%% (%umV)", pers, volt);
             oled_write_ln(buf, false);
             snprintf(buf, 32, "Device #%u", device_id);
             oled_write_ln(buf, false);
