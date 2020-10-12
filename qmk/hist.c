@@ -262,24 +262,119 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 #ifdef STENO_DEBUG_HIST
             steno_debug_ln("");
 #endif
-        } else {
-            uint8_t byte_len;
-            if (attr.str_only) {
-                byte_len = entry_len;
-            } else {
-                byte_len = _buf[i];
-                i ++;
-            }
-            switch (cap) {
-                case ATTR_CAPS_UPPER:
-                    for (uint8_t j = 0; j < byte_len; j ++) {
-                        _buf[j] = toupper(_buf[j]);
-                    }
-                    break;
-                case ATTR_CAPS_CAPS:
-                    _buf[i] = toupper(_buf[i]);
-                    break;
-            }
+        }
+        //COMMAND: only count characters in command so ignore anything less than 32
+        else if(_buf[i]<=32)
+        {
+        	switch(_buf[i]){
+
+        		case '0':
+        			str_len = _buf[i+1];
+        			has_raw_key = 1;
+        			break;
+
+        		case '1':
+        			state->cap = 0;
+        			break;
+
+        		case '2':
+        			state->cap = 2;
+        			break;
+
+        		case '3':
+        			state->cap = 1;
+        			break;
+
+        		case '4':
+        			length = _buf[i+1];
+        			uint32_t temp_unicode = 0;
+					for(j = 0; j < length; j ++)
+					{
+						if(_buf[i] >= 32 && _buf[i] <= 127){
+							send_char(_buf[i]);
+							i++;
+							str_len++;
+						} 
+						else if (_buf[i]>=128) {
+							if ((_buf[i] & 0x80) == 0)
+							{
+								send_unicode(_buf[i])
+								i++;
+								break;
+							}
+							else if ((_buf[i] & 0xE0) == 6){
+								temp_unicode = _buf[i]<<8|_buf[i+1];
+								send_unicode(temp_unicode);
+								i+=2
+								break;
+							}
+							else if ((_buf[i] & 0xF0) == 14){
+								temp_unicode = _buf[i]<<16|_buf[i+1]<<8|_buf[i+2];
+								send_unicode(temp_unicode);
+								i+=3
+								break;
+							}
+							else if ((_buf[i] & 0xF8) == 30){
+								temp_unicode = _buf[i]<<24|_buf[i+1]<<16|_buf[i+2]<<8|_buf[i+3];
+								send_unicode(temp_unicode);
+								i+=4;
+								break;
+							}
+							str_len++;
+						}
+					}
+        			state->cap = old_state->cap;	
+        			break;
+
+        		case '5':
+        			state->space = 1;
+        			state->cap = 0;
+        			state->prev_glue = 0;
+        			break;
+
+        	}
+        } 
+        //ASCII: Count in total length of output
+        else if(_buf[i]<=127)
+        {
+        	send_char(_buf[i]);
+        	str_len++;
+        }
+        //UNICODE
+        else 
+        {
+        	uint32_t temp_unicode = 0;
+			for(j = 0; j < length; j ++)
+			{
+				if(_buf[i] >= 32 && _buf[i] <= 127){
+					i++;
+				} 
+				else if (_buf[i]>=128) {
+					if ((_buf[i] & 0x80) == 0)
+					{
+						send_unicode(_buf[i])
+						break;
+					}
+					else if ((_buf[i] & 0xE0) == 6){
+						temp_unicode = _buf[i]<<8|_buf[i+1];
+						send_unicode(temp_unicode);
+						break;
+					}
+					else if ((_buf[i] & 0xF0) == 14){
+						temp_unicode = _buf[i]<<16|_buf[i+1]<<8|_buf[i+2];
+						send_unicode(temp_unicode);
+						break;
+					}
+					else if ((_buf[i] & 0xF8) == 30){
+						temp_unicode = _buf[i]<<24|_buf[i+1]<<16|_buf[i+2]<<8|_buf[i+3];
+						send_unicode(temp_unicode);
+						break;
+					}
+				}
+			}
+        	str_len = 1;
+        	break;
+        }
 
 #ifdef STENO_DEBUG_HIST
             steno_debug("    str: '", str_len);

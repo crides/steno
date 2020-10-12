@@ -307,7 +307,8 @@ void oled_task_user(void) {
     }
 #endif
 
-    oled_set_contrast(0);
+    //oled_set_contrast(0);
+    char buf[32];
 #ifdef __AVR__
 #ifdef HAS_BATTERY
     char buf[32];
