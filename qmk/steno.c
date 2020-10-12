@@ -2,12 +2,14 @@
 #include "steno.h"
 #include "keymap_steno.h"
 #include "raw_hid.h"
+#include "spi.h"
 #include "flash.h"
 #include <stdio.h>
 
 #ifdef CUSTOM_STENO
 
 #include "hist.h"
+#include "lcd.h"
 
 #ifdef __AVR__
 #ifdef HAS_BATTERY
@@ -37,11 +39,11 @@ void tap_code16(uint16_t code) {
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
 state_t state = {.space = 0, .cap = ATTR_CAPS_CAPS, .prev_glue = 0};
-#ifdef OLED_DRIVER_ENABLE
+/* #ifdef OLED_DRIVER_ENABLE */
 char last_stroke[24];
 char last_trans[128];
 uint8_t last_trans_size;
-#endif
+/* #endif */
 #ifndef __AVR__
 static bt_state_t bt_state = BT_ACTIVE;
 static uint32_t bt_state_time;
@@ -71,15 +73,20 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     bt_state = BT_ACTIVE;
 #endif
 
-#ifdef OLED_DRIVER_ENABLE
+/* #ifdef OLED_DRIVER_ENABLE */
     last_trans_size = 0;
     memset(last_trans, 0, 128);
     stroke_to_string(stroke, last_stroke, NULL);
-#endif
+/* #endif */
 
     extern int usbd_send_consumer(uint16_t data);
     if (stroke == 0x1000) {  // Asterisk
         hist_undo();
+        select_lcd();
+        lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
+        lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
+        lcd_puts(0, 16, (uint8_t *) last_trans, 2);
+        unselect_lcd();
         return false;
     }
 
@@ -126,6 +133,11 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
     steno_debug_ln("--------\n");
 #endif
+    select_lcd();
+    lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
+    lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
+    lcd_puts(0, 16, (uint8_t *) last_trans, 2);
+    unselect_lcd();
     return false;
 }
 
@@ -237,7 +249,9 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
 // the keyboard
 void keyboard_post_init_user(void) {
 #ifdef USE_SPI_FLASH
+    spi_init();
     flash_init();
+    lcd_init();
 #else
     extern FATFS fat_fs;
     if (pf_mount(&fat_fs)) {

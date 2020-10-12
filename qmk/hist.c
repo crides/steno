@@ -115,10 +115,10 @@ void register_hex32(uint32_t hex) {
     }
 }
 
-#ifdef OLED_DRIVER_ENABLE
+/* #ifdef OLED_DRIVER_ENABLE */
 extern char last_trans[128];
 extern uint8_t last_trans_size;
-#endif
+/* #endif */
 // Custom version of `send_string` that takes care of custom Unicode formats
 uint8_t _send_unicode_string(char *buf, uint8_t len) {
     uint8_t str_len = 0;
@@ -134,9 +134,9 @@ uint8_t _send_unicode_string(char *buf, uint8_t len) {
             buf += 3;
             i += 3;
         } else {
-#ifdef OLED_DRIVER_ENABLE
+/* #ifdef OLED_DRIVER_ENABLE */
             last_trans[last_trans_size++] = *buf;
-#endif
+/* #endif */
             send_char(*buf);
         }
         str_len ++;

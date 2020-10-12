@@ -2,6 +2,7 @@
 #include <string.h>
 #include "flash.h"
 #include "steno.h"
+#include "spi.h"
 
 #ifndef __AVR__
 #include "nrf_drv_qspi.h"
@@ -15,17 +16,7 @@
 
 void flash_init(void) {
 #ifdef __AVR__
-    /* enable outputs for MOSI, SCK, SS, input for MISO */
-    DDRB |= _BV(DDB0);
-    configure_pin_mosi();
-    configure_pin_sck();
-    configure_pin_ss();
-    configure_pin_miso();
-
-    unselect_card();
-
-    SPCR = _BV(MSTR) | _BV(SPE);
-    SPSR = _BV(SPI2X);
+    // Assume SPI inited
 #else
     nrf_drv_qspi_config_t config = {
         .xip_offset  = 0,
@@ -98,20 +89,6 @@ void flash_init(void) {
 /* #endif */
 #endif
 }
-
-#ifdef __AVR__
-void spi_send_byte(uint8_t b) {
-    SPDR = b;
-    while(!(SPSR & _BV(SPIF)));
-}
-
-uint8_t spi_recv_byte(void) {
-    SPDR = 0xff;
-    while(!(SPSR & _BV(SPIF)));
-
-    return SPDR;
-}
-#endif
 
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__

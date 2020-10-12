@@ -16,7 +16,7 @@ SRC += analog.c
 # CUSTOM_MATRIX = yes
 # EXTRAKEY_ENABLE = yes
 
-SRC += flash.c hist.c stroke.c sd/pff.c sd/diskio.c
+SRC += spi.c lcd.c lcd_font.c flash.c hist.c stroke.c sd/pff.c sd/diskio.c
 
 MOUSEKEY_ENABLE = no
 VIRTSER_ENABLE = no
