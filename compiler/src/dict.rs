@@ -24,55 +24,85 @@ pub enum Input {
     Keycodes(Vec<u8>),
     /// Strings, which can contain Unicode characters
     String(String),
+    /// Make the next word lower case
+    Lower,
+    /// Make the next word UPPER CASE
+    Upper,
+    /// Make the next word Capitalized/Title case
+    Capitalized,
+    /// Carry/Keep the case until `length` characters later; if the current character should be upper cased
+    /// for example, then don't make the current word upper case, but instead apply upper case to `length`
+    /// characters (not bytes; unicode code points) later
+    Keep(String),
+    /// Reset formatting (case conversion)
+    ResetFormat,
+    /// Make last stroke (not word) lower case
+    LowerLast,
+    /// Make last stroke (not word) upper case
+    UpperLast,
+    /// Make last stroke (not word) Capitalized/Title case
+    CapitalizedLast,
+    /// Repeat last stroke
+    Repeat,
+    /// Toggle asterisk on the last stroke
+    ToggleStar,
+    /// Add space between last and last last stroke
+    AddSpace,
+    /// Remove space between last and last last stroke
+    RemoveSpace,
+    /// Add a new translation
+    AddTranslation,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Caps {
-    Lower,
-    /// Keep capitalization state for the next atom
-    Keep,
-    /// Caps
-    Caps,
-    /// UPPER
-    Upper,
+impl Input {
+    /// String length of this input segment
+    fn strlen(&self) -> usize {
+        match self {
+            Input::String(s) => s.len(),
+            Input::Keep(s) => s.len(),
+            _ => 0,
+        }
+    }
+
+    /// Total length in bytes for the entry. Used to cheaply determine the size of a certain entry
+    pub fn byte_len(&self) -> usize {
+        match self {
+            Input::String(s) => s.len(),
+            Input::Keep(s) => s.len() + 2,
+            Input::Keycodes(k) => k.len() + 2,
+            _ => 1,
+        }
+    }
 }
 
 /// Simplified attributes for formatting atoms or entries for easy MCU consumption. Also includes other
 /// properties about the entry itself 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Attr {
-    pub caps: Caps,
     pub space_prev: bool,
     pub space_after: bool,
     pub glue: bool,
     /// Whether this entry has an output or not. Note that 0-length entries can be outputs e.g. ones that
     /// contain only attribute changes but no printable content.
     pub present: bool,
-    /// Whether the entry contains only strings i.e. no keycodes, which means no header byte required, leading
-    /// to some space savings
-    pub str_only: bool,
 }
 
 impl Attr {
     fn none() -> Self {
         Attr {
-            caps: Caps::Lower,
             space_prev: false,
             space_after: false,
             glue: false,
             present: false,
-            str_only: false,
         }
     }
 
     fn valid_default() -> Self {
         Attr {
-            caps: Caps::Lower,
             space_prev: true,
             space_after: true,
             glue: false,
             present: true,
-            str_only: false,
         }
     }
 }
@@ -81,61 +111,34 @@ impl Attr {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Entry {
     pub attr: Attr,
-    pub input: Vec<Input>,
+    pub inputs: Vec<Input>,
 }
 
 impl Default for Entry {
     fn default() -> Entry {
         Entry {
             attr: Attr::none(),
-            input: Vec::new(),
+            inputs: Vec::new(),
         }
     }
 }
 
 impl Entry {
-    fn unicode_string_len(s: &str) -> usize {
-        s.chars().map(|c| if c.is_ascii() { 1 } else { 4 }).sum()
-    }
-
     /// Total length in bytes for the entry. Used to cheaply determine the size of a certain entry
     pub fn byte_len(&self) -> usize {
-        if self.input.len() == 1 {
-            if let Input::String(s) = &self.input[0] {
-                return Entry::unicode_string_len(s);
-            }
-        }
-
-        self.input
+        self.inputs
             .iter()
             .map(|i| match i {
-                Input::String(s) => {
-                    if s.is_empty() {
-                        0
-                    } else {
-                        Entry::unicode_string_len(s) + 1
-                    }
-                }
-                Input::Keycodes(k) => k.len() + 1,
+                Input::String(s) => s.len(),
+                Input::Keep(s) => s.len() + 2,
+                Input::Keycodes(k) => k.len() + 2,
+                _ => 1,
             })
             .sum()
     }
 
-    /// Length for this entry if it's a string
-    pub fn strlen(&self) -> Option<usize> {
-        if self.input.len() == 1 {
-            if let Some(Input::String(s)) = self.input.first() {
-                Some(s.len())
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
-    fn parse_atom(mut s: &str) -> Result<(Attr, Input), ParseDictError> {
+    fn parse_atom(mut s: &str) -> Result<Entry, ParseDictError> {
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
         let mut attr = Attr::valid_default();
         if s.starts_with('{') && s.ends_with('}') {
@@ -146,32 +149,33 @@ impl Entry {
                     .into_iter()
                     .flat_map(|t| t.into_keycodes())
                     .collect();
-                Ok((attr, Input::Keycodes(keycodes)))
+                Ok(Entry {
+                    attr,
+                    inputs: vec![Input::Keycodes(keycodes)],
+                })
             } else {
-                match s {
+                let inputs = match s {
                     "?" | "!" | "." => {
                         attr.space_prev = false;
-                        attr.caps = Caps::Caps;
+                        vec![Input::String(s.into()), Input::Capitalized]
                     }
                     "," | ";" | ":" => {
                         attr.space_prev = false;
+                        vec![Input::String(s.into())]
                     }
                     "-|" => {
-                        attr.caps = Caps::Caps;
-                        s = "";
+                        vec![Input::Capitalized]
                     }
                     ">" => {
-                        attr.caps = Caps::Lower;
-                        s = "";
+                        vec![Input::Lower]
                     }
                     "<" => {
-                        attr.caps = Caps::Upper;
-                        s = "";
+                        vec![Input::Upper]
                     }
                     "^" => {
                         attr.space_prev = false;
                         attr.space_after = false;
-                        s = "";
+                        vec![Input::String("".into())]
                     }
                     _ => {
                         if s.starts_with('&') {
@@ -187,15 +191,22 @@ impl Entry {
                             attr.space_after = false;
                         }
                         if s.starts_with("~|") {
-                            s = &s[2..];
-                            attr.caps = Caps::Keep;
+                            vec![Input::Keep(s[2..].into())]
+                        } else {
+                            vec![Input::String(s.into())]
                         }
                     }
-                }
-                Ok((attr, Input::String(s.into())))
+                };
+                Ok(Entry {
+                    attr,
+                    inputs,
+                })
             }
         } else {
-            Ok((attr, Input::String(s.into())))
+            Ok(Entry {
+                attr,
+                inputs: vec![Input::String(s.into())],
+            })
         }
     }
 
@@ -204,88 +215,50 @@ impl Entry {
     pub fn parse_entry(s: &str) -> Result<Entry, ParseDictError> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
-            input: Vec::new(),
+            inputs: Vec::new(),
         };
-        let mut last_cap = Caps::Lower;
 
         let mut atoms = META_RE
             .find_iter(s)
             .map(|(b, e)| Entry::parse_atom(&s[b..e]))
-            .collect::<Result<Vec<(Attr, Input)>, ParseDictError>>()?;
-        let len = atoms.len();
-        for i in 0..len {
-            let prev_attr = if i == 0 {
-                Attr::valid_default()
-            } else {
-                atoms[i - 1].0
-            };
-            let (attr, input) = &mut atoms[i];
-            match input {
-                Input::Keycodes(keycodes) => {
-                    if let Some(Input::Keycodes(prev_keycodes)) = entry.input.last_mut() {
-                        prev_keycodes.extend(keycodes.iter());
-                    } else {
-                        entry.input.push(input.clone());
-                    }
+            .collect::<Result<Vec<Entry>, ParseDictError>>()?;
+        if atoms.is_empty() {
+            Ok(entry)
+        } else if atoms.len() == 1 {
+            Ok(atoms[0].clone())
+        } else {
+            entry.attr.glue = atoms[0].attr.glue;
+            entry.attr.space_prev = atoms[0].attr.space_prev;
+            entry.attr.space_after = atoms.last().unwrap().attr.space_after;
+            let spaces: Vec<bool> = atoms.windows(2).map(|pair| {
+                let (fst, snd) = (pair[0].attr, pair[1].attr);
+                fst.space_after && snd.space_prev && !(fst.glue && snd.glue)
+            }).collect();
+            assert_eq!(spaces.len() + 1, atoms.len());
+            let mut inputs = atoms[0].inputs.clone();
+            for i in 0..spaces.len() {
+                if spaces[i] && atoms[i + 1].inputs.iter().map(|i| i.byte_len()).sum::<usize>() > 0 {
+                    inputs.push(Input::String(" ".into()));
                 }
-                Input::String(s) => {
-                    let mut buf = String::new();
-                    if prev_attr.glue && attr.glue || !prev_attr.space_after || !attr.space_prev {
-                        if i == 0 {
-                            entry.attr.space_prev = false;
+                inputs.append(&mut atoms[i + 1].inputs);
+            }
+            for mut input in inputs.into_iter() {
+                if let Some(last) = entry.inputs.last_mut() {
+                    match (last, &mut input) {
+                        (Input::String(a), Input::String(ref mut b)) => {
+                            a.push_str(b);
+                        },
+                        (Input::Keycodes(a), Input::Keycodes(ref mut b)) => {
+                            a.append(b);
+                        },
+                        _ => {
+                            entry.inputs.push(input);
                         }
-                    } else if entry.strlen().unwrap_or(0) > 0 && !s.is_empty() {
-                        buf.push(' ');
-                    }
-                    if prev_attr.caps == Caps::Caps
-                        || last_cap == Caps::Caps && prev_attr.caps == Caps::Keep
-                    {
-                        let mut chars = s.chars();
-                        if let Some(c) = chars.next() {
-                            buf.push(c.to_ascii_uppercase());
-                        }
-                        buf.extend(chars);
-                        last_cap = Caps::Caps;
-                    } else if prev_attr.caps == Caps::Upper
-                        || last_cap == Caps::Upper && prev_attr.caps == Caps::Keep
-                    {
-                        buf.push_str(&s.to_ascii_uppercase());
-                        last_cap = Caps::Upper;
-                    } else {
-                        buf.push_str(&s);
-                        last_cap = Caps::Lower;
-                    }
-                    if entry.strlen().unwrap_or(0) == 0 && s.is_empty() {
-                        attr.space_after = attr.space_after && prev_attr.space_after;
-                        attr.space_prev = attr.space_prev && prev_attr.space_prev;
-                    }
-                    if let Some(Input::String(prev_str)) = entry.input.last_mut() {
-                        prev_str.push_str(&buf);
-                    } else if !buf.is_empty() {
-                        entry.input.push(Input::String(buf));
                     }
                 }
             }
+            Ok(entry)
         }
-        let last_attr = atoms
-            .last()
-            .map(|(a, _s)| a)
-            .copied()
-            .unwrap_or_else(Attr::valid_default);
-        entry.attr.caps = last_attr.caps;
-        entry.attr.space_after = last_attr.space_after;
-        if entry.input.len() == 1 {
-            if let Some(Input::String(s)) = entry.input.first() {
-                entry.attr.str_only = true;
-                if !s.is_empty() && s.chars().all(|c| c.is_ascii_digit()) {
-                    entry.attr.glue = true;
-                }
-            }
-        }
-        if atoms.iter().any(|(a, _s)| a.glue) {
-            entry.attr.glue = true;
-        }
-        Ok(entry)
     }
 }
 
@@ -363,10 +336,7 @@ fn test_plain() {
     assert_eq!(
         Entry::parse_entry("a").unwrap(),
         Entry {
-            attr: Attr {
-                str_only: true,
-                ..Attr::valid_default()
-            },
+            attr: Attr::valid_default(),
             input: vec![Input::String("a".into())]
         }
     );
@@ -379,7 +349,6 @@ fn test_finger_spell() {
         Entry {
             attr: Attr {
                 glue: true,
-                str_only: true,
                 ..Attr::valid_default()
             },
             input: vec![Input::String("c".into())],
@@ -392,10 +361,7 @@ fn test_cap() {
     assert_eq!(
         Entry::parse_entry("{-|}").unwrap(),
         Entry {
-            attr: Attr {
-                caps: Caps::Caps,
-                ..Attr::valid_default()
-            },
+            attr: Attr::valid_default(),
             input: vec![],
         }
     );
@@ -407,7 +373,6 @@ fn test_cap_star() {
         Entry::parse_entry("{^}{-|}").unwrap(),
         Entry {
             attr: Attr {
-                caps: Caps::Caps,
                 space_prev: false,
                 space_after: false,
                 ..Attr::valid_default()
@@ -432,10 +397,7 @@ fn test_command() {
     assert_eq!(
         Entry::parse_entry("oh yeah{,}babe").unwrap(),
         Entry {
-            attr: Attr {
-                str_only: true,
-                ..Attr::valid_default()
-            },
+            attr: Attr::valid_default(),
             input: vec![Input::String("oh yeah, babe".into())],
         }
     );

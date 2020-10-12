@@ -36,6 +36,7 @@ fn main() {
                 .arg(Arg::with_name("len").required(true)),
         )
         .subcommand(SubCommand::with_name("download").arg(Arg::with_name("file").required(true)))
+        .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
                 .arg(Arg::with_name("input").required(true))

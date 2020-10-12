@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::io::{self, prelude::*};
 
-use crate::dict::{Attr, Caps, Dict, Entry, Input};
+use crate::dict::{Attr, Dict, Entry, Input};
 use crate::hashmap::LPHashMap;
 use crate::stroke::Stroke;
 
@@ -15,7 +15,7 @@ pub struct RawEntry(Vec<u8>);
 impl From<Entry> for RawEntry {
     fn from(e: Entry) -> RawEntry {
         let bytes = e
-            .input
+            .inputs
             .iter()
             .flat_map(|i| match i {
                 Input::Keycodes(keycodes) => {
@@ -23,31 +23,30 @@ impl From<Entry> for RawEntry {
                     if keycodes.is_empty() {
                         vec![]
                     } else {
-                        let mut bytes = vec![(keycodes.len() as u8) | 0x80];
+                        let mut bytes = vec![0, keycodes.len() as u8];
                         bytes.extend(keycodes);
                         bytes
                     }
                 }
-                Input::String(s) => {
-                    assert!(s.len() <= 127);
-                    if !s.is_empty() {
-                        let mut bytes: Vec<u8> = s.chars()
-                            .flat_map(|c| {
-                                if c.is_ascii() {
-                                    vec![c as u8]
-                                } else {
-                                    let mut bytes = vec![1];
-                                    bytes.extend_from_slice(&(c as u32).to_le_bytes()[0..3]);
-                                    bytes
-                                }
-                            })
-                            .collect();
-                        bytes.insert(0, bytes.len() as u8);
-                        bytes
-                    } else {
-                        vec![]
-                    }
+                Input::String(s) => s.as_bytes().to_vec(),
+                Input::Keep(s) => {
+                    let mut bytes = s.as_bytes().to_vec();
+                    bytes.insert(0, 4);
+                    bytes.insert(1, s.len() as u8);
+                    bytes
                 }
+                Input::Lower => vec![1],
+                Input::Upper => vec![2],
+                Input::Capitalized => vec![3],
+                Input::ResetFormat => vec![5],
+                Input::LowerLast => vec![8],
+                Input::UpperLast => vec![9],
+                Input::CapitalizedLast => vec![10],
+                Input::Repeat => vec![11],
+                Input::ToggleStar => vec![12],
+                Input::AddSpace => vec![13],
+                Input::RemoveSpace => vec![14],
+                Input::AddTranslation => vec![16],
             })
             .collect();
         RawEntry(bytes)
@@ -65,28 +64,19 @@ bitfield! {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     pub struct RawAttr(u8);
     impl Debug;
-    caps, set_caps: 1, 0;
-    space_prev, set_space_prev: 2, 2;
-    space_after, set_space_after: 3, 3;
-    glue, set_glue: 4, 4;
-    present, set_present: 5, 5;
-    str_only, set_str_only: 6, 6;
+    space_prev, set_space_prev: 0, 0;
+    space_after, set_space_after: 1, 1;
+    glue, set_glue: 2, 2;
+    present, set_present: 3, 3;
 }
 
 impl From<Attr> for RawAttr {
     fn from(a: Attr) -> RawAttr {
         let mut ra = RawAttr(0);
-        ra.set_caps(match a.caps {
-            Caps::Lower => 0,
-            Caps::Keep => 1,
-            Caps::Caps => 2,
-            Caps::Upper => 3,
-        });
         ra.set_glue(a.glue.into());
         ra.set_space_prev(a.space_prev.into());
         ra.set_space_after(a.space_after.into());
         ra.set_present(a.present.into());
-        ra.set_str_only(a.str_only.into());
         ra
     }
 }
@@ -244,11 +234,7 @@ impl IR {
             let raw_attr: RawAttr = attr.into();
             bytes.push(raw_attr.0);
             let raw_entry: RawEntry = node.entry.clone().into();
-            if attr.str_only {
-                bytes.extend_from_slice(&raw_entry.as_bytes()[1..]);
-            } else {
-                bytes.extend_from_slice(raw_entry.as_bytes());
-            }
+            bytes.extend_from_slice(raw_entry.as_bytes());
             w.write_all(&bytes)?;
             node.children.write_all_to(w)?;
         }
