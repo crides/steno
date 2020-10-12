@@ -6,15 +6,6 @@
 #define MAX_COLLISIONS 8
 #define SEARCH_NODES_SIZE 8
 
-typedef union __attribute__((packed)) {
-    uint32_t raw : 24;
-    struct {
-        uint8_t b0;
-        uint8_t b1;
-        uint8_t b2;
-    };
-} u24;
-
 typedef struct __attribute__((packed)) {
     uint32_t stroke : 24;
     uint32_t addr : 24;
@@ -30,21 +21,11 @@ typedef enum {
     CAPS_UPPER = 2,
 } caps_t;
 
-// Attributes for next entry
-typedef enum {
-    ATTR_CAPS_LOWER = 0,
-    ATTR_CAPS_KEEP = 1,
-    ATTR_CAPS_CAPS = 2,
-    ATTR_CAPS_UPPER = 3,
-} attr_caps_t;
-
 typedef struct __attribute__((packed)) {
-    attr_caps_t caps : 2;
     uint8_t space_prev : 1;
     uint8_t space_after : 1;
     uint8_t glue : 1;
     uint8_t present : 1;
-    uint8_t str_only : 1;
 } attr_t;
 
 typedef struct __attribute__((packed)) {

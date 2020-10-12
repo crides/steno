@@ -10,6 +10,7 @@
 
 #include "hist.h"
 #include "lcd.h"
+#include "dict_editing.h"
 
 #ifdef __AVR__
 #ifdef HAS_BATTERY
@@ -38,7 +39,7 @@ void tap_code16(uint16_t code) {
 
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
-state_t state = {.space = 0, .cap = ATTR_CAPS_CAPS, .prev_glue = 0};
+state_t state = {.space = 0, .cap = CAPS_CAP, .prev_glue = 0};
 /* #ifdef OLED_DRIVER_ENABLE */
 char last_stroke[24];
 char last_trans[128];
@@ -73,11 +74,19 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     bt_state = BT_ACTIVE;
 #endif
 
+
 /* #ifdef OLED_DRIVER_ENABLE */
     last_trans_size = 0;
     memset(last_trans, 0, 128);
     stroke_to_string(stroke, last_stroke, NULL);
 /* #endif */
+
+    if(editing_state == ED_ACTIVE_ADD || editing_state == ED_ACTIVE_REMOVE)
+    {
+        set_Stroke(last_stroke);
+        steno_debug_ln("entered editing state");
+        return false;
+    }
 
     extern int usbd_send_consumer(uint16_t data);
     if (stroke == 0x1000) {  // Asterisk
@@ -133,11 +142,13 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
     steno_debug_ln("--------\n");
 #endif
-    select_lcd();
-    lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-    lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
-    lcd_puts(0, 16, (uint8_t *) last_trans, 2);
-    unselect_lcd();
+    if(editing_state == ED_IDLE){
+        select_lcd();
+        lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
+        lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
+        lcd_puts(0, 16, (uint8_t *) last_trans, 2);
+        unselect_lcd();
+    }
     return false;
 }
 
@@ -307,7 +318,8 @@ void oled_task_user(void) {
     }
 #endif
 
-    oled_set_contrast(0);
+    //oled_set_contrast(0);
+    char buf[32];
 #ifdef __AVR__
 #ifdef HAS_BATTERY
     char buf[32];

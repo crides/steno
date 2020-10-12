@@ -10,7 +10,7 @@
 /* #define STENO_PHONE */
 
 #define STENO_DEBUG
-/* #define DEBUG_FLASH */
+#define DEBUG_FLASH
 #define DEBUG_STROKE
 /* #define DEBUG_HIST */
 
@@ -86,6 +86,7 @@
 #define LOCKING_SUPPORT_ENABLE
 #define LOCKING_RESYNC_ENABLE
 #define PREVENT_STUCK_MODIFIERS
+#define UNICODE_SELECTED_MODES UC_LNX
 
 #define NO_ACTION_LAYER
 #define NO_ACTION_TAPPING
