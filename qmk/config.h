@@ -10,7 +10,7 @@
 /* #define STENO_PHONE */
 
 #define STENO_DEBUG
-/* #define DEBUG_FLASH */
+#define DEBUG_FLASH
 #define DEBUG_STROKE
 /* #define DEBUG_HIST */
 

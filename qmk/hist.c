@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include "process_keycode/process_unicode_common.h"
+#include "dict_editing.h"
 
 history_t history[HIST_SIZE];
 uint8_t hist_ind = 0;
@@ -87,34 +88,6 @@ void hist_undo() {
     }
 }
 
-uint16_t hex_to_keycode(uint8_t hex) {
-    if (hex == 0x0) {
-        return KC_0;
-    } else if (hex < 0xA) {
-        return KC_1 + (hex - 0x1);
-    } else {
-        return KC_A + (hex - 0xA);
-    }
-}
-
-void register_hex32(uint32_t hex) {
-    bool onzerostart = true;
-    for (int i = 7; i >= 0; i--) {
-        if (i <= 3) {
-            onzerostart = false;
-        }
-        uint8_t digit = ((hex >> (i * 4)) & 0xF);
-        if (digit == 0) {
-            if (!onzerostart) {
-                tap_code(hex_to_keycode(digit));
-            }
-        } else {
-            tap_code(hex_to_keycode(digit));
-            onzerostart = false;
-        }
-    }
-}
-
 /* #ifdef OLED_DRIVER_ENABLE */
 extern char last_trans[128];
 extern uint8_t last_trans_size;
@@ -174,7 +147,7 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  old_state: space: %u, cap: %u, glue: %u", old_state.space, old_state.cap, old_state.prev_glue);
 #endif
-    uint8_t space = old_state.space, cap = old_state.cap;
+    uint8_t space = old_state.space;
     state->prev_glue = 0;
     state->space = 1;
 
@@ -268,72 +241,59 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         {
         	switch(_buf[i]){
 
-        		case '0':
-        			str_len = _buf[i+1];
+        		case 0://raw bytes of "length"
+                    i+=_buf[i+1]+1;
         			has_raw_key = 1;
         			break;
 
-        		case '1':
+        		case 1://lowercase next entry
         			state->cap = 0;
         			break;
 
-        		case '2':
+        		case 2://Uppercase next entry
         			state->cap = 2;
         			break;
 
-        		case '3':
+        		case 3://capitalize next entry
         			state->cap = 1;
         			break;
 
-        		case '4':
-        			length = _buf[i+1];
-        			uint32_t temp_unicode = 0;
-					for(j = 0; j < length; j ++)
+        		case 4:;//keep case after "length" amount of characters
+        			uint8_t length = _buf[i+1];
+					for(int j = 0; j < length; j ++)
 					{
-						if(_buf[i] >= 32 && _buf[i] <= 127){
-							send_char(_buf[i]);
+						if(_buf[j] >= 32 && _buf[j] <= 127){
+							send_char(_buf[j]);
 							i++;
 							str_len++;
-						} 
-						else if (_buf[i]>=128) {
-							if ((_buf[i] & 0x80) == 0)
-							{
-								send_unicode(_buf[i])
-								i++;
-								break;
-							}
-							else if ((_buf[i] & 0xE0) == 6){
-								temp_unicode = _buf[i]<<8|_buf[i+1];
-								send_unicode(temp_unicode);
-								i+=2
-								break;
-							}
-							else if ((_buf[i] & 0xF0) == 14){
-								temp_unicode = _buf[i]<<16|_buf[i+1]<<8|_buf[i+2];
-								send_unicode(temp_unicode);
-								i+=3
-								break;
-							}
-							else if ((_buf[i] & 0xF8) == 30){
-								temp_unicode = _buf[i]<<24|_buf[i+1]<<16|_buf[i+2]<<8|_buf[i+3];
-								send_unicode(temp_unicode);
-								i+=4;
-								break;
-							}
-							str_len++;
 						}
+						else if (_buf[i]>=128) {
+                            int32_t code_point = 0;
+                            const char * str = decode_utf8(&_buf[i],&code_point);
+                            if (code_point >= 0) {
+                                register_unicode(code_point);
+                            }
+                            str_len++;
+                            i+=str-&_buf[i];
+                        }
 					}
-        			state->cap = old_state->cap;	
+        			state->cap = old_state.cap;	
         			break;
 
-        		case '5':
+        		case 5://reset formatting
         			state->space = 1;
         			state->cap = 0;
         			state->prev_glue = 0;
         			break;
 
+                case 16: //add translation
+                    prompt_user();
+                    break;
+
+
+
         	}
-        } 
+        }
         //ASCII: Count in total length of output
         else if(_buf[i]<=127)
         {
@@ -343,59 +303,36 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         //UNICODE
         else 
         {
-        	uint32_t temp_unicode = 0;
-			for(j = 0; j < length; j ++)
-			{
-				if(_buf[i] >= 32 && _buf[i] <= 127){
-					i++;
-				} 
-				else if (_buf[i]>=128) {
-					if ((_buf[i] & 0x80) == 0)
-					{
-						send_unicode(_buf[i])
-						break;
-					}
-					else if ((_buf[i] & 0xE0) == 6){
-						temp_unicode = _buf[i]<<8|_buf[i+1];
-						send_unicode(temp_unicode);
-						break;
-					}
-					else if ((_buf[i] & 0xF0) == 14){
-						temp_unicode = _buf[i]<<16|_buf[i+1]<<8|_buf[i+2];
-						send_unicode(temp_unicode);
-						break;
-					}
-					else if ((_buf[i] & 0xF8) == 30){
-						temp_unicode = _buf[i]<<24|_buf[i+1]<<16|_buf[i+2]<<8|_buf[i+3];
-						send_unicode(temp_unicode);
-						break;
-					}
-				}
-			}
-        	str_len = 1;
-        	break;
-        }
-
-#ifdef STENO_DEBUG_HIST
-            steno_debug("    str: '", str_len);
-#endif
-            cap = ATTR_CAPS_LOWER;
-            if (space) {
-#ifdef STENO_DEBUG_HIST
-                steno_debug(" ");
-#endif
-                str_len ++;
-                send_char(' ');
+            int32_t code_point = 0;
+            const char * str = decode_utf8(&_buf[i],&code_point);
+            if (code_point >= 0) {
+                register_unicode(code_point);
             }
-            str_len += _send_unicode_string(_buf + i, byte_len);
-#ifdef STENO_DEBUG_HIST
-            steno_debug_ln("%s'", _buf + i);
-#endif
-            i += byte_len;
+        	str_len = 1;
+            i+=str-&_buf[i];
         }
     }
-#ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  -> %u", str_len);
-#endif
+
+// #ifdef STENO_DEBUG_HIST
+//             steno_debug("    str: '", str_len);
+// #endif
+//             cap = ATTR_CAPS_LOWER;
+//             if (space) {
+// #ifdef STENO_DEBUG_HIST
+//                 steno_debug(" ");
+// #endif
+//                 str_len ++;
+//                 send_char(' ');
+//             }
+//             str_len += _send_unicode_string(_buf + i, byte_len);
+// #ifdef STENO_DEBUG_HIST
+//             steno_debug_ln("%s'", _buf + i);
+// #endif
+//             i += byte_len;
+//         }
+//     }
+// #ifdef STENO_DEBUG_HIST
+//     steno_debug_ln("  -> %u", str_len);
+// #endif
     return has_raw_key ? 0 : str_len;
 }
