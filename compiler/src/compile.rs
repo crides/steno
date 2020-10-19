@@ -1,5 +1,5 @@
 //! Handles everything related to converting Rust dictionary related values to bytes. Provides raw
-//! counterparts for types in `dict`. 
+//! counterparts for types in `dict`.
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::io::{self, prelude::*};

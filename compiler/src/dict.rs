@@ -76,7 +76,7 @@ impl Input {
 }
 
 /// Simplified attributes for formatting atoms or entries for easy MCU consumption. Also includes other
-/// properties about the entry itself 
+/// properties about the entry itself
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Attr {
     pub space_prev: bool,
@@ -163,19 +163,13 @@ impl Entry {
                         attr.space_prev = false;
                         vec![Input::String(s.into())]
                     }
-                    "-|" => {
-                        vec![Input::Capitalized]
-                    }
-                    ">" => {
-                        vec![Input::Lower]
-                    }
-                    "<" => {
-                        vec![Input::Upper]
-                    }
+                    "-|" => vec![Input::Capitalized],
+                    ">" => vec![Input::Lower],
+                    "<" => vec![Input::Upper],
                     "^" => {
                         attr.space_prev = false;
                         attr.space_after = false;
-                        vec![Input::String("".into())]
+                        vec![]
                     }
                     _ => {
                         if s.starts_with('&') {
@@ -192,15 +186,14 @@ impl Entry {
                         }
                         if s.starts_with("~|") {
                             vec![Input::Keep(s[2..].into())]
-                        } else {
+                        } else if !s.is_empty() {
                             vec![Input::String(s.into())]
+                        } else {
+                            vec![]
                         }
                     }
                 };
-                Ok(Entry {
-                    attr,
-                    inputs,
-                })
+                Ok(Entry { attr, inputs })
             }
         } else {
             Ok(Entry {
@@ -218,7 +211,7 @@ impl Entry {
             inputs: Vec::new(),
         };
 
-        let mut atoms = META_RE
+        let atoms = META_RE
             .find_iter(s)
             .map(|(b, e)| Entry::parse_atom(&s[b..e]))
             .collect::<Result<Vec<Entry>, ParseDictError>>()?;
@@ -227,33 +220,46 @@ impl Entry {
         } else if atoms.len() == 1 {
             Ok(atoms[0].clone())
         } else {
-            entry.attr.glue = atoms[0].attr.glue;
+            entry.attr.glue = atoms.iter().any(|e| e.attr.glue);
             entry.attr.space_prev = atoms[0].attr.space_prev;
-            entry.attr.space_after = atoms.last().unwrap().attr.space_after;
-            let spaces: Vec<bool> = atoms.windows(2).map(|pair| {
-                let (fst, snd) = (pair[0].attr, pair[1].attr);
-                fst.space_after && snd.space_prev && !(fst.glue && snd.glue)
-            }).collect();
+            // Find the last non-zero length entry or attribute only entry and get the attribute; there can be
+            // zero-width commands after wards, which always don't affect spacing. We want to use attributes
+            // from either a string entry (which has non-zero length) or a entry with no inputs (attribute only)
+            entry.attr.space_after = atoms
+                .iter()
+                .rev()
+                .find(|a| {
+                    a.inputs.is_empty() || a.inputs.iter().map(|i| i.strlen()).sum::<usize>() > 0
+                })
+                .map(|a| a.attr.space_after)
+                .unwrap_or(true);
+            let spaces: Vec<bool> = atoms
+                .windows(2)
+                .map(|pair| {
+                    let (fst, snd) = (pair[0].attr, pair[1].attr);
+                    fst.space_after && snd.space_prev && !(fst.glue && snd.glue)
+                })
+                .collect();
             assert_eq!(spaces.len() + 1, atoms.len());
             let mut inputs = atoms[0].inputs.clone();
             for i in 0..spaces.len() {
-                if spaces[i] && atoms[i + 1].inputs.iter().map(|i| i.byte_len()).sum::<usize>() > 0 {
+                if spaces[i]
+                        && atoms[i + 1] .inputs .iter() .map(|i| i.strlen()) .sum::<usize>() > 0
+                        && atoms[i].inputs.iter().map(|i| i.strlen()).sum::<usize>() > 0 {
                     inputs.push(Input::String(" ".into()));
                 }
-                inputs.append(&mut atoms[i + 1].inputs);
+                inputs.extend(atoms[i + 1].inputs.clone());
             }
             for mut input in inputs.into_iter() {
-                if let Some(last) = entry.inputs.last_mut() {
-                    match (last, &mut input) {
-                        (Input::String(a), Input::String(ref mut b)) => {
-                            a.push_str(b);
-                        },
-                        (Input::Keycodes(a), Input::Keycodes(ref mut b)) => {
-                            a.append(b);
-                        },
-                        _ => {
-                            entry.inputs.push(input);
-                        }
+                match (entry.inputs.last_mut(), &mut input) {
+                    (Some(Input::String(a)), Input::String(ref mut b)) => {
+                        a.push_str(b);
+                    }
+                    (Some(Input::Keycodes(a)), Input::Keycodes(ref mut b)) => {
+                        a.append(b);
+                    }
+                    _ => {
+                        entry.inputs.push(input);
                     }
                 }
             }
@@ -337,21 +343,22 @@ fn test_plain() {
         Entry::parse_entry("a").unwrap(),
         Entry {
             attr: Attr::valid_default(),
-            input: vec![Input::String("a".into())]
+            inputs: vec![Input::String("a".into())]
         }
     );
 }
 
 #[test]
 fn test_finger_spell() {
+    let entry = Entry::parse_entry("{>}{&c}").unwrap();
     assert_eq!(
-        Entry::parse_entry("{>}{&c}").unwrap(),
+        entry,
         Entry {
             attr: Attr {
                 glue: true,
                 ..Attr::valid_default()
             },
-            input: vec![Input::String("c".into())],
+            inputs: vec![Input::Lower, Input::String("c".into())],
         }
     );
 }
@@ -362,7 +369,7 @@ fn test_cap() {
         Entry::parse_entry("{-|}").unwrap(),
         Entry {
             attr: Attr::valid_default(),
-            input: vec![],
+            inputs: vec![Input::Capitalized],
         }
     );
 }
@@ -377,7 +384,7 @@ fn test_cap_star() {
                 space_after: false,
                 ..Attr::valid_default()
             },
-            input: vec![],
+            inputs: vec![Input::Capitalized],
         }
     );
 }
@@ -388,7 +395,7 @@ fn test_entry_len() {
         Entry::parse_entry("{^}{#Return}{^}{-|}")
             .unwrap()
             .byte_len(),
-        2
+        4
     );
 }
 
@@ -398,7 +405,7 @@ fn test_command() {
         Entry::parse_entry("oh yeah{,}babe").unwrap(),
         Entry {
             attr: Attr::valid_default(),
-            input: vec![Input::String("oh yeah, babe".into())],
+            inputs: vec![Input::String("oh yeah, babe".into())],
         }
     );
 }
