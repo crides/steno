@@ -1,6 +1,6 @@
 //! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
 //! values which are already byte level (e.g. keycodes) for simplicity
-use std::collections::{hash_map::Entry as MapEntry, HashMap};
+use std::collections::HashMap;
 use std::fmt::Display;
 
 use lalrpop_util::ParseError;
@@ -244,8 +244,14 @@ impl Entry {
             let mut inputs = atoms[0].inputs.clone();
             for i in 0..spaces.len() {
                 if spaces[i]
-                        && atoms[i + 1] .inputs .iter() .map(|i| i.strlen()) .sum::<usize>() > 0
-                        && atoms[i].inputs.iter().map(|i| i.strlen()).sum::<usize>() > 0 {
+                    && atoms[i + 1]
+                        .inputs
+                        .iter()
+                        .map(|i| i.strlen())
+                        .sum::<usize>()
+                        > 0
+                    && atoms[i].inputs.iter().map(|i| i.strlen()).sum::<usize>() > 0
+                {
                     inputs.push(Input::String(" ".into()));
                 }
                 inputs.extend(atoms[i + 1].inputs.clone());
@@ -285,55 +291,33 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
     }
 }
 
-/// Parsed value representation for a JSON dictionary. Is of tree like structure to facilitate further
-/// compilation
+/// Parsed value representation for a JSON dictionary. Differs from the JSON dictionary only in that the
+/// values here are parsed.
 #[derive(Debug, Clone)]
-pub struct Dict {
-    pub entry: Option<Entry>,
-    pub children: HashMap<Stroke, Dict>,
-}
+pub struct Dict(pub HashMap<Vec<Stroke>, Entry>);
 
 impl Dict {
-    pub fn new(entry: Option<Entry>) -> Dict {
-        Dict {
-            entry,
-            children: HashMap::new(),
-        }
-    }
-
-    pub fn set_entry(&mut self, entry: Entry) {
-        self.entry = Some(entry);
-    }
-
-    pub fn entry(&mut self, stroke: Stroke) -> MapEntry<Stroke, Dict> {
-        self.children.entry(stroke)
-    }
-
     pub fn parse_from_json(m: &JsonDict) -> Result<Dict, ParseDictError> {
-        let mut root = Dict::new(None);
         let pbar = progress_bar(m.len(), "Parsing dictionary");
         pbar.set_draw_delta(m.len() as u64 / 100);
-        for (strokes, entry) in m.iter() {
-            let mut cur_dict = &mut root;
-            for stroke in strokes.split('/').map(|stroke| {
-                stroke
-                    .parse()
-                    .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
-            }) {
-                let stroke = stroke?;
-                cur_dict = cur_dict.entry(stroke).or_default();
-            }
-            cur_dict.set_entry(Entry::parse_entry(entry)?);
-            pbar.inc(1);
-        }
+        let dict = m
+            .iter()
+            .map(|(strokes, entry)| {
+                let strokes = strokes
+                    .split('/')
+                    .map(|stroke| {
+                        stroke
+                            .parse()
+                            .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let entry = Entry::parse_entry(entry)?;
+                pbar.inc(1);
+                Ok((strokes, entry))
+            })
+            .collect::<Result<HashMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");
-        Ok(root)
-    }
-}
-
-impl Default for Dict {
-    fn default() -> Dict {
-        Dict::new(None)
+        Ok(Dict(dict))
     }
 }
 
