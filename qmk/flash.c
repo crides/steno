@@ -94,9 +94,7 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
     select_card();
     spi_send_byte(0x03);    // read 
-    spi_send_byte((addr >> 16) & 0xFF);
-    spi_send_byte((addr >> 8) & 0xFF);
-    spi_send_byte(addr & 0xFF);
+    spi_send_addr(addr);
     for (uint8_t i = 0; i < len; i ++) {
         buf[i] = spi_recv_byte();
     }
@@ -129,8 +127,8 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 #endif
 }
 
-void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
+void flash_prep_write(void) {
     select_card();
     while (1) {
         spi_send_byte(0x05);    // read status reg
@@ -144,12 +142,15 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
     select_card();
     spi_send_byte(0x06);    // write enable
     unselect_card();
+}
+#endif
 
+void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
+#ifdef __AVR__
+    flash_prep_write();
     select_card();
     spi_send_byte(0x02);    // program
-    spi_send_byte((addr >> 16) & 0xFF);
-    spi_send_byte((addr >> 8) & 0xFF);
-    spi_send_byte(addr & 0xFF);
+    spi_send_addr(addr);
     for (uint8_t i = 0; i < len; i ++) {
         spi_send_byte(buf[i]);
     }
@@ -160,30 +161,41 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 #endif
 }
 
-void flash_erase_page(uint32_t addr) {
+void flash_erase_64k(uint32_t addr) {
 #ifdef __AVR__
-    select_card();
-    while (1) {
-        spi_send_byte(0x05);    // read status reg
-        uint8_t status = spi_recv_byte();
-        if (!(status & 0x01)) {
-            break;
-        }
-    }
-    unselect_card();
-
-    select_card();
-    spi_send_byte(0x06);    // write enable
-    unselect_card();
-
+    flash_prep_write();
     select_card();
     spi_send_byte(0xD8);
-    spi_send_byte((addr >> 16) & 0xFF);
-    spi_send_byte((addr >> 8) & 0xFF);
-    spi_send_byte(addr & 0xFF);
+    spi_send_addr(addr);
     unselect_card();
 #else
     uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_64KB, addr);
+    APP_ERROR_CHECK(err_code);
+#endif
+}
+
+void flash_erase_4k(uint32_t addr) {
+#ifdef __AVR__
+    flash_prep_write();
+    select_card();
+    spi_send_byte(0x20);
+    spi_send_addr(addr);
+    unselect_card();
+#else
+    uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr);
+    APP_ERROR_CHECK(err_code);
+#endif
+}
+
+void flash_erase_device(void) {
+#ifdef __AVR__
+    flash_prep_write();
+    select_card();
+    spi_send_byte(0xC7);
+    spi_send_byte(0x60);
+    unselect_card();
+#else
+    uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_KB, addr);
     APP_ERROR_CHECK(err_code);
 #endif
 }

@@ -11,6 +11,8 @@
 #include "hist.h"
 #include "lcd.h"
 #include "dict_editing.h"
+#include <LUFA/Drivers/USB/USB.h>
+#include "scsi.h"
 
 #ifdef __AVR__
 #ifdef HAS_BATTERY
@@ -40,6 +42,7 @@ void tap_code16(uint16_t code) {
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
 state_t state = {.space = 0, .cap = CAPS_CAP, .prev_glue = 0};
+bool flashing = false;
 /* #ifdef OLED_DRIVER_ENABLE */
 char last_stroke[24];
 char last_trans[128];
@@ -59,6 +62,10 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     bt_state_time = timer_read32();
 #endif
 
+    if (flashing) {
+        steno_debug_ln("flashing");
+        return false;
+    }
     uint32_t stroke = qmk_chord_to_stroke(chord);
 #ifdef STENO_PHONE
     if (stroke == 0x0CA990) {   //KPROERPG, 2 paws and OE
@@ -235,7 +242,7 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
             break;
         case 0x03:;
             addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
-            flash_erase_page(addr);
+            flash_erase_64k(addr);
             data[1] = 0x01;
             break;
         case 0x04:;

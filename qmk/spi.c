@@ -25,6 +25,12 @@ void spi_send_word(uint16_t w) {
     spi_send_byte(w);
 }
 
+void spi_send_addr(uint32_t addr) {
+    spi_send_byte((addr >> 16) & 0xFF);
+    spi_send_byte((addr >> 8) & 0xFF);
+    spi_send_byte(addr & 0xFF);
+}
+
 uint8_t spi_recv_byte(void) {
     SPDR = 0xff;
     while(!(SPSR & _BV(SPIF)));
