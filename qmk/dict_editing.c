@@ -1,7 +1,6 @@
 #include <string.h>
 #include "steno.h"
 #include "keymap_steno.h"
-#include "raw_hid.h"
 #include "spi.h"
 #include "flash.h"
 #include <stdio.h>

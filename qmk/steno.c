@@ -1,7 +1,6 @@
 #include <string.h>
 #include "steno.h"
 #include "keymap_steno.h"
-#include "raw_hid.h"
 #include "spi.h"
 #include "flash.h"
 #include <stdio.h>
@@ -158,110 +157,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     }
     return false;
 }
-
-#ifdef USE_SPI_FLASH
-uint16_t crc8(uint8_t *data, uint8_t len) {
-    uint8_t crc = 0;
-    for (uint8_t i = 0; i < len; i ++) {
-        crc ^= data[i];
-        for (uint8_t i = 0; i < 8; ++i) {
-            crc = crc >> 1;
-            if (crc & 1) {
-                crc = crc ^ 0x8C;
-            }
-        }
-    }
-    return crc;
-}
-
-#define nack(reason) \
-    data[0] = 0x55; \
-    data[1] = 0xFF; \
-    data[2] = (reason); \
-    data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE); \
-    raw_hid_send(data, PACKET_SIZE);
-
-// Handle the HID packets, mostly for downloading and uploading the dictionary.
-void raw_hid_receive(uint8_t *data, uint8_t length) {
-    static mass_write_info_t mass_write_infos[PACKET_SIZE];
-    static uint8_t mass_write_packet_num = 0;
-    static uint8_t mass_write_packet_ind = 0;
-    static uint32_t mass_write_addr = 0;
-
-    if (mass_write_packet_num) {
-        mass_write_info_t info = mass_write_infos[mass_write_packet_ind];
-        uint8_t crc = crc8(data, info.len);
-        if (crc != info.crc) {
-            steno_error_ln("calc: %X, info: %X", crc, info.crc);
-            nack(0x04);
-            return;
-        }
-        flash_write(mass_write_addr, data, info.len);
-        mass_write_addr += info.len;
-        mass_write_packet_ind ++;
-        if (mass_write_packet_ind == mass_write_packet_num) {
-            mass_write_packet_num = 0;
-        }
-
-        data[0] = 0x55;
-        data[1] = 0x01;
-        data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE);
-        raw_hid_send(data, PACKET_SIZE);
-        return;
-    }
-
-    if (data[0] != 0xAA) {
-        steno_error_ln("head");
-        nack(0x01);
-        return;
-    }
-
-    uint8_t crc = crc8(data, MSG_SIZE);
-    if (crc != data[PACKET_SIZE - 1]) {
-        steno_error_ln("CRC: %X", crc);
-        nack(0x02);
-        return;
-    }
-
-    uint32_t addr;
-    uint8_t len;
-    switch (data[1]) {
-        case 0x01:;
-            addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
-            len = data[2];
-            flash_write(addr, data + 6, len);
-            data[0] = 0x55;
-            data[1] = 0x01;
-            break;
-        case 0x02:;
-            addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
-            len = data[2];
-            data[1] = 0x02;
-            data[2] = len;
-            flash_read(addr, data + 6, len);
-            break;
-        case 0x03:;
-            addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
-            flash_erase_64k(addr);
-            data[1] = 0x01;
-            break;
-        case 0x04:;
-            mass_write_addr = (uint32_t) data[3] | (uint32_t) data[4] << 8 | (uint32_t) data[5] << 16;
-            mass_write_packet_num = data[2];
-            mass_write_packet_ind = 0;
-            memcpy(mass_write_infos, data + 6, sizeof(mass_write_infos));
-            data[1] = 0x01;
-            break;
-        default:;
-            nack(0x03);
-            return;
-    }
-
-    data[0] = 0x55;
-    data[PACKET_SIZE - 1] = crc8(data, MSG_SIZE);
-    raw_hid_send(data, PACKET_SIZE);
-}
-#endif
 
 // Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize
 // the keyboard
