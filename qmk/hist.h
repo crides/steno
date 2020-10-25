@@ -27,15 +27,12 @@ typedef struct __attribute__((packed)) {
     uint8_t len;
     state_t state;
     uint8_t repl_len : 4;
-    uint8_t search_nodes_len : 4;
-    search_node_t *search_nodes;
-    output_t output;
+    uint32_t stroke : 24;
+    // Pointer + strokes length of the entry
+    uint32_t entry : 24;
 } history_t;
 
-extern search_node_t search_nodes[SEARCH_NODES_SIZE];
-extern uint8_t search_nodes_len;
 extern state_t state;
-
 extern history_t history[HIST_SIZE];
 extern uint8_t hist_ind;
 

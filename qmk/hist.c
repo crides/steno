@@ -11,14 +11,7 @@ history_t history[HIST_SIZE];
 uint8_t hist_ind = 0;
 
 void hist_add(history_t hist) {
-    hist_ind++;
-    if (hist_ind == HIST_SIZE) {
-        hist_ind = 0;
-    }
-
-    if (history[hist_ind].len) {
-        free(history[hist_ind].search_nodes);
-    }
+    history[hist_ind] = hist;
 
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("hist[%u]:", hist_ind);
@@ -34,7 +27,18 @@ void hist_add(history_t hist) {
         steno_debug_ln("  output: %lX", node);
     }
 #endif
-    history[hist_ind] = hist;
+    hist_ind++;
+    if (hist_ind == HIST_SIZE) {
+        hist_ind = 0;
+    }
+}
+
+history_t *hist_get(uint8_t ind) {
+    int8_t real_ind = hist_ind - ind;
+    if (real_ind < 0) {
+        real_ind += HIST_SIZE;
+    }
+    return &history[real_ind];
 }
 
 // Undo the last history entry. First delete the output, and then start from the initial state of the
