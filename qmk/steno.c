@@ -40,7 +40,7 @@ void tap_code16(uint16_t code) {
 
 search_node_t search_nodes[SEARCH_NODES_SIZE];
 uint8_t search_nodes_len = 0;
-state_t state = {.space = 0, .cap = CAPS_CAP, .prev_glue = 0};
+state_t state = {.space = 0, .cap = CAPS_CAP, .glue = 0};
 bool flashing = false;
 /* #ifdef OLED_DRIVER_ENABLE */
 char last_stroke[24];
@@ -135,11 +135,11 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     }
     new_hist.state = state;
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
+    steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
 #endif
     new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
+    steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
 #endif
     if (new_hist.len) {
         hist_add(new_hist);

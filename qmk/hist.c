@@ -17,7 +17,7 @@ void hist_add(history_t hist) {
     steno_debug_ln("hist[%u]:", hist_ind);
     steno_debug_ln("  len: %u, repl_len: %u", hist.len, hist.repl_len);
     state_t state = hist.state;
-    steno_debug_ln("  space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
+    steno_debug_ln("  space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
     if (hist.output.type == RAW_STROKE) {
         char buf[24];
         stroke_to_string(hist.output.stroke, buf, NULL);
@@ -149,10 +149,9 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 
     state_t old_state = *state;
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  old_state: space: %u, cap: %u, glue: %u", old_state.space, old_state.cap, old_state.prev_glue);
+    steno_debug_ln("  old_state: space: %u, cap: %u, glue: %u", old_state.space, old_state.cap, old_state.glue);
 #endif
-    uint8_t space = old_state.space;
-    state->prev_glue = 0;
+    state->glue = 0;
     state->space = 1;
 
     if (output.type == RAW_STROKE) {
@@ -162,12 +161,12 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
         steno_debug_ln("  stroke: %lX", stroke);
 #endif
         if (stroke_to_string(output.stroke, _buf, &len)) {
-            state->prev_glue = 1;
+            state->glue = 1;
         }
 #ifdef STENO_DEBUG_HIST
         steno_debug("  output: '");
 #endif
-        if (space && !(old_state.prev_glue && state->prev_glue)) {
+        if (old_state.space && !(old_state.glue && state->glue)) {
             send_char(' ');
             steno_debug(" ");
             len++;
@@ -191,8 +190,8 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 
     attr_t attr = _header.attrs;
     state->space = attr.space_after;
-    state->prev_glue = attr.glue;
-    space = space && attr.space_prev && entry_len && !(old_state.prev_glue && state->prev_glue);
+    state->glue = attr.glue;
+    space = old_state.space && attr.space_prev && entry_len && !(old_state.glue && state->glue);
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  attr: glue: %u, cap: %u, str_only: %u", attr.glue, attr.caps, attr.str_only);
     steno_debug_ln("  output:");
@@ -200,12 +199,14 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
 
     uint8_t has_raw_key = 0, str_len = 0;
     uint8_t mods = 0;
+    uint8_t set_case;
     for (uint8_t i = 0; i < entry_len; i++) {
         // Commands
+        set_case = 0;
         if (_buf[i] < 32) {
             switch (_buf[i]) {
             case 0: // raw bytes of "length"
-                space = 0;
+               space = 0;
                 has_raw_key = 1;
                 uint8_t key_end = _buf[i + 1];
                 i++;
@@ -247,10 +248,12 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
             // TODO handle keep cases at the end of entry
             case 2: // Uppercase next entry
                 state->cap = CAPS_UPPER;
+                set_case = 1;
                 break;
 
             case 3: // capitalize next entry
                 state->cap = CAPS_CAP;
+                set_case = 1;
                 break;
 
             case 4:; // keep case after "length" amount of characters
@@ -271,12 +274,13 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
                     }
                 }
                 state->cap = old_state.cap;
+                set_case = 1;
                 break;
 
             case 5: // reset formatting
                 state->space = 1;
                 state->cap = CAPS_LOWER;
-                state->prev_glue = 0;
+                state->glue = 0;
                 break;
 
             case 16: // add translation
@@ -319,6 +323,9 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
             str_len = 1;
             i = str - _buf;
         }
+    }
+    if (!set_case) {
+        state->cap = CAPS_LOWER;
     }
 
 #ifdef STENO_DEBUG_HIST
