@@ -33,6 +33,8 @@ static const uint8_t PROGMEM initcmd[] = {
   0x00                                   // End of list
 };
 
+static int16_t cursor_x = 0, cursor_y = 0;
+
 // SPI assume inited
 void lcd_init(void) {
     uint8_t cmd, x, numArgs;
@@ -84,12 +86,13 @@ void set_addr_window(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h) {
 }
 
 void lcd_pos(uint16_t x, uint16_t y) {
-    set_addr_window(x, y, 1, 1);
+    cursor_x = x;
+    cursor_y = y;
 }
 
 void lcd_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
     if (x < LCD_WIDTH && y < LCD_HEIGHT) {
-        lcd_pos(x, y);
+        set_addr_window(x, y, 1, 1);
         spi_send_word(color);
     }
 }
@@ -154,7 +157,6 @@ void lcd_draw_char(int16_t x, int16_t y, uint8_t c, uint8_t size, uint16_t fg, u
     unselect_lcd();
 }
 
-static int16_t cursor_x = 0, cursor_y = 0;
 void lcd_putc(uint8_t c, uint8_t size) {
     if (c == '\n') {              // Newline?
         cursor_x = 0;               // Reset x to zero,
@@ -169,11 +171,34 @@ void lcd_putc(uint8_t c, uint8_t size) {
     }
 }
 
-void lcd_puts(int16_t x, int16_t y, uint8_t *str, uint8_t size) {
+void lcd_puts_at(int16_t x, int16_t y, uint8_t *str, uint8_t size) {
     cursor_x = x;
     cursor_y = y;
     while (*str) {
         lcd_putc(*str, size);
         str ++;
     }
+}
+
+void lcd_puts(uint8_t *str, uint8_t size) {
+    while (*str) {
+        lcd_putc(*str, size);
+        str ++;
+    }
+}
+
+void lcd_back(uint8_t size)
+{
+    if(cursor_x == 0)
+    {
+        if (cursor_y != 0) {
+            cursor_x = LCD_WIDTH-6*size;
+            cursor_y--;
+        } else {
+            return;
+        }
+    } else {
+        cursor_x = cursor_x-6*size;
+    }
+    lcd_fill_rect(cursor_x,cursor_y,size*6, size*8,LCD_WHITE);
 }

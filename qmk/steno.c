@@ -74,31 +74,44 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     bt_state = BT_ACTIVE;
 #endif
 
-
-/* #ifdef OLED_DRIVER_ENABLE */
+    /* #ifdef OLED_DRIVER_ENABLE */
     last_trans_size = 0;
     memset(last_trans, 0, 128);
     stroke_to_string(stroke, last_stroke, NULL);
-/* #endif */
+    /* #endif */
+    steno_debug_ln("Current Editing State: %d", editing_state);
+    if (editing_state == ED_ACTIVE_ADD || editing_state == ED_ACTIVE_REMOVE) {
+        if (stroke == 0x008100) {
+            prompt_user_translation();
+            editing_state = ED_ACTIVE_ADD_TRANS;
+        } else {
+            set_Stroke(stroke);
+            steno_debug_ln("entered editing state");
+        }
+        return false;
+    }
+    if (editing_state == ED_ACTIVE_ADD_TRANS) {
+        if (stroke == 0x008100) {
+            editing_state = ED_IDLE;
+            add_finished();
+        } else {
+            set_Trans(last_stroke);
+            steno_debug_ln("entered translation addition stage");
+        }
 
-    if(editing_state == ED_ACTIVE_ADD || editing_state == ED_ACTIVE_REMOVE)
-    {
-        set_Stroke(last_stroke);
-        steno_debug_ln("entered editing state");
         return false;
     }
 
     extern int usbd_send_consumer(uint16_t data);
-    if (stroke == 0x1000) {  // Asterisk
+    if (stroke == 0x1000) { // Asterisk
         hist_undo();
         select_lcd();
         lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-        lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
-        lcd_puts(0, 16, (uint8_t *) last_trans, 2);
+        lcd_puts_at(0, 0, (uint8_t *)last_stroke, 2);
+        lcd_puts_at(0, 16, (uint8_t *)last_trans, 2);
         unselect_lcd();
         return false;
     }
-
 
     // TODO free up the next entry for boundary
     history_t new_hist;
@@ -142,11 +155,11 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
     steno_debug_ln("--------\n");
 #endif
-    if(editing_state == ED_IDLE){
+    if (editing_state == ED_IDLE) {
         select_lcd();
         lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-        lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
-        lcd_puts(0, 16, (uint8_t *) last_trans, 2);
+        lcd_puts_at(0, 0, (uint8_t *)last_stroke, 2);
+        lcd_puts_at(0, 16, (uint8_t *)last_trans, 2);
         unselect_lcd();
     }
     return false;
