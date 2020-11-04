@@ -29,7 +29,7 @@ impl Stroke {
         let bytes = self.0.to_le_bytes();
         let mut hash = init.unwrap_or(0x811c9dc5u32);
         for byte in &bytes {
-            hash *= 0x01000193;
+            hash = hash.wrapping_mul(0x01000193);
             hash ^= *byte as u32;
         }
         hash

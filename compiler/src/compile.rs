@@ -14,8 +14,8 @@ pub struct RawEntry(Vec<u8>);
 impl From<Entry> for RawEntry {
     fn from(e: Entry) -> RawEntry {
         let attr: RawAttr = e.attr.into();
-        let bytes = iter::once(attr.0)
-            .chain(iter::once(e.byte_len() as u8))
+        let bytes = iter::once(e.byte_len() as u8)
+            .chain(iter::once(attr.0))
             .chain(e.inputs.iter().flat_map(|i| match i {
                 Input::Keycodes(keycodes) => {
                     assert!(keycodes.len() <= 127);
@@ -137,8 +137,15 @@ impl RawDict {
         for bucket in &self.buckets {
             w.write_all(&bucket.to_le_bytes()[0..3])?;
         }
+        let mut written = 3 * (1usize << 20);
         for pair in &self.kvpairs {
+            written += pair.len();
             w.write_all(&pair)?;
+        }
+        let rem = vec![0xFFu8; 16];
+        while written < 16 * (1usize << 20) {
+            w.write_all(&rem)?;
+            written += 16;
         }
         Ok(())
     }

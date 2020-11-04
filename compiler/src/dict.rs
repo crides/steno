@@ -196,6 +196,9 @@ impl Entry {
                 Ok(Entry { attr, inputs })
             }
         } else {
+            if s.chars().all(|c| c.is_numeric()) {
+                attr.glue = true;
+            }
             Ok(Entry {
                 attr,
                 inputs: vec![Input::String(s.into())],
@@ -333,7 +336,41 @@ fn test_plain() {
 }
 
 #[test]
+fn test_punctuation() {
+    let entry = Entry::parse_entry("{.}is").unwrap();
+    assert_eq!(
+        entry,
+        Entry {
+            attr: Attr {
+                space_prev: false,
+                ..Attr::valid_default()
+            },
+            inputs: vec![
+                Input::String(".".into()),
+                Input::Capitalized,
+                Input::String(" is".into())
+            ],
+        }
+    );
+}
+
+#[test]
 fn test_finger_spell() {
+    let entry = Entry::parse_entry("{&P}").unwrap();
+    assert_eq!(
+        entry,
+        Entry {
+            attr: Attr {
+                glue: true,
+                ..Attr::valid_default()
+            },
+            inputs: vec![Input::String("P".into())],
+        }
+    );
+}
+
+#[test]
+fn test_finger_spell_lower() {
     let entry = Entry::parse_entry("{>}{&c}").unwrap();
     assert_eq!(
         entry,
@@ -380,6 +417,20 @@ fn test_entry_len() {
             .unwrap()
             .byte_len(),
         4
+    );
+}
+
+#[test]
+fn test_number_only() {
+    assert_eq!(
+        Entry::parse_entry("05").unwrap(),
+        Entry {
+            attr: Attr {
+                glue: true,
+                ..Attr::valid_default()
+            },
+            inputs: vec![Input::String("05".into())],
+        }
     );
 }
 

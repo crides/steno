@@ -26,6 +26,7 @@ use stroke::Stroke;
 fn main() {
     let matches = App::new("compile-steno")
         .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
+        .subcommand(SubCommand::with_name("hash").arg(Arg::with_name("strokes").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
                 .arg(Arg::with_name("input").required(true))
@@ -69,6 +70,15 @@ fn main() {
         ("test", Some(m)) => {
             let stroke: Stroke = m.value_of("stroke").unwrap().parse().unwrap();
             println!("{:x}", stroke.raw());
+        }
+        ("hash", Some(m)) => {
+            let strokes: String = m.value_of("strokes").unwrap().parse().unwrap();
+            let strokes = strokes
+                .split('/')
+                .map(|stroke| stroke.parse().unwrap())
+                .collect::<Vec<_>>();
+            dbg!(&strokes);
+            println!("{:x}", stroke::hash_strokes(&strokes));
         }
         (cmd, _) => panic!("{}", cmd),
     }
