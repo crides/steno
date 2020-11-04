@@ -35,8 +35,8 @@ impl FreeMap {
         let bit = 31 - log2(self.0[word as usize], block);
         let addr = (word - 1057) * 32 + bit;
         assert!(addr < 2u32.pow(20));
-        let thing = 2u32.pow(1 << block) - 1;   // Get block of continous 1's with count 1 << block
-        self.0[word as usize] &= !(thing << (31 - bit - ((1 << block) - 1)));   // Move the block to the right, aligning MSB of block to bit
+        let thing = 2u32.pow(1 << block) - 1; // Get block of continous 1's with count 1 << block
+        self.0[word as usize] &= !(thing << (31 - bit - ((1 << block) - 1))); // Move the block to the right, aligning MSB of block to bit
         for _level in 0..3 {
             let (bit, next) = ((word - 1) % 32, (word - 1) / 32);
             if self.0[word as usize] == 0 {
@@ -73,34 +73,34 @@ fn test() {
     let mut map = FreeMap::new();
     assert_eq!(map.req_16(), 0);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_32(), 1/*2*/);
+    assert_eq!(map.req_32(), 1 /*2*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_16(), 3/*1*/);
+    assert_eq!(map.req_16(), 3 /*1*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_16(), 4/*4*/);
+    assert_eq!(map.req_16(), 4 /*4*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 5/*8*/);
+    assert_eq!(map.req_64(), 5 /*8*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 9/*12*/);
+    assert_eq!(map.req_64(), 9 /*12*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 13/*16*/);
+    assert_eq!(map.req_64(), 13 /*16*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 17/*20*/);
+    assert_eq!(map.req_64(), 17 /*20*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 21/*24*/);
+    assert_eq!(map.req_64(), 21 /*24*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 25/*28*/);
+    assert_eq!(map.req_64(), 25 /*28*/);
     println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 29/*32*/);
+    assert_eq!(map.req_64(), 29 /*32*/);
     println!("{:08x}", map.0[33]);
     println!("{:08x} {:08x}", map.0[1057], map.0[1058]);
-    assert_eq!(map.req_64(), 33/*36*/);
+    assert_eq!(map.req_64(), 33 /*36*/);
     println!("{:08x}", map.0[33]);
     println!("{:08x} {:08x}", map.0[1057], map.0[1058]);
 }
 
 #[test]
-fn test_log()  {
+fn test_log() {
     assert_eq!(31, log2(0xFFFF_FFFF, 0));
     assert_eq!(29, log2(0x7FFF_FFFF, 1));
     assert_eq!(29, log2(0x3FFF_FFFF, 1));

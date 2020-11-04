@@ -8,7 +8,7 @@ typedef enum {
     ED_ACTIVE_CHANGE,
 } editing_state_t;
 
-editing_state_t editing_state;
+extern editing_state_t editing_state;
 
 void prompt_user(void);
 void set_Stroke(char stroke[]);

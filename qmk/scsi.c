@@ -40,6 +40,8 @@
 #include "flash.h"
 #include "stroke.h"
 
+static uint8_t scsi_buf[256];
+
 /** Structure to hold the SCSI response data to a SCSI INQUIRY command. This gives information about the device's
  *  features and capabilities.
  */
@@ -157,8 +159,8 @@ void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint3
             // XXX For some reason, Linux seems to write the file starting from the
             // first block, all the way to the end, and then write the 0th block
             for (uint8_t packet_num = 0; packet_num < 8; packet_num ++) {
-                Endpoint_Read_Stream_LE(_buf, EPSIZE, NULL);
-                flash_write(((block_no + i) * 8 + packet_num) * EPSIZE, (uint8_t *) _buf, EPSIZE);
+                Endpoint_Read_Stream_LE(scsi_buf, EPSIZE, NULL);
+                flash_write(((block_no + i) * 8 + packet_num) * EPSIZE, scsi_buf, EPSIZE);
             }
             if (msc_interface_info->State.IsMassStoreReset) {
                 return;
@@ -172,7 +174,7 @@ void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint3
     } else {
         for (uint16_t i = 0; i < blocks; i ++) {
             for (uint8_t packet_num = 0; packet_num < 8; packet_num ++) {
-                Endpoint_Read_Stream_LE(_buf, EPSIZE, NULL);
+                Endpoint_Read_Stream_LE(scsi_buf, EPSIZE, NULL);
             }
             if (msc_interface_info->State.IsMassStoreReset) {
                 return;
@@ -196,8 +198,8 @@ void scsi_read(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint32
                     return;
                 }
             }
-            fat_read_block(block_addr + i, packet_num, (uint8_t *) _buf);
-            Endpoint_Write_Stream_LE(_buf, EPSIZE, NULL);
+            fat_read_block(block_addr + i, packet_num, (uint8_t *) scsi_buf);
+            Endpoint_Write_Stream_LE(scsi_buf, EPSIZE, NULL);
             if (msc_interface_info->State.IsMassStoreReset) {
                 return;
             }

@@ -38,15 +38,16 @@ void tap_code16(uint16_t code) {
 }
 #endif
 
-search_node_t search_nodes[SEARCH_NODES_SIZE];
-uint8_t search_nodes_len = 0;
-state_t state = {.space = 0, .cap = CAPS_CAP, .glue = 0};
 bool flashing = false;
-/* #ifdef OLED_DRIVER_ENABLE */
 char last_stroke[24];
 char last_trans[128];
 uint8_t last_trans_size;
-/* #endif */
+
+uint8_t hist_ind = 0;
+// Index into `history` that marks how far into the past the translation can go; always less than or
+// equal to `hist_ind` or 0xFF
+uint8_t stroke_start_ind = 0;
+
 #ifndef __AVR__
 static bt_state_t bt_state = BT_ACTIVE;
 static uint32_t bt_state_time;
@@ -80,12 +81,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     bt_state = BT_ACTIVE;
 #endif
 
-
-/* #ifdef OLED_DRIVER_ENABLE */
     last_trans_size = 0;
     memset(last_trans, 0, 128);
     stroke_to_string(stroke, last_stroke, NULL);
-/* #endif */
 
     if(editing_state == ED_ACTIVE_ADD || editing_state == ED_ACTIVE_REMOVE)
     {
@@ -94,9 +92,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
-    extern int usbd_send_consumer(uint16_t data);
     if (stroke == 0x1000) {  // Asterisk
-        hist_undo();
+        hist_ind = HIST_LIMIT(hist_ind - 1);
+        hist_undo(hist_ind);
         select_lcd();
         lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
         lcd_puts(0, 0, (uint8_t *) last_stroke, 2);
@@ -105,44 +103,42 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
-
     // TODO free up the next entry for boundary
-    history_t new_hist;
-    search_node_t *hist_nodes = malloc(search_nodes_len * sizeof(search_node_t));
-    if (!hist_nodes) {
-        steno_error_ln("No memory for history!");
-        return false;
+    history_t *hist = hist_get(hist_ind);
+    hist->stroke = stroke;
+    // Default `state` set in last cycle
+    search_entry(hist_ind);
+    hist->entry = last_entry_ptr;
+    steno_debug_ln("  entry: %06lX", last_entry_ptr);
+    uint8_t strokes_len = last_entry_ptr & 0xF;
+    if (strokes_len > 1) {
+        hist->state = hist_get(HIST_LIMIT(hist_ind - strokes_len + 1))->state;
     }
-    memcpy(hist_nodes, search_nodes, search_nodes_len * sizeof(search_node_t));
-    new_hist.search_nodes = hist_nodes;
-    new_hist.search_nodes_len = search_nodes_len;
-
-    uint32_t max_level_node = 0;
-    uint8_t max_level = 0;
-    search_on_nodes(search_nodes, &search_nodes_len, stroke, &max_level_node, &max_level);
-
-    if (max_level_node) {
-        new_hist.output.type = NODE_STRING;
-        new_hist.output.node = max_level_node;
-        new_hist.repl_len = max_level - 1;
+#ifdef STENO_DEBUG_HIST
+    steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", hist->state.space, hist->state.cap, hist->state.glue);
+#endif
+    // Set default state for next history entry
+    hist_get(HIST_LIMIT(hist_ind + 1))->state = process_output(hist_ind);
+#ifdef STENO_DEBUG_HIST
+    steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", hist->state.space, hist->state.cap, hist->state.glue);
+#endif
+    if (hist->len) {
+#ifdef STENO_DEBUG_HIST
+        steno_debug_ln("hist[%u]:", hist_ind);
+        steno_debug_ln("  len: %u, stroke_len: %u", hist->len, hist->entry & 0xF);
+        state_t state = hist->state;
+        steno_debug_ln("  space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
+        char buf[24];
+        stroke_to_string(hist->stroke, buf, NULL);
+        steno_debug_ln("  stroke: %s", buf);
+        if (hist->entry != 0) {
+            steno_debug_ln("  entry: %lX", hist->entry & 0xFFFFFF);
+        }
+#endif
+        hist_ind = HIST_LIMIT(hist_ind + 1);
+        stroke_start_ind = 0xFF;
     } else {
-        new_hist.output.type = RAW_STROKE;
-        new_hist.output.stroke = stroke;
-        new_hist.repl_len = 0;
-    }
-    if (new_hist.repl_len) {
-        state = history[(hist_ind - new_hist.repl_len + 1) % HIST_SIZE].state;
-    }
-    new_hist.state = state;
-#ifdef STENO_DEBUG_HIST
-    steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
-#endif
-    new_hist.len = process_output(&state, new_hist.output, new_hist.repl_len);
-#ifdef STENO_DEBUG_HIST
-    steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
-#endif
-    if (new_hist.len) {
-        hist_add(new_hist);
+        stroke_start_ind = hist_ind;
     }
 
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
@@ -161,6 +157,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 // Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize
 // the keyboard
 void keyboard_post_init_user(void) {
+    hist_get(0)->state.cap = CAPS_CAP;
 #ifdef USE_SPI_FLASH
     spi_init();
     flash_init();

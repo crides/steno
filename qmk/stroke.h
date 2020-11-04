@@ -5,11 +5,8 @@
 
 #define MAX_COLLISIONS 8
 #define SEARCH_NODES_SIZE 8
-
-typedef struct __attribute__((packed)) {
-    uint32_t stroke : 24;
-    uint32_t addr : 24;
-} child_t;
+#define FNV_SEED 0x811c9dc5
+#define FNV_FACTOR 0x01000193
 
 // Caps for the current entry
 typedef enum {
@@ -28,26 +25,12 @@ typedef struct __attribute__((packed)) {
     uint8_t present : 1;
 } attr_t;
 
-typedef struct __attribute__((packed)) {
-    uint32_t node_num : 24;
-    uint8_t entry_len;
-    attr_t attrs;
-} header_t;
-
-typedef struct __attribute__((packed)) {
-    uint32_t node : 24;
-    uint8_t level;
-} search_node_t;
-
-extern header_t _header;
-extern child_t _child;
-extern char _buf[128];
-
-void seek(uint32_t addr);
-void read_string(void);
-void read_header(void);
-void read_child(void);
+extern uint32_t last_entry_ptr;
+extern uint8_t entry_buf[128];
 
 bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *len);
 uint32_t qmk_chord_to_stroke(uint8_t chord[6]);
-void search_on_nodes(search_node_t *nodes, uint8_t *size, uint32_t stroke, uint32_t *max_level_node, uint8_t *max_level);
+uint8_t last_entry_len(void);
+// Both returns implicitly in `last_entry_ptr`
+void find_strokes(uint8_t *strokes, uint8_t len);
+void search_entry(uint8_t h_ind);
