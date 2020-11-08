@@ -8,6 +8,7 @@ typedef enum {
     ED_ACTIVE_REMOVE,
     ED_ACTIVE_CHANGE,
     ED_ACTIVE_REMOVE_TRANS,
+    ED_ERROR,
 } editing_state_t;
 
 extern editing_state_t editing_state;

@@ -109,6 +109,17 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
+    if (editing_state == ED_ERROR) {
+        if (stroke == 0x008100) {
+            editing_state = ED_IDLE;
+            select_lcd();
+            lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
+            unselect_lcd();
+        }
+
+        return false;
+    }
+
     if(editing_state == ED_ACTIVE_REMOVE) {
         if (stroke == 0x008100) {
             display_stroke_to_remove();
