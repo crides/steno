@@ -290,6 +290,10 @@ uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
                     prompt_user();
                     break;
 
+                case 18: //remove translation
+                    prompt_user_remove();
+                    break;
+
 
 
         	}

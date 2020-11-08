@@ -8,18 +8,21 @@
 #include "hist.h"
 #include "lcd.h"
 #include "dict_editing.h"
+#include "stroke.h"
 
 editing_state_t editing_state = ED_IDLE;
 char curr_stroke[30];
 char curr_trans[64];
 static uint8_t curr_stroke_size = 0;
+uint32_t address_ptr = 0;
+uint8_t entry_length = 0;
 
 void prompt_user(void) {
     steno_debug_ln("prompt_user executed");
     editing_state = ED_ACTIVE_ADD;
     select_lcd();
     lcd_fill_rect(0, 0, LCD_WIDTH, 48, LCD_WHITE);
-    lcd_puts_at(0, 0, (uint8_t *)"Enter Stroke", 2);
+    lcd_puts_at(0, 0, (uint8_t *)"Enter Stroke to add: ", 2);
     unselect_lcd();
     memset(curr_stroke, 0, 30);
 }
@@ -95,10 +98,85 @@ void set_Trans(char trans[]) {
 void add_finished(void) {
     steno_debug_ln("Adding done with stroke: ");
     for (uint8_t i = 0; i < curr_stroke_size; i++) {
-        steno_debug("%X%X%X /a", curr_stroke[i * 3], curr_stroke[i * 3 + 1], curr_stroke[i * 3 + 2]);
+        steno_debug("%X%X%X /", curr_stroke[i * 3], curr_stroke[i * 3 + 1], curr_stroke[i * 3 + 2]);
     }
+
+    //find a open spot in flash and store this
+    
+
     steno_debug_ln("Adding done with translation: %s", curr_trans);
     select_lcd();
     lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
     unselect_lcd();
 }
+
+void prompt_user_remove(void) {
+    steno_debug_ln("prompt_user_remove executed");
+    editing_state = ED_ACTIVE_ADD;
+    select_lcd();
+    lcd_fill_rect(0, 0, LCD_WIDTH, 48, LCD_WHITE);
+    lcd_puts_at(0, 0, (uint8_t *)"Enter Stroke to remove: ", 2);
+    unselect_lcd();
+    memset(curr_stroke, 0, 30);
+}
+
+void display_stroke_to_remove(void) {
+    steno_debug_ln("display stroke remove executed");
+
+    find_strokes(curr_stroke, curr_stroke_size);
+    //last_entry_ptr is where the address is stored
+    address_ptr = (last_entry_ptr & 0xFFFFF0) + 0x300000;
+    uint8_t stroke_byte_len = 3 * curr_stroke_size;
+    flash_read(address_ptr, entry_buf, stroke_byte_len + 1);
+    uint8_t entry_len = entry_buf[stroke_byte_len];
+    flash_read(byte_ptr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
+    char entry_trans[entry_len];
+
+    entry_length = stroke_byte_len + 1 + entry_len + 1;
+
+    memcpy(entry_trans, entry_buf + stroke_byte_len + 2, entry_len);
+
+    select_lcd();
+    lcd_pos(0, 16);
+    lcd_puts((uint8_t *)"Entry to remove: ", 2);
+    lcd_puts((uint8_t *)entry_trans, 2);
+    lcd_puts_at(0, 48, (uint8_t *)"To remove, press enter (R/R)", 2);
+    unselect_lcd();
+
+}
+
+void remove_stroke(void) {
+
+    address_ptr = address_ptr & 0xFFF000;
+    
+    //scratchpage is at 0xF22000 to 0xF23000
+    uint32_t scratch_addr = 0xF22000;
+    char temp_scratch[256];
+    flash_erase_4k(scratch_addr);
+
+    for(;address_ptr<address_ptr+0x1000; address_ptr += 256) {
+
+        flash_read_page(address_ptr, temp_scratch);
+        if(address_ptr=>(last_entry_ptr & 0xFFFFF0) + 0x300000 
+                || address_ptr<(last_entry_ptr & 0xFFFFF0) + 0x300000 + entry_length) {
+            uint32_t offset = address_ptr - (last_entry_ptr & 0xFFFFF0) + 0x300000;
+            memset(temp_scratch+offset, 0xFF, entry_length);
+            flash_write_page(scratch_addr, temp_scratch);
+
+        }
+        else {
+            flash_write_page(scratch_addr, temp_scratch);
+            scratch_addr+=256;
+        }
+
+
+    }
+    flash_erase_4k(address_ptr-0x1000);
+    for(;address_ptr<address_ptr+0x1000; address_ptr += 256) {
+        flash_read_page(scratch_addr, temp_scratch);
+        scratch_addr+=256;
+        flash_write_page(address_ptr, temp_scratch);
+    }
+
+}
+

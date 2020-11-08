@@ -80,7 +80,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     stroke_to_string(stroke, last_stroke, NULL);
     /* #endif */
     steno_debug_ln("Current Editing State: %d", editing_state);
-    if (editing_state == ED_ACTIVE_ADD || editing_state == ED_ACTIVE_REMOVE) {
+    if (editing_state == ED_ACTIVE_ADD) {
         if (stroke == 0x008100) {
             prompt_user_translation();
             editing_state = ED_ACTIVE_ADD_TRANS;
@@ -99,6 +99,26 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
             steno_debug_ln("entered translation addition stage");
         }
 
+        return false;
+    }
+
+    if(editing_state == ED_ACTIVE_REMOVE) {
+        if (stroke == 0x008100) {
+            display_stroke_to_remove();
+            editing_state = ED_ACTIVE_REMOVE_TRANS;
+        } else {
+            set_Stroke(stroke);
+            steno_debug_ln("Added stroke to remove");
+        }
+        return false;
+    }
+
+    if(editing_state == ED_ACTIVE_REMOVE_TRANS;) {
+        if (stroke == 0x008100) {
+            remove_stroke();
+            editing_state = ED_IDLE;
+        }
+        steno_debug_ln("removed stroke")
         return false;
     }
 

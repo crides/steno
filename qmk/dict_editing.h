@@ -7,6 +7,7 @@ typedef enum {
     ED_ACTIVE_ADD_TRANS,
     ED_ACTIVE_REMOVE,
     ED_ACTIVE_CHANGE,
+    ED_ACTIVE_REMOVE_TRANS,
 } editing_state_t;
 
 editing_state_t editing_state;
