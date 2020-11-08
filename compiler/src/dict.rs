@@ -52,6 +52,10 @@ pub enum Input {
     RemoveSpace,
     /// Add a new translation
     AddTranslation,
+    /// Edit a new translation
+    EditTranslation,
+    /// Remove a new translation
+    RemoveTranslation,
 }
 
 impl Input {
@@ -163,6 +167,9 @@ impl Entry {
                         attr.space_prev = false;
                         vec![Input::String(s.into())]
                     }
+                    "BAT_STENO:ADD_TRANSLATION" => vec![Input::AddTranslation],
+                    "BAT_STENO:EDIT_TRANSLATION" => vec![Input::EditTranslation],
+                    "BAT_STENO:REMOVE_TRANSLATION" => vec![Input::RemoveTranslation],
                     "-|" => vec![Input::Capitalized],
                     ">" => vec![Input::Lower],
                     "<" => vec![Input::Upper],
