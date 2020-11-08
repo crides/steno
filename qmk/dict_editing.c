@@ -1,7 +1,6 @@
 #include <string.h>
 #include "steno.h"
 #include "keymap_steno.h"
-#include "raw_hid.h"
 #include "spi.h"
 #include "flash.h"
 #include <stdio.h>
@@ -36,9 +35,9 @@ void set_Stroke(uint32_t stroke) {
     if (stroke == 0x1000) {
         if (curr_stroke_size != 0) {
             curr_stroke_size -= 1;
-            uint32_t temp_last_stroke = (uint32_t)curr_stroke[3 * curr_stroke_size] << 16 |
-                                        (uint32_t)curr_stroke[3 * curr_stroke_size + 1] << 8 |
-                                        (uint32_t)curr_stroke[3 * curr_stroke_size + 2];
+            uint32_t temp_last_stroke = (uint32_t) curr_stroke[3 * curr_stroke_size] << 16 |
+                                        (uint32_t) curr_stroke[3 * curr_stroke_size + 1] << 8 |
+                                        (uint32_t) curr_stroke[3 * curr_stroke_size + 2];
             stroke_to_string(temp_last_stroke, temp, NULL);
             select_lcd();
             for (uint8_t i = 0; i < strlen(temp) + 1; i++) {
@@ -48,7 +47,7 @@ void set_Stroke(uint32_t stroke) {
         }
     } else if (curr_stroke_size < 9) {
         if (curr_stroke_size > 0) {
-            lcd_puts((uint8_t *)"/", 2);
+            lcd_puts((uint8_t *) "/", 2);
         }
         curr_stroke[3 * curr_stroke_size] = (stroke >> 16) & 0xFF;
         curr_stroke[3 * curr_stroke_size + 1] = (stroke >> 8) & 0xFF;
@@ -58,14 +57,14 @@ void set_Stroke(uint32_t stroke) {
         // stroke_to_string(stroke, last_stroke, NULL);
         select_lcd();
         steno_debug_ln("set stroke passed");
-        lcd_puts((uint8_t *)temp, 2);
+        lcd_puts((uint8_t *) temp, 2);
         unselect_lcd();
     }
 }
 
 void prompt_user_translation(void) {
     select_lcd();
-    lcd_puts_at(0, 32, (uint8_t *)"Enter Translation", 2);
+    lcd_puts_at(0, 32, (uint8_t *) "Enter Translation", 2);
     unselect_lcd();
     memset(curr_trans, 0, 64);
 }
@@ -90,21 +89,21 @@ void set_Trans(char trans[]) {
         strcat(curr_trans, trans);
         curr_trans_index += strlen(trans);
         select_lcd();
-        lcd_puts((uint8_t *)trans, 2);
+        lcd_puts((uint8_t *) trans, 2);
         unselect_lcd();
     }
 }
 
 void add_finished(void) {
-    steno_debug_ln("Adding done with stroke: ");
+    char buf[24];
+    steno_debug("Adding done with stroke: ");
     for (uint8_t i = 0; i < curr_stroke_size; i++) {
-        steno_debug("%X%X%X /", curr_stroke[i * 3], curr_stroke[i * 3 + 1], curr_stroke[i * 3 + 2]);
+        uint32_t stroke = (uint32_t) curr_stroke[3 * i] << 16 | (uint32_t) curr_stroke[3 * i + 1] << 8 |
+                          (uint32_t) curr_stroke[3 * i + 2];
+        stroke_to_string(stroke, buf, NULL);
+        steno_debug("%s/", buf);
     }
-
-    //find a open spot in flash and store this
-    
-
-    steno_debug_ln("Adding done with translation: %s", curr_trans);
+    steno_debug_ln("\nAdding done with translation: %s", curr_trans);
     select_lcd();
     lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
     unselect_lcd();
@@ -179,4 +178,3 @@ void remove_stroke(void) {
     }
 
 }
-

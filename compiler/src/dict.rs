@@ -1,6 +1,6 @@
 //! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
 //! values which are already byte level (e.g. keycodes) for simplicity
-use std::collections::{hash_map::Entry as MapEntry, HashMap};
+use std::collections::HashMap;
 use std::fmt::Display;
 
 use lalrpop_util::ParseError;
@@ -76,7 +76,7 @@ impl Input {
 }
 
 /// Simplified attributes for formatting atoms or entries for easy MCU consumption. Also includes other
-/// properties about the entry itself 
+/// properties about the entry itself
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Attr {
     pub space_prev: bool,
@@ -163,19 +163,13 @@ impl Entry {
                         attr.space_prev = false;
                         vec![Input::String(s.into())]
                     }
-                    "-|" => {
-                        vec![Input::Capitalized]
-                    }
-                    ">" => {
-                        vec![Input::Lower]
-                    }
-                    "<" => {
-                        vec![Input::Upper]
-                    }
+                    "-|" => vec![Input::Capitalized],
+                    ">" => vec![Input::Lower],
+                    "<" => vec![Input::Upper],
                     "^" => {
                         attr.space_prev = false;
                         attr.space_after = false;
-                        vec![Input::String("".into())]
+                        vec![]
                     }
                     _ => {
                         if s.starts_with('&') {
@@ -192,17 +186,19 @@ impl Entry {
                         }
                         if s.starts_with("~|") {
                             vec![Input::Keep(s[2..].into())]
-                        } else {
+                        } else if !s.is_empty() {
                             vec![Input::String(s.into())]
+                        } else {
+                            vec![]
                         }
                     }
                 };
-                Ok(Entry {
-                    attr,
-                    inputs,
-                })
+                Ok(Entry { attr, inputs })
             }
         } else {
+            if s.chars().all(|c| c.is_numeric()) {
+                attr.glue = true;
+            }
             Ok(Entry {
                 attr,
                 inputs: vec![Input::String(s.into())],
@@ -218,7 +214,7 @@ impl Entry {
             inputs: Vec::new(),
         };
 
-        let mut atoms = META_RE
+        let atoms = META_RE
             .find_iter(s)
             .map(|(b, e)| Entry::parse_atom(&s[b..e]))
             .collect::<Result<Vec<Entry>, ParseDictError>>()?;
@@ -227,33 +223,52 @@ impl Entry {
         } else if atoms.len() == 1 {
             Ok(atoms[0].clone())
         } else {
-            entry.attr.glue = atoms[0].attr.glue;
+            entry.attr.glue = atoms.iter().any(|e| e.attr.glue);
             entry.attr.space_prev = atoms[0].attr.space_prev;
-            entry.attr.space_after = atoms.last().unwrap().attr.space_after;
-            let spaces: Vec<bool> = atoms.windows(2).map(|pair| {
-                let (fst, snd) = (pair[0].attr, pair[1].attr);
-                fst.space_after && snd.space_prev && !(fst.glue && snd.glue)
-            }).collect();
+            // Find the last non-zero length entry or attribute only entry and get the attribute; there can be
+            // zero-width commands after wards, which always don't affect spacing. We want to use attributes
+            // from either a string entry (which has non-zero length) or a entry with no inputs (attribute only)
+            entry.attr.space_after = atoms
+                .iter()
+                .rev()
+                .find(|a| {
+                    a.inputs.is_empty() || a.inputs.iter().map(|i| i.strlen()).sum::<usize>() > 0
+                })
+                .map(|a| a.attr.space_after)
+                .unwrap_or(true);
+            let spaces: Vec<bool> = atoms
+                .windows(2)
+                .map(|pair| {
+                    let (fst, snd) = (pair[0].attr, pair[1].attr);
+                    fst.space_after && snd.space_prev && !(fst.glue && snd.glue)
+                })
+                .collect();
             assert_eq!(spaces.len() + 1, atoms.len());
             let mut inputs = atoms[0].inputs.clone();
             for i in 0..spaces.len() {
-                if spaces[i] && atoms[i + 1].inputs.iter().map(|i| i.byte_len()).sum::<usize>() > 0 {
+                if spaces[i]
+                    && atoms[i + 1]
+                        .inputs
+                        .iter()
+                        .map(|i| i.strlen())
+                        .sum::<usize>()
+                        > 0
+                    && atoms[i].inputs.iter().map(|i| i.strlen()).sum::<usize>() > 0
+                {
                     inputs.push(Input::String(" ".into()));
                 }
-                inputs.append(&mut atoms[i + 1].inputs);
+                inputs.extend(atoms[i + 1].inputs.clone());
             }
             for mut input in inputs.into_iter() {
-                if let Some(last) = entry.inputs.last_mut() {
-                    match (last, &mut input) {
-                        (Input::String(a), Input::String(ref mut b)) => {
-                            a.push_str(b);
-                        },
-                        (Input::Keycodes(a), Input::Keycodes(ref mut b)) => {
-                            a.append(b);
-                        },
-                        _ => {
-                            entry.inputs.push(input);
-                        }
+                match (entry.inputs.last_mut(), &mut input) {
+                    (Some(Input::String(a)), Input::String(ref mut b)) => {
+                        a.push_str(b);
+                    }
+                    (Some(Input::Keycodes(a)), Input::Keycodes(ref mut b)) => {
+                        a.append(b);
+                    }
+                    _ => {
+                        entry.inputs.push(input);
                     }
                 }
             }
@@ -279,55 +294,33 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
     }
 }
 
-/// Parsed value representation for a JSON dictionary. Is of tree like structure to facilitate further
-/// compilation
+/// Parsed value representation for a JSON dictionary. Differs from the JSON dictionary only in that the
+/// values here are parsed.
 #[derive(Debug, Clone)]
-pub struct Dict {
-    pub entry: Option<Entry>,
-    pub children: HashMap<Stroke, Dict>,
-}
+pub struct Dict(pub HashMap<Vec<Stroke>, Entry>);
 
 impl Dict {
-    pub fn new(entry: Option<Entry>) -> Dict {
-        Dict {
-            entry,
-            children: HashMap::new(),
-        }
-    }
-
-    pub fn set_entry(&mut self, entry: Entry) {
-        self.entry = Some(entry);
-    }
-
-    pub fn entry(&mut self, stroke: Stroke) -> MapEntry<Stroke, Dict> {
-        self.children.entry(stroke)
-    }
-
     pub fn parse_from_json(m: &JsonDict) -> Result<Dict, ParseDictError> {
-        let mut root = Dict::new(None);
         let pbar = progress_bar(m.len(), "Parsing dictionary");
         pbar.set_draw_delta(m.len() as u64 / 100);
-        for (strokes, entry) in m.iter() {
-            let mut cur_dict = &mut root;
-            for stroke in strokes.split('/').map(|stroke| {
-                stroke
-                    .parse()
-                    .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
-            }) {
-                let stroke = stroke?;
-                cur_dict = cur_dict.entry(stroke).or_default();
-            }
-            cur_dict.set_entry(Entry::parse_entry(entry)?);
-            pbar.inc(1);
-        }
+        let dict = m
+            .iter()
+            .map(|(strokes, entry)| {
+                let strokes = strokes
+                    .split('/')
+                    .map(|stroke| {
+                        stroke
+                            .parse()
+                            .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let entry = Entry::parse_entry(entry)?;
+                pbar.inc(1);
+                Ok((strokes, entry))
+            })
+            .collect::<Result<HashMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");
-        Ok(root)
-    }
-}
-
-impl Default for Dict {
-    fn default() -> Dict {
-        Dict::new(None)
+        Ok(Dict(dict))
     }
 }
 
@@ -337,21 +330,56 @@ fn test_plain() {
         Entry::parse_entry("a").unwrap(),
         Entry {
             attr: Attr::valid_default(),
-            input: vec![Input::String("a".into())]
+            inputs: vec![Input::String("a".into())]
+        }
+    );
+}
+
+#[test]
+fn test_punctuation() {
+    let entry = Entry::parse_entry("{.}is").unwrap();
+    assert_eq!(
+        entry,
+        Entry {
+            attr: Attr {
+                space_prev: false,
+                ..Attr::valid_default()
+            },
+            inputs: vec![
+                Input::String(".".into()),
+                Input::Capitalized,
+                Input::String(" is".into())
+            ],
         }
     );
 }
 
 #[test]
 fn test_finger_spell() {
+    let entry = Entry::parse_entry("{&P}").unwrap();
     assert_eq!(
-        Entry::parse_entry("{>}{&c}").unwrap(),
+        entry,
         Entry {
             attr: Attr {
                 glue: true,
                 ..Attr::valid_default()
             },
-            input: vec![Input::String("c".into())],
+            inputs: vec![Input::String("P".into())],
+        }
+    );
+}
+
+#[test]
+fn test_finger_spell_lower() {
+    let entry = Entry::parse_entry("{>}{&c}").unwrap();
+    assert_eq!(
+        entry,
+        Entry {
+            attr: Attr {
+                glue: true,
+                ..Attr::valid_default()
+            },
+            inputs: vec![Input::Lower, Input::String("c".into())],
         }
     );
 }
@@ -362,7 +390,7 @@ fn test_cap() {
         Entry::parse_entry("{-|}").unwrap(),
         Entry {
             attr: Attr::valid_default(),
-            input: vec![],
+            inputs: vec![Input::Capitalized],
         }
     );
 }
@@ -377,7 +405,7 @@ fn test_cap_star() {
                 space_after: false,
                 ..Attr::valid_default()
             },
-            input: vec![],
+            inputs: vec![Input::Capitalized],
         }
     );
 }
@@ -388,7 +416,21 @@ fn test_entry_len() {
         Entry::parse_entry("{^}{#Return}{^}{-|}")
             .unwrap()
             .byte_len(),
-        2
+        4
+    );
+}
+
+#[test]
+fn test_number_only() {
+    assert_eq!(
+        Entry::parse_entry("05").unwrap(),
+        Entry {
+            attr: Attr {
+                glue: true,
+                ..Attr::valid_default()
+            },
+            inputs: vec![Input::String("05".into())],
+        }
     );
 }
 
@@ -398,7 +440,7 @@ fn test_command() {
         Entry::parse_entry("oh yeah{,}babe").unwrap(),
         Entry {
             attr: Attr::valid_default(),
-            input: vec![Input::String("oh yeah, babe".into())],
+            inputs: vec![Input::String("oh yeah, babe".into())],
         }
     );
 }

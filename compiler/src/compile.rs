@@ -1,12 +1,11 @@
 //! Handles everything related to converting Rust dictionary related values to bytes. Provides raw
-//! counterparts for types in `dict`. 
-use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
+//! counterparts for types in `dict`.
 use std::io::{self, prelude::*};
+use std::iter;
 
 use crate::dict::{Attr, Dict, Entry, Input};
-use crate::hashmap::LPHashMap;
-use crate::stroke::Stroke;
+use crate::freemap::FreeMap;
+use crate::stroke::hash_strokes;
 
 /// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
 /// keyboard storage.
@@ -14,10 +13,10 @@ pub struct RawEntry(Vec<u8>);
 
 impl From<Entry> for RawEntry {
     fn from(e: Entry) -> RawEntry {
-        let bytes = e
-            .inputs
-            .iter()
-            .flat_map(|i| match i {
+        let attr: RawAttr = e.attr.into();
+        let bytes = iter::once(e.byte_len() as u8)
+            .chain(iter::once(attr.0))
+            .chain(e.inputs.iter().flat_map(|i| match i {
                 Input::Keycodes(keycodes) => {
                     assert!(keycodes.len() <= 127);
                     if keycodes.is_empty() {
@@ -47,7 +46,7 @@ impl From<Entry> for RawEntry {
                 Input::AddSpace => vec![13],
                 Input::RemoveSpace => vec![14],
                 Input::AddTranslation => vec![16],
-            })
+            }))
             .collect();
         RawEntry(bytes)
     }
@@ -81,162 +80,72 @@ impl From<Attr> for RawAttr {
     }
 }
 
-/// A hashable counter part for `Dict`, contains only the information needed
-#[derive(Debug, Eq, Clone)]
-pub struct HashableDict {
-    pub entry: Option<Entry>,
-    pub children: Vec<(Stroke, Option<Entry>)>,
+pub struct RawDict {
+    /// KV-pointer + key length
+    buckets: Vec<u32>,
+    kvpairs: Vec<Vec<u8>>,
+    // TODO bit map
 }
 
-impl PartialEq for HashableDict {
-    fn eq(&self, other: &Self) -> bool {
-        if self.entry != other.entry {
-            return false;
-        }
-        for ((stroke, entry), (other_stroke, other_entry)) in
-            self.children.iter().zip(other.children.iter())
-        {
-            if stroke != other_stroke {
-                return false;
+impl RawDict {
+    pub fn from_dict(d: Dict) -> RawDict {
+        // 1M entries of 3 bytes; key length cannot be 15
+        let mut buckets = vec![0xFFFFFF; 2usize.pow(20)];
+        let mut kvpairs = Vec::with_capacity(d.0.len());
+        let mut map = FreeMap::new();
+        let mut max_collision = 0;
+        for (strokes, entry) in d.0.into_iter() {
+            let hash = hash_strokes(&strokes);
+            let mut index = hash as usize % 2usize.pow(20);
+            let mut collisions = 0;
+            while buckets[index] != 0xFFFFFF {
+                index = index.wrapping_add(1);
+                collisions += 1;
             }
-            if entry.is_none() || other_entry.is_none() || entry != other_entry {
-                return false;
+            if collisions > max_collision {
+                max_collision = collisions;
             }
-        }
-        true
-    }
-}
-
-impl HashableDict {
-    pub fn from_dict(d: &Dict) -> Self {
-        let Dict { entry, children } = d;
-        let mut children: Vec<(Stroke, Option<_>)> = children
-            .iter()
-            .map(|(k, v)| (*k, v.entry.clone()))
-            .collect();
-        children.sort_by_key(|(k, _v)| *k);
-        Self {
-            entry: entry.clone(),
-            children,
-        }
-    }
-}
-
-impl Hash for HashableDict {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.entry.hash(state);
-        self.children.hash(state);
-    }
-}
-
-/// Representation of individual nodes in IR
-struct IRNode {
-    entry: Entry,
-    children: LPHashMap,
-}
-
-impl IRNode {
-    fn new(node_num: u32, entry: Entry) -> Self {
-        let children = LPHashMap::new(node_num as usize);
-        Self { entry, children }
-    }
-
-    fn add_child(&mut self, input: u32, addr: u32) {
-        self.children.add_child(input, addr);
-    }
-}
-
-/// A middle layer between `Dict` and the actual bytes. Used for laying nodes in a flattened structure from a
-/// tree like structure in `Dict`, for filling out the addresses of the nodes in the `children` map before
-/// actually being written out. Contains states for building the middle layer representation.
-pub struct IR {
-    cur_addr: u32,
-    nodes: Vec<IRNode>,
-}
-
-impl IR {
-    pub fn new() -> IR {
-        IR {
-            cur_addr: 0,
-            nodes: Vec::new(),
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        self.nodes.len()
-    }
-
-    pub fn addr(&self) -> u32 {
-        self.cur_addr
-    }
-
-    pub fn add_node(&mut self, node_num: u32, entry: Entry) {
-        let len = entry.byte_len();
-        let new_node = IRNode::new(node_num, entry);
-        self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 5;
-        self.nodes.push(new_node);
-    }
-
-    /// Turns a `Dict` into `IR`. Uses some caching to merge the nodes that have the same output for reducing
-    /// storage size
-    pub fn from_dict(dict: Dict) -> Self {
-        let mut ir = IR::new();
-        let mut node_cache = HashMap::new();
-        let mut max_collisions = 0;
-        assert_eq!(ir._from_dict(dict, &mut node_cache, &mut max_collisions), 0);
-        println!("Max collisions: {}", max_collisions);
-        ir
-    }
-
-    /// Recursive helper function. Appends each child node to IR before filling out the addresses in the
-    /// `children` map.
-    fn _from_dict(
-        &mut self,
-        dict: Dict,
-        node_cache: &mut HashMap<HashableDict, u32>,
-        max_collisions: &mut usize,
-    ) -> u32 {
-        let addr = self.addr();
-        let mut children: Vec<(Stroke, Dict)> = dict.children.into_iter().collect();
-        children.sort_by(|a, b| a.0.cmp(&b.0));
-        let cur_ind = self.len();
-        self.add_node(children.len() as u32, dict.entry.unwrap_or_default());
-
-        for child in children.into_iter() {
-            let hash = HashableDict::from_dict(&child.1);
-            let child_addr = if !node_cache.contains_key(&hash) {
-                let child_addr = self._from_dict(child.1, node_cache, max_collisions);
-                if hash.children.iter().all(|(_s, ent)| ent.is_some()) {
-                    node_cache.insert(hash.clone(), child_addr);
-                }
-                child_addr
+            let pair_size = strokes.len() * 3 + 2 + entry.byte_len();
+            let (block_no, block_size) = if pair_size <= 16 {
+                (map.req_16(), 16)
+            } else if pair_size <= 32 {
+                (map.req_32(), 32)
+            } else if pair_size <= 64 {
+                (map.req_64(), 64)
             } else {
-                node_cache.get(&hash).copied().unwrap()
+                panic!("Entry too big!");
             };
-            self.nodes[cur_ind].add_child(child.0.raw(), child_addr);
+            assert!(strokes.len() < 15);
+            buckets[index] = block_no << 4 | strokes.len() as u32;
+            let mut block = Vec::with_capacity(block_size);
+            for stroke in strokes {
+                block.write_all(&stroke.raw().to_le_bytes()[0..3]).unwrap();
+            }
+            let raw_entry: RawEntry = entry.into();
+            block.write_all(&raw_entry.as_bytes()).unwrap();
+            for _ in pair_size..block_size {
+                block.push(0xFF);
+            }
+            kvpairs.push(block);
         }
-        let stats = self.nodes[cur_ind].children.stats();
-        if stats.0 > *max_collisions {
-            *max_collisions = stats.0;
-        }
-        addr
+        dbg!(max_collision);
+        RawDict { buckets, kvpairs }
     }
 
-    /// Write the IR out as bytes
+    /// Write the RawDict out as bytes
     pub fn write(&self, w: &mut dyn Write) -> io::Result<()> {
-        let mut bytes: Vec<u8> = Vec::new();
-        for node in self.nodes.iter() {
-            bytes.clear();
-            // Note: this is 3 bytes long. MSB is at the end cuz LE.
-            bytes.extend_from_slice(&(node.children.total_size() as u32).to_le_bytes()[0..3]);
-            bytes.push(node.entry.byte_len() as u8);
-            let attr = node.entry.attr;
-            let raw_attr: RawAttr = attr.into();
-            bytes.push(raw_attr.0);
-            let raw_entry: RawEntry = node.entry.clone().into();
-            bytes.extend_from_slice(raw_entry.as_bytes());
-            w.write_all(&bytes)?;
-            node.children.write_all_to(w)?;
+        for bucket in &self.buckets {
+            w.write_all(&bucket.to_le_bytes()[0..3])?;
+        }
+        let mut written = 3 * (1usize << 20);
+        for pair in &self.kvpairs {
+            written += pair.len();
+            w.write_all(&pair)?;
+        }
+        let rem = vec![0xFFu8; 16];
+        while written < 16 * (1usize << 20) {
+            w.write_all(&rem)?;
+            written += 16;
         }
         Ok(())
     }

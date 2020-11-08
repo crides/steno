@@ -23,6 +23,25 @@ impl Stroke {
     pub fn raw(self) -> u32 {
         self.0
     }
+
+    /// From FNV-1a
+    pub fn hash(self, init: Option<u32>) -> u32 {
+        let bytes = self.0.to_le_bytes();
+        let mut hash = init.unwrap_or(0x811c9dc5u32);
+        for byte in &bytes {
+            hash = hash.wrapping_mul(0x01000193);
+            hash ^= *byte as u32;
+        }
+        hash
+    }
+}
+
+pub fn hash_strokes(strokes: &[Stroke]) -> u32 {
+    let mut hash = None;
+    for stroke in strokes {
+        hash = Some(stroke.hash(hash));
+    }
+    hash.unwrap()
 }
 
 impl Display for Stroke {
@@ -70,7 +89,7 @@ impl Display for Stroke {
 impl Debug for Stroke {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         f.debug_tuple("Stroke")
-            .field(&format_args!("{:x}", &self.0))
+            .field(&format_args!("{:06x}", &self.0))
             .field(&format_args!("{}", &self))
             .finish()
     }

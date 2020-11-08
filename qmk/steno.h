@@ -7,16 +7,16 @@
 
 #include "config.h"
 
-#ifdef CONSOLE_ENABLE
-#if defined(STENO_DEBUG) && defined(DEBUG_FLASH)
+#if defined(CONSOLE_ENABLE) && defined(STENO_DEBUG)
+#ifdef DEBUG_FLASH
 #define STENO_DEBUG_FLASH
 #endif
 
-#if defined(STENO_DEBUG) && defined(DEBUG_HIST)
+#ifdef DEBUG_HIST
 #define STENO_DEBUG_HIST
 #endif
 
-#if defined(STENO_DEBUG) && defined(DEBUG_STROKE)
+#ifdef DEBUG_STROKE
 #define STENO_DEBUG_STROKE
 #endif
 #endif
@@ -74,5 +74,7 @@ typedef struct {
     uint8_t crc;
     uint8_t len;
 } mass_write_info_t;
+
+extern uint8_t stroke_start_ind;
 
 #endif

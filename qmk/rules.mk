@@ -16,15 +16,16 @@ SRC += analog.c
 # CUSTOM_MATRIX = yes
 # EXTRAKEY_ENABLE = yes
 
-SRC += spi.c lcd.c lcd_font.c flash.c hist.c stroke.c sd/pff.c sd/diskio.c dict_editing.c
+SRC += spi.c lcd.c lcd_font.c flash.c hist.c stroke.c sd/pff.c sd/diskio.c dict_editing.c scsi.c ghostfat.c
 
 MOUSEKEY_ENABLE = no
 VIRTSER_ENABLE = no
-RAW_ENABLE = yes
+RAW_ENABLE = no
 CONSOLE_ENABLE = yes
 STENO_ENABLE = yes
 COMBO_ENABLE = no
 OLED_DRIVER_ENABLE = no
 UNICODE_ENABLE = yes
+MSC_ENABLE = yes
 
 EXTRAFLAGS += -flto
