@@ -10,8 +10,8 @@
 /* #define STENO_PHONE */
 
 #define STENO_DEBUG
-/* #define DEBUG_FLASH */
-/* #define DEBUG_STROKE */
+#define DEBUG_FLASH
+#define DEBUG_STROKE
 #define DEBUG_HIST
 
 #define STATUS_STAY_TIME 1500
