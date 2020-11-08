@@ -122,13 +122,13 @@ void prompt_user_remove(void) {
 void display_stroke_to_remove(void) {
     steno_debug_ln("display stroke remove executed");
 
-    find_strokes(curr_stroke, curr_stroke_size);
+    find_strokes((uint8_t *)curr_stroke, curr_stroke_size);
     //last_entry_ptr is where the address is stored
     address_ptr = (last_entry_ptr & 0xFFFFF0) + 0x300000;
     uint8_t stroke_byte_len = 3 * curr_stroke_size;
     flash_read(address_ptr, entry_buf, stroke_byte_len + 1);
     uint8_t entry_len = entry_buf[stroke_byte_len];
-    flash_read(byte_ptr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
+    flash_read(address_ptr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
     char entry_trans[entry_len];
 
     entry_length = stroke_byte_len + 1 + entry_len + 1;
@@ -150,13 +150,13 @@ void remove_stroke(void) {
     
     //scratchpage is at 0xF22000 to 0xF23000
     uint32_t scratch_addr = 0xF22000;
-    char temp_scratch[256];
+    uint8_t temp_scratch[256];
     flash_erase_4k(scratch_addr);
 
     for(;address_ptr<address_ptr+0x1000; address_ptr += 256) {
 
         flash_read_page(address_ptr, temp_scratch);
-        if(address_ptr=>(last_entry_ptr & 0xFFFFF0) + 0x300000 
+        if(address_ptr>=(last_entry_ptr & 0xFFFFF0) + 0x300000 
                 || address_ptr<(last_entry_ptr & 0xFFFFF0) + 0x300000 + entry_length) {
             uint32_t offset = address_ptr - (last_entry_ptr & 0xFFFFF0) + 0x300000;
             memset(temp_scratch+offset, 0xFF, entry_length);

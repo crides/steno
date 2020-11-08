@@ -125,7 +125,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
             remove_stroke();
             editing_state = ED_IDLE;
         }
-        steno_debug_ln("removed stroke")
+        steno_debug_ln("removed stroke");
         return false;
     }
 

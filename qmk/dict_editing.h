@@ -17,5 +17,8 @@ void set_Stroke(uint32_t stroke);
 void prompt_user_translation(void);
 void set_Trans(char trans[]);
 void add_finished(void);
+void remove_stroke(void);
+void display_stroke_to_remove(void);
+void prompt_user_remove(void);
 
 #endif
