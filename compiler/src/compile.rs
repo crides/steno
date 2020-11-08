@@ -46,6 +46,8 @@ impl From<Entry> for RawEntry {
                 Input::AddSpace => vec![13],
                 Input::RemoveSpace => vec![14],
                 Input::AddTranslation => vec![16],
+                Input::EditTranslation => vec![17],
+                Input::RemoveTranslation => vec![18],
             }))
             .collect();
         RawEntry(bytes)
