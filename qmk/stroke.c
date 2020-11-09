@@ -149,7 +149,7 @@ void find_strokes(uint8_t *strokes, uint8_t len) {
             continue;
         }
         uint8_t byte_len = 3 * len;
-        uint32_t byte_ptr = (last_entry_ptr & 0xFFFFF0) + 0x300000;
+        uint32_t byte_ptr = ENTRY_GET_ADDR(last_entry_ptr);
         flash_read(byte_ptr, entry_buf, byte_len + 1);          // Also read the entry length
 #ifdef STENO_DEBUG_FLASH
         steno_debug_ln("    strokes:");
