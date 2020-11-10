@@ -12,6 +12,8 @@ typedef enum {
 } editing_state_t;
 
 extern editing_state_t editing_state;
+extern uint8_t page_buffer[FLASH_PP_SIZE];
+extern uint8_t entry_buf_len;
 
 void prompt_user(void);
 void set_Stroke(uint32_t stroke);

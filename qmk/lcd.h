@@ -36,17 +36,20 @@
 #ifndef _ADAFRUIT_ILI9341H_
 #define _ADAFRUIT_ILI9341H_
 
+#include "spi.h"
+
 void lcd_init(void);
-void lcd_puts_at(int16_t x, int16_t y, uint8_t *str, uint8_t size);
-void lcd_puts(uint8_t *str, uint8_t size);
+void lcd_puts_at(int16_t x, int16_t y, char *str, uint8_t size);
+void lcd_puts(char *str, uint8_t size);
 void lcd_pos(uint16_t x, uint16_t y);
 void lcd_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void lcd_draw_hline(int16_t x, int16_t y, int16_t w, int16_t color);
 void lcd_draw_vline(int16_t x, int16_t y, int16_t h, int16_t color);
 void lcd_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-void lcd_draw_char(int16_t x, int16_t y, uint8_t c, uint8_t size, uint16_t fg, uint16_t bg);
-void lcd_putc(uint8_t c, uint8_t size);
+void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint16_t bg);
+void lcd_putc(char c, uint8_t size);
 void lcd_back(uint8_t size);
+void lcd_clear(void);
 
 #define lcd_command() PORTF &= ~_BV(PORTF4)
 #define lcd_data() PORTF |= _BV(PORTF4)

@@ -19,6 +19,10 @@
 #ifdef DEBUG_STROKE
 #define STENO_DEBUG_STROKE
 #endif
+
+#ifdef DEBUG_DICTED
+#define STENO_DEBUG_DICTED
+#endif
 #endif
 
 #ifdef __AVR__

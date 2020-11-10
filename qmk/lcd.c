@@ -54,7 +54,7 @@ void lcd_init(void) {
         lcd_command();
         spi_send_byte(cmd);
         lcd_data();
-        for (uint8_t i = 0; i < numArgs; i ++) {
+        for (uint8_t i = 0; i < numArgs; i++) {
             spi_send_byte(pgm_read_byte(addr + i));
         }
         unselect_lcd();
@@ -64,7 +64,7 @@ void lcd_init(void) {
         }
     }
     select_lcd();
-    lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
+    lcd_clear();
     unselect_lcd();
 }
 
@@ -99,13 +99,13 @@ void lcd_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
 
 void lcd_draw_hline(int16_t x, int16_t y, int16_t w, int16_t color) {
     set_addr_window(x, y, w, 1);
-    for (int16_t i = 0; i < w; i ++) {
+    for (int16_t i = 0; i < w; i++) {
         spi_send_word(color);
     }
 }
 
 void lcd_draw_vline(int16_t x, int16_t y, int16_t h, int16_t color) {
-    for (int16_t i = y; i < y + h; i ++) {
+    for (int16_t i = y; i < y + h; i++) {
         lcd_draw_pixel(x, i, color);
     }
 }
@@ -119,7 +119,7 @@ void lcd_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     }
 }
 
-void lcd_draw_char(int16_t x, int16_t y, uint8_t c, uint8_t size, uint16_t fg, uint16_t bg) {
+void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint16_t bg) {
     if (x >= LCD_WIDTH || y >= LCD_HEIGHT || (x + 6 - 1) < 0 || (y + 8 - 1) < 0) {
         return;
     }
@@ -157,48 +157,50 @@ void lcd_draw_char(int16_t x, int16_t y, uint8_t c, uint8_t size, uint16_t fg, u
     unselect_lcd();
 }
 
-void lcd_putc(uint8_t c, uint8_t size) {
-    if (c == '\n') {              // Newline?
-        cursor_x = 0;               // Reset x to zero,
-        cursor_y += size * 8; // advance y one line
-    } else if (c != '\r') {       // Ignore carriage returns
+void lcd_putc(char c, uint8_t size) {
+    if (c == '\n') {                             // Newline?
+        cursor_x = 0;                            // Reset x to zero,
+        cursor_y += size * 8;                    // advance y one line
+    } else if (c != '\r') {                      // Ignore carriage returns
         if ((cursor_x + size * 6) > LCD_WIDTH) { // Off right?
-            cursor_x = 0;                                       // Reset x to zero,
-            cursor_y += size * 8; // advance y one line
+            cursor_x = 0;                        // Reset x to zero,
+            cursor_y += size * 8;                // advance y one line
         }
         lcd_draw_char(cursor_x, cursor_y, c, size, LCD_BLACK, LCD_WHITE);
         cursor_x += size * 6; // Advance x one char
     }
 }
 
-void lcd_puts_at(int16_t x, int16_t y, uint8_t *str, uint8_t size) {
+void lcd_puts_at(int16_t x, int16_t y, char *str, uint8_t size) {
     cursor_x = x;
     cursor_y = y;
     while (*str) {
         lcd_putc(*str, size);
-        str ++;
+        str++;
     }
 }
 
-void lcd_puts(uint8_t *str, uint8_t size) {
+void lcd_puts(char *str, uint8_t size) {
     while (*str) {
         lcd_putc(*str, size);
-        str ++;
+        str++;
     }
 }
 
-void lcd_back(uint8_t size)
-{
-    if(cursor_x == 0)
-    {
+void lcd_back(uint8_t size) {
+    if (cursor_x == 0) {
         if (cursor_y != 0) {
-            cursor_x = LCD_WIDTH-6*size;
-            cursor_y--;
+            cursor_x = LCD_WIDTH - 6 * size;
+            cursor_y -= 8 * size;
         } else {
             return;
         }
     } else {
-        cursor_x = cursor_x-6*size;
+        cursor_x = cursor_x - 6 * size;
     }
-    lcd_fill_rect(cursor_x,cursor_y,size*6, size*8,LCD_WHITE);
+    lcd_fill_rect(cursor_x, cursor_y, size * 6, size * 8, LCD_WHITE);
+}
+
+void lcd_clear(void) {
+    lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
 }

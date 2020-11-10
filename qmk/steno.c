@@ -83,7 +83,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     /* #ifdef OLED_DRIVER_ENABLE */
     last_trans_size = 0;
-    memset(last_trans, 0, 128);
+    /* memset(last_trans, 0, 128); */
     stroke_to_string(stroke, last_stroke, NULL);
     /* #endif */
     steno_debug_ln("Current Editing State: %d", editing_state);
@@ -101,19 +101,16 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         if (stroke == 0x008100) {
             editing_state = ED_IDLE;
             add_finished();
-        } else {
-            set_Trans(last_stroke);
-            steno_debug_ln("entered translation addition stage");
+            return false;
         }
-
-        return false;
+        // `process_output()` will handle the translation and write to buffer
     }
 
     if (editing_state == ED_ERROR) {
         if (stroke == 0x008100) {
             editing_state = ED_IDLE;
             select_lcd();
-            lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
+            lcd_clear();
             unselect_lcd();
         }
 
@@ -143,11 +140,13 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (stroke == 0x1000) { // Asterisk
         hist_ind = HIST_LIMIT(hist_ind - 1);
         hist_undo(hist_ind);
-        select_lcd();
-        lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-        lcd_puts_at(0, 0, (uint8_t *)last_stroke, 2);
-        lcd_puts_at(0, 16, (uint8_t *)last_trans, 2);
-        unselect_lcd();
+        if (editing_state != ED_ACTIVE_ADD_TRANS) {
+            select_lcd();
+            lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
+            lcd_puts_at(0, 0, last_stroke, 2);
+            lcd_puts_at(0, 16, last_trans, 2);
+            unselect_lcd();
+        }
         return false;
     }
 
@@ -195,8 +194,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if(editing_state == ED_IDLE){
         select_lcd();
         lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-        lcd_puts_at(0, 0, (uint8_t *) last_stroke, 2);
-        lcd_puts_at(0, 16, (uint8_t *) last_trans, 2);
+        lcd_puts_at(0, 0, last_stroke, 2);
+        lcd_puts_at(0, 16, last_trans, 2);
         unselect_lcd();
     }
     return false;

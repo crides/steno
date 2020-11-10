@@ -2,10 +2,13 @@
 
 #ifdef __AVR__
 #include <avr/io.h>
-
 #else
 #include <stdint.h>
 #endif
+
+// Program page size
+#define FLASH_PP_SIZE 256
+#define FLASH_ERASED_BYTE 0xFF
 
 void flash_init(void);
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len);
