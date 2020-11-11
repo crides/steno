@@ -92,6 +92,9 @@ void flash_init(void) {
 
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    steno_debug_ln("flash_read(# 0x%02X @ 0x%06lX)", len, addr);
+#endif
     select_card();
     spi_send_byte(0x03);    // read 
     spi_send_addr(addr);
@@ -130,6 +133,9 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 // Read a program page into buffer
 void flash_read_page(uint32_t addr, uint8_t *buf) {
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    steno_debug_ln("flash_read_page(@ 0x%06lX)", addr);
+#endif
     select_card();
     spi_send_byte(0x03);    // read 
     spi_send_addr(addr);
@@ -161,6 +167,9 @@ void flash_prep_write(void) {
 
 void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    steno_debug_ln("flash_write(# 0x%02X @ 0x%06lX)", len, addr);
+#endif
     flash_prep_write();
     select_card();
     spi_send_byte(0x02);    // program
@@ -177,6 +186,9 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 
 void flash_write_page(uint32_t addr, uint8_t *buf) {
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    steno_debug_ln("flash_write_page(@ 0x%06lX)", addr);
+#endif
     flash_prep_write();
     select_card();
     spi_send_byte(0x02);    // program
@@ -203,7 +215,11 @@ void flash_erase_64k(uint32_t addr) {
 }
 
 void flash_erase_4k(uint32_t addr) {
+
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    steno_debug_ln("flash_erase_4k(@ 0x%06lX)", addr);
+#endif
     flash_prep_write();
     select_card();
     spi_send_byte(0x20);
