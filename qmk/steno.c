@@ -89,10 +89,10 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     steno_debug_ln("Current Editing State: %d", editing_state);
     if (editing_state == ED_ACTIVE_ADD) {
         if (stroke == 0x008100) {
-            prompt_user_translation();
+            dicted_add_prompt_trans();
             editing_state = ED_ACTIVE_ADD_TRANS;
         } else {
-            set_Stroke(stroke);
+            set_stroke(stroke);
             steno_debug_ln("entered editing state");
         }
         return false;
@@ -100,7 +100,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (editing_state == ED_ACTIVE_ADD_TRANS) {
         if (stroke == 0x008100) {
             editing_state = ED_IDLE;
-            add_finished();
+            dicted_add_done();
             return false;
         }
         // `process_output()` will handle the translation and write to buffer
@@ -119,10 +119,10 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     if(editing_state == ED_ACTIVE_REMOVE) {
         if (stroke == 0x008100) {
-            display_stroke_to_remove();
+            dicted_remove_conf_strokes();
             editing_state = ED_ACTIVE_REMOVE_TRANS;
         } else {
-            set_Stroke(stroke);
+            set_stroke(stroke);
             steno_debug_ln("Added stroke to remove");
         }
         return false;
@@ -131,47 +131,49 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (editing_state == ED_ACTIVE_REMOVE_TRANS) {
         if (stroke == 0x008100) {
             remove_stroke();
+            select_lcd();
+            lcd_clear();
+            unselect_lcd();
             editing_state = ED_IDLE;
         }
         steno_debug_ln("removed stroke");
         return false;
     }
 
-    if (editing_state == ED_ACTIVE_EDIT) {
+    if (editing_state == ED_ACTIVE_EDIT_CONF_STROKES) {
         if (stroke == 0x008100) {
-            display_stroke_to_edit();
-            editing_state = ED_ACTIVE_EDIT_TRANS_1;
-            steno_debug_ln("display_stroke_to_edit() executed");
-        }
-        else {
-            set_Stroke(stroke);
-            steno_debug_ln("entered editing state");
+            editing_state = ED_ACTIVE_EDIT_TRANS;
+            dicted_edit_conf_strokes();
+            steno_debug_ln("dicted_edit_conf_strokes() executed");
+        } else {
+            set_stroke(stroke);
         }
         return false;
     }
 
-    if (editing_state == ED_ACTIVE_EDIT_TRANS_1) {
+    if (editing_state == ED_ACTIVE_EDIT_TRANS) {
         if (stroke == 0x008100) {
-            prompt_user_edit_translation();
-            editing_state = ED_ACTIVE_EDIT_TRANS_2;
-            steno_debug_ln("prompt_user_edit_translation() executed");
+            dicted_edit_prompt_trans();
+            editing_state = ED_ACTIVE_EDIT_CONF_TRANS;
+            steno_debug_ln("dicted_edit_prompt_trans() executed");
         }
         return false;
     }
 
-    if (editing_state == ED_ACTIVE_EDIT_TRANS_2) {
+    if (editing_state == ED_ACTIVE_EDIT_CONF_TRANS) {
         if (stroke == 0x008100) {
-            edit_finished();
+            dicted_edit_done();
             editing_state = ED_IDLE;
             steno_debug_ln("edited translation");
+            return false;
         }
-        return false;
+        // `process_output()` will handle the translation and write to buffer
     }
 
     if (stroke == 0x1000) { // Asterisk
         hist_ind = HIST_LIMIT(hist_ind - 1);
         hist_undo(hist_ind);
-        if (editing_state != ED_ACTIVE_ADD_TRANS) {
+        if (editing_state == ED_IDLE) {
             select_lcd();
             lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
             lcd_puts_at(0, 0, last_stroke, 2);
@@ -181,7 +183,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
-    // TODO free up the next entry for boundary
     history_t *hist = hist_get(hist_ind);
     hist->stroke = stroke;
     // Default `state` set in last cycle

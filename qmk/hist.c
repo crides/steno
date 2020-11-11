@@ -25,7 +25,7 @@ static void dict_edit_puts(char *str) {
 }
 
 static void steno_back(void) {
-    if (editing_state == ED_ACTIVE_ADD_TRANS) {
+    if (editing_state != ED_IDLE) {
         if (entry_buf_len > 0) {
             entry_buf_len --;
             select_lcd();
@@ -38,7 +38,7 @@ static void steno_back(void) {
 }
 
 static void steno_send_char(char c) {
-    if (editing_state == ED_ACTIVE_ADD_TRANS) {
+    if (editing_state != ED_IDLE) {
         if (entry_buf_len < 255) {
             page_buffer[entry_buf_len ++] = c;
             lcd_putc(c, 2);
@@ -59,7 +59,7 @@ static uint8_t steno_send_unicode(uint32_t u) {
         steno_debug("\\U%06lX", u);
     }
 #endif
-    if (editing_state == ED_ACTIVE_ADD_TRANS) {
+    if (editing_state != ED_IDLE) {
         char buf[16];
         uint8_t len;
         if (u < 0xFFFF) {
@@ -84,7 +84,7 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
     char buf[16];
     uint8_t output_len = 3;
     uint8_t mods = 0;
-    if (editing_state == ED_ACTIVE_ADD_TRANS) {
+    if (editing_state != ED_IDLE) {
         dict_edit_puts("\\k[");
     }
     for (uint8_t i = 0; i < len; i++) {
@@ -99,7 +99,7 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
             }
             uint8_t mod_mask = 1 << mod;
             if (mods & mod_mask) {
-                if (editing_state == ED_ACTIVE_ADD_TRANS) {
+                if (editing_state != ED_IDLE) {
                     dict_edit_puts(")");
                     output_len += 1;
                 } else {
@@ -109,7 +109,7 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
                 steno_debug(" %c", mod_char);
 #endif
             } else {
-                if (editing_state == ED_ACTIVE_ADD_TRANS) {
+                if (editing_state != ED_IDLE) {
                     snprintf(buf, 16, "\\%c(", mod_char);
                     dict_edit_puts(buf);
                     output_len += 3;
@@ -125,7 +125,7 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
 #ifdef STENO_DEBUG_HIST
             steno_debug(" %02X", keycodes[i]);
 #endif
-            if (editing_state == ED_ACTIVE_ADD_TRANS) {
+            if (editing_state != ED_IDLE) {
                 snprintf(buf, 16, " %02X", keycodes[i]);
                 dict_edit_puts(buf);
                 output_len += 3;
@@ -137,7 +137,7 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
 #ifdef STENO_DEBUG_HIST
     steno_debug("\n");
 #endif
-    if (editing_state == ED_ACTIVE_ADD_TRANS) {
+    if (editing_state != ED_IDLE) {
         dict_edit_puts("]");
         return output_len + 1;
     } else {
@@ -350,11 +350,11 @@ state_t process_output(uint8_t h_ind) {
                 break;
 
             case 16: // add translation
-                if (editing_state == ED_ACTIVE_ADD_TRANS) {
+                if (editing_state != ED_IDLE) {
                     dict_edit_puts("{add_trans}");
                     str_len += 11;
                 } else {
-                    prompt_user();
+                    dicted_add_prompt_strokes();
                 }
                 break;
 
@@ -363,16 +363,16 @@ state_t process_output(uint8_t h_ind) {
                     dict_edit_puts("{edit_trans}");
                     str_len += 10;
                 } else {
-                    prompt_user_edit();
+                    dicted_edit_prompt_strokes();
                 }
                 break;
 
             case 18: //remove translation
-                if (editing_state == ED_ACTIVE_ADD_TRANS) {
+                if (editing_state != ED_IDLE) {
                     dict_edit_puts("{rm_trans}");
                     str_len += 10;
                 } else {
-                    prompt_user_remove();
+                    dicted_remove_prompt_strokes();
                 }
                 break;
 
