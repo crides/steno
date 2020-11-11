@@ -117,29 +117,29 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
 }
 
 void find_strokes(uint8_t *strokes, uint8_t len) {
-#ifdef STENO_DEBUG_FLASH
+#ifdef STENO_DEBUG_STROKE
     steno_debug_ln("  find_strokes():");
 #endif
     uint32_t hash = FNV_SEED;
     for (uint8_t i = 0; i < len; i ++) {
-#ifdef STENO_DEBUG_FLASH
+#ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    [%d] = %02X%02X%02X", i, strokes[3 * i + 2], strokes[3 * i + 1], strokes[3 * i]);
 #endif
         hash_stroke_ptr(&hash, strokes + 3 * i);
     }
-#ifdef STENO_DEBUG_FLASH
+#ifdef STENO_DEBUG_STROKE
     steno_debug_ln("    hash: %08lX", hash);
 #endif
     uint32_t bucket_ind = 3 * (hash & 0xFFFFF);   // Lower 20 bits, mul 3 to byte address
-#ifdef STENO_DEBUG_FLASH
+#ifdef STENO_DEBUG_STROKE
     steno_debug_ln("    bucket_ind: %06lX", bucket_ind);
 #endif
     while (1) {
         flash_read(bucket_ind, (uint8_t *) &last_entry_ptr, 3);
-#ifdef STENO_DEBUG_FLASH
+#ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    entry: %06lX", last_entry_ptr);
 #endif
-        uint8_t entry_stroke_len = last_entry_ptr & 0xF;
+        uint8_t entry_stroke_len = ENTRY_GET_LEN(last_entry_ptr);
         if (entry_stroke_len == 0 || entry_stroke_len == 0xF) {
             last_entry_ptr = 0;
             return;
@@ -151,7 +151,7 @@ void find_strokes(uint8_t *strokes, uint8_t len) {
         uint8_t byte_len = 3 * len;
         uint32_t byte_ptr = ENTRY_GET_ADDR(last_entry_ptr);
         flash_read(byte_ptr, entry_buf, byte_len + 1);          // Also read the entry length
-#ifdef STENO_DEBUG_FLASH
+#ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    strokes:");
         for (uint8_t i = 0; i < len; i ++) {
             steno_debug_ln("      [%d] = %02X%02X%02X", i, entry_buf[3 * i + 2], entry_buf[3 * i + 1], entry_buf[3 * i]);
@@ -185,7 +185,7 @@ void search_entry(uint8_t h_ind) {
     uint8_t strokes[3 * max_strokes_len];
     for (uint8_t i = 0; i < max_strokes_len; i ++) {
         history_t *old_hist = hist_get(HIST_LIMIT(h_ind - i));
-        uint8_t strokes_len = old_hist->entry & 0xF;
+        uint8_t strokes_len = ENTRY_GET_LEN(old_hist->entry);
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("  hist[%d].strokes_len = %d", HIST_LIMIT(h_ind - i), strokes_len);
 #endif

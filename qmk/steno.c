@@ -187,8 +187,10 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     // Default `state` set in last cycle
     search_entry(hist_ind);
     hist->entry = last_entry_ptr;
+#ifdef STENO_DEBUG_HIST
     steno_debug_ln("  entry: %06lX", last_entry_ptr);
-    uint8_t strokes_len = last_entry_ptr & 0xF;
+#endif
+    uint8_t strokes_len = ENTRY_GET_LEN(last_entry_ptr);
     if (strokes_len > 1) {
         hist->state = hist_get(HIST_LIMIT(hist_ind - strokes_len + 1))->state;
     }
@@ -202,7 +204,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist[%u]:", hist_ind);
-        steno_debug_ln("  len: %u, stroke_len: %u", hist->len, hist->entry & 0xF);
+        steno_debug_ln("  len: %u, stroke_len: %u", hist->len, ENTRY_GET_LEN(hist->entry));
         state_t state = hist->state;
         steno_debug_ln("  space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
         char buf[24];
@@ -219,7 +221,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     }
     hist_get(hist_ind)->state = new_state;
 
-#if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
+#if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE) || defined(STENO_DEBUG_DICTED)
     steno_debug_ln("--------\n");
 #endif
     if (editing_state == ED_IDLE) {

@@ -90,7 +90,6 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
     for (uint8_t i = 0; i < len; i++) {
         if ((keycodes[i] & 0xFC) == 0xE0) {
             uint8_t mod = keycodes[i] & 0x03;
-#ifdef STENO_DEBUG_HIST
             uint8_t mod_char;
             switch (mod) {
             case 0: mod_char = 'c'; break;
@@ -98,7 +97,6 @@ static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
             case 2: mod_char = 'a'; break;
             case 3: mod_char = 'g'; break;
             }
-#endif
             uint8_t mod_mask = 1 << mod;
             if (mods & mod_mask) {
                 if (editing_state == ED_ACTIVE_ADD_TRANS) {
@@ -171,7 +169,7 @@ void hist_undo(uint8_t h_ind) {
     for (uint8_t i = 0; i < len; i++) {
         steno_back();
     }
-    uint8_t strokes_len = hist->entry & 0xF;
+    uint8_t strokes_len = ENTRY_GET_LEN(hist->entry);
     uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
     for (uint8_t i = 0; i < repl_len; i++) {
         uint8_t old_hist_ind = HIST_LIMIT(h_ind + i - repl_len);
@@ -198,7 +196,7 @@ state_t process_output(uint8_t h_ind) {
 #endif
     // TODO optimization: compare beginning of current and string to replace
     history_t *hist = hist_get(h_ind);
-    uint8_t strokes_len = hist->entry & 0xF;
+    uint8_t strokes_len = ENTRY_GET_LEN(hist->entry);
     {
         uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
         int8_t counter = repl_len;
@@ -216,7 +214,7 @@ state_t process_output(uint8_t h_ind) {
             for (uint8_t j = 0; j < old_hist->len; j++) {
                 steno_back();
             }
-            uint8_t old_strokes_len = old_hist->entry & 0xF;
+            uint8_t old_strokes_len = ENTRY_GET_LEN(old_hist->entry);
             uint8_t old_repl_len = old_strokes_len > 1 ? old_strokes_len - 1 : 0;
             counter -= old_repl_len + 1;
         }
