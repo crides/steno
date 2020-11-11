@@ -3,111 +3,131 @@
 /// is full
 pub struct FreeMap(Vec<u32>);
 
-fn log2(n: u32, block: u32) -> u32 {
-    let mut n = match block {
-        0 => n,
-        1 => n & (n << 1) & 0xAAAA_AAAA,
-        2 => n & (n << 1) & (n << 2) & (n << 3) & 0x8888_8888,
-        _ => panic!(),
-    };
-    let mut r = 0u32;
-    for i in (0..5).rev() {
-        let mask = 1 << i;
-        if n & (u32::MAX << mask) != 0 {
-            n >>= mask;
-            r += mask;
-        }
-    }
-    r
-}
-
 impl FreeMap {
+    // NOTE: Word *not byte* indexes
+    const LVL_0: u32 = 0;
+    const LVL_1: u32 = (1 << 20) / 32 + FreeMap::LVL_0; // 1M entries
+    const LVL_2: u32 = (1 << 20) / 32 / 32 + FreeMap::LVL_1; // 32768 entries
+    const LVL_3: u32 = (1 << 20) / 32 / 32 / 32 + FreeMap::LVL_2; // 1024 entries
+
+    fn find_free(word: u32, start: u8, block: u8) -> Option<u32> {
+        let size: u8 = 2u8.pow(block as u32);
+        let mut mask: u32 = 2u32.pow(size as u32) - 1;
+        for i in (0..32).step_by(size as usize) {
+            if i < start as u32 {
+                mask <<= size;
+                continue;
+            }
+            if (word & mask) == mask {
+                return Some(i);
+            }
+            mask <<= size;
+        }
+        return None;
+    }
+
     pub fn new() -> FreeMap {
         FreeMap(vec![0xFFFF_FFFF; 1 + 32 + 32usize.pow(2) + 32usize.pow(3)])
     }
 
     /// Request a 16 byte block, returning block number
-    fn req(&mut self, block: u32) -> u32 {
-        // 1 based indexing
-        let mut word = 1 + (31 - log2(self.0[0], 0));
-        word = 1 + word * 32 + (31 - log2(self.0[word as usize], 0));
-        word = 1 + word * 32 + (31 - log2(self.0[word as usize], 0));
-        let bit = 31 - log2(self.0[word as usize], block);
-        let addr = (word - 1057) * 32 + bit;
-        assert!(addr < 2u32.pow(20));
-        let thing = 2u32.pow(1 << block) - 1; // Get block of continous 1's with count 1 << block
-        self.0[word as usize] &= !(thing << (31 - bit - ((1 << block) - 1))); // Move the block to the right, aligning MSB of block to bit
-        for _level in 0..3 {
-            let (bit, next) = ((word - 1) % 32, (word - 1) / 32);
-            if self.0[word as usize] == 0 {
-                self.0[next as usize] &= !(1 << (31 - bit));
-            }
-            word = next;
+    pub fn req(&mut self, block: u8) -> Option<u32> {
+        if let Some((ind, _full)) = self._req(3, 0, block) {
+            return Some(ind);
         }
-        addr
+        None
     }
 
-    pub fn req_16(&mut self) -> u32 {
-        self.req(0)
+    fn get_start(lvl: u8) -> u32 {
+        match lvl {
+            0 => FreeMap::LVL_0,
+            1 => FreeMap::LVL_1,
+            2 => FreeMap::LVL_2,
+            3 => FreeMap::LVL_3,
+            _ => panic!(),
+        }
     }
 
-    pub fn req_32(&mut self) -> u32 {
-        let addr = self.req_16();
-        self.req_16();
-        addr
-        // self.req(1)
-    }
-
-    pub fn req_64(&mut self) -> u32 {
-        let addr = self.req_16();
-        self.req_16();
-        self.req_16();
-        self.req_16();
-        addr
-        // self.req(2)
+    fn _req(&mut self, lvl: u8, word: u32, block: u8) -> Option<(u32, bool)> {
+        let this_lvl_block = if lvl == 0 { block } else { 0 };
+        let start_ind = FreeMap::get_start(lvl);
+        let alloc_word = self.0[(start_ind + word) as usize];
+        let size: u8 = 2u8.pow(this_lvl_block as u32);
+        let mask: u32 = 2u32.pow(size as u32) - 1;
+        for start in 0..32 {
+            let res = FreeMap::find_free(alloc_word, start, this_lvl_block);
+            dbg!((lvl, res));
+            if let Some(mut ind) = res {
+                if lvl != 0 {
+                    println!("_req({}, {}, {})", lvl - 1, ind, block);
+                    if let Some((i, full)) = self._req(lvl - 1, ind, block) {
+                        ind = i;
+                        if full {
+                            self.0[(start_ind + word) as usize] &= !(mask << ind);
+                        }
+                    } else {
+                        continue;
+                    }
+                } else {
+                    self.0[(start_ind + word) as usize] &= !(mask << ind);
+                }
+                println!("mask: 0x{:08x}, ind: {}", mask, ind);
+                let full = self.0[(start_ind + word) as usize] == 0;
+                return Some((word * 32 + ind, full));
+            }
+        }
+        None
     }
 }
 
 #[test]
-fn test() {
-    let mut map = FreeMap::new();
-    assert_eq!(map.req_16(), 0);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_32(), 1 /*2*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_16(), 3 /*1*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_16(), 4 /*4*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 5 /*8*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 9 /*12*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 13 /*16*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 17 /*20*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 21 /*24*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 25 /*28*/);
-    println!("{:08x}", map.0[1057]);
-    assert_eq!(map.req_64(), 29 /*32*/);
-    println!("{:08x}", map.0[33]);
-    println!("{:08x} {:08x}", map.0[1057], map.0[1058]);
-    assert_eq!(map.req_64(), 33 /*36*/);
-    println!("{:08x}", map.0[33]);
-    println!("{:08x} {:08x}", map.0[1057], map.0[1058]);
+fn test_alloc() {
+    let mut map = FreeMap::new();     // 0|----|----+----|---------|----+----|----|31
+    assert_eq!(map.req(0), Some(0));  //  |x   |    +    |    -    |    +    |    |
+    assert_eq!(map.req(1), Some(2));  //  |  xx|    +    |    -    |    +    |    |
+    assert_eq!(map.req(2), Some(4));  //  |    |xxxx+    |    -    |    +    |    |
+    assert_eq!(map.req(2), Some(8));  //  |    |    +xxxx|    -    |    +    |    |
+    assert_eq!(map.req(3), Some(16)); //  |    |    +    |    -xxxx|xxxx+    |    |
+    assert_eq!(map.req(2), Some(12)); //  |    |    +    |xxxx-    |    +    |    |
+    assert_eq!(map.req(2), Some(24)); //  |    |    +    |    -    |    +xxxx|    |
+    assert_eq!(map.req(0), Some(1));  //  | x  |    +    |    -    |    +    |    |
+    assert_eq!(map.req(1), Some(28)); //  |    |    +    |    -    |    +    |xx  |
+    assert_eq!(map.req(0), Some(30)); //  |    |    +    |    -    |    +    |  x |
+                                      // 1 block in the first word is free here
+    assert_eq!(map.req(3), Some(32)); //  |    |    +    |    -    |    +    |    |
 }
 
 #[test]
-fn test_log() {
-    assert_eq!(31, log2(0xFFFF_FFFF, 0));
-    assert_eq!(29, log2(0x7FFF_FFFF, 1));
-    assert_eq!(29, log2(0x3FFF_FFFF, 1));
-    assert_eq!(29, log2(0xBFFF_FFFF, 1));
-    assert_eq!(27, log2(0x7FFF_FFFF, 2));
-    assert_eq!(27, log2(0x3FFF_FFFF, 2));
-    assert_eq!(27, log2(0x1FFF_FFFF, 2));
-    assert_eq!(27, log2(0x0FFF_FFFF, 2));
-    assert_eq!(23, log2(0xACFF_FFFF, 2));
+fn test_word_alloc() {
+    assert_eq!(Some(0), FreeMap::find_free(0xFFFF_FFFF, 0, 0));
+    assert_eq!(Some(1), FreeMap::find_free(0xFFFF_FFFE, 0, 0));
+    assert_eq!(Some(2), FreeMap::find_free(0xFFFF_FFFC, 0, 0));
+    assert_eq!(Some(2), FreeMap::find_free(0xFFFF_FFFE, 0, 1));
+    assert_eq!(Some(2), FreeMap::find_free(0xFFFF_FFFC, 0, 1));
+    assert_eq!(Some(2), FreeMap::find_free(0xFFFF_FFFD, 0, 1));
+    assert_eq!(Some(4), FreeMap::find_free(0xFFFF_FFFE, 0, 2));
+    assert_eq!(Some(4), FreeMap::find_free(0xFFFF_FFFC, 0, 2));
+    assert_eq!(Some(4), FreeMap::find_free(0xFFFF_FFF8, 0, 2));
+    assert_eq!(Some(4), FreeMap::find_free(0xFFFF_FFF0, 0, 2));
+    assert_eq!(Some(8), FreeMap::find_free(0xFFFF_FFAC, 0, 2));
+
+    assert_eq!(Some(5), FreeMap::find_free(0xFFFF_FFE0, 0, 0));
+    assert_eq!(Some(6), FreeMap::find_free(0xFFFF_FFE0, 0, 1));
+    assert_eq!(Some(6), FreeMap::find_free(0xFFFF_FFC0, 0, 1));
+    assert_eq!(Some(6), FreeMap::find_free(0xFFFF_FFD0, 0, 1));
+    assert_eq!(Some(8), FreeMap::find_free(0xFFFF_FFE0, 0, 2));
+    assert_eq!(Some(8), FreeMap::find_free(0xFFFF_FFC0, 0, 2));
+    assert_eq!(Some(8), FreeMap::find_free(0xFFFF_FF80, 0, 2));
+    assert_eq!(Some(8), FreeMap::find_free(0xFFFF_FF00, 0, 2));
+    assert_eq!(Some(12), FreeMap::find_free(0xFFFF_FAC0, 0, 2));
+
+    assert_eq!(None, FreeMap::find_free(0, 0, 0));
+    assert_eq!(None, FreeMap::find_free(0x8000_0000, 0, 1));
+    assert_eq!(None, FreeMap::find_free(0x4000_0000, 0, 1));
+    assert_eq!(None, FreeMap::find_free(0x2000_0000, 0, 1));
+    assert_eq!(None, FreeMap::find_free(0x1000_0000, 0, 1));
+    assert_eq!(None, FreeMap::find_free(0x8000_0000, 0, 2));
+    assert_eq!(None, FreeMap::find_free(0xC000_0000, 0, 2));
+    assert_eq!(None, FreeMap::find_free(0xE000_0000, 0, 2));
+    assert_eq!(None, FreeMap::find_free(0x0007_0000, 0, 2));
 }

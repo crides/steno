@@ -5,6 +5,7 @@ use std::iter;
 
 use crate::dict::{Attr, Dict, Entry, Input};
 use crate::freemap::FreeMap;
+use crate::orthography;
 use crate::stroke::hash_strokes;
 
 /// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
@@ -86,7 +87,6 @@ pub struct RawDict {
     /// KV-pointer + key length
     buckets: Vec<u32>,
     kvpairs: Vec<Vec<u8>>,
-    // TODO bit map
 }
 
 impl RawDict {
@@ -109,16 +109,16 @@ impl RawDict {
             }
             let pair_size = strokes.len() * 3 + 2 + entry.byte_len();
             let (block_no, block_size) = if pair_size <= 16 {
-                (map.req_16(), 16)
+                (map.req(0), 16)
             } else if pair_size <= 32 {
-                (map.req_32(), 32)
+                (map.req(1), 32)
             } else if pair_size <= 64 {
-                (map.req_64(), 64)
+                (map.req(2), 64)
             } else {
                 panic!("Entry too big!");
             };
             assert!(strokes.len() < 15);
-            buckets[index] = block_no << 4 | strokes.len() as u32;
+            buckets[index] = block_no.unwrap() << 4 | strokes.len() as u32;
             let mut block = Vec::with_capacity(block_size);
             for stroke in strokes {
                 block.write_all(&stroke.raw().to_le_bytes()[0..3]).unwrap();
@@ -145,6 +145,7 @@ impl RawDict {
             w.write_all(&pair)?;
         }
         let rem = vec![0xFFu8; 16];
+        // Padding to 15MB (12MB for the entries)
         while written < 16 * (1usize << 20) {
             w.write_all(&rem)?;
             written += 16;
