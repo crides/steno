@@ -140,8 +140,12 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (editing_state == ED_ACTIVE_EDIT) {
         if (stroke == 0x008100) {
             display_stroke_to_edit();
-            editing_state = ED_ACTIVE_EDIT_TRANS_2;
+            editing_state = ED_ACTIVE_EDIT_TRANS_1;
             steno_debug_ln("display_stroke_to_edit() executed");
+        }
+        else {
+            set_Stroke(stroke);
+            steno_debug_ln("entered editing state");
         }
         return false;
     }
@@ -149,7 +153,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     if (editing_state == ED_ACTIVE_EDIT_TRANS_1) {
         if (stroke == 0x008100) {
             prompt_user_edit_translation();
-            editing_state = ED_ACTIVE_EDIT_TRANS_3;
+            editing_state = ED_ACTIVE_EDIT_TRANS_2;
             steno_debug_ln("prompt_user_edit_translation() executed");
         }
         return false;
