@@ -139,15 +139,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     if (editing_state == ED_ACTIVE_EDIT) {
         if (stroke == 0x008100) {
-            prompt_user_edit();
-            editing_state = ED_ACTIVE_EDIT_TRANS;
-            steno_debug_ln("prompt_user_edit() executed");
-        }
-        return false;
-    }
-
-    if (editing_state == ED_ACTIVE_EDIT_TRANS) {
-        if (stroke == 0x008100) {
             display_stroke_to_edit();
             editing_state = ED_ACTIVE_EDIT_TRANS_2;
             steno_debug_ln("display_stroke_to_edit() executed");
@@ -155,7 +146,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
-    if (editing_state == ED_ACTIVE_EDIT_TRANS_2) {
+    if (editing_state == ED_ACTIVE_EDIT_TRANS_1) {
         if (stroke == 0x008100) {
             prompt_user_edit_translation();
             editing_state = ED_ACTIVE_EDIT_TRANS_3;
@@ -164,7 +155,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         return false;
     }
 
-    if (editing_state == ED_ACTIVE_EDIT_TRANS_3) {
+    if (editing_state == ED_ACTIVE_EDIT_TRANS_2) {
         if (stroke == 0x008100) {
             edit_finished();
             editing_state = ED_IDLE;

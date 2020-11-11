@@ -10,7 +10,6 @@ typedef enum {
     ED_ACTIVE_REMOVE_TRANS,
     ED_ACTIVE_EDIT_TRANS,
     ED_ACTIVE_EDIT_TRANS_2,
-    ED_ACTIVE_EDIT_TRANS_3,
     ED_ERROR,
 } editing_state_t;
 
