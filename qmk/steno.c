@@ -162,12 +162,11 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         hist->state = hist_get(HIST_LIMIT(hist_ind - strokes_len + 1))->state;
     }
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("steno(): state: space: %u, cap: %u, glue: %u", hist->state.space, hist->state.cap, hist->state.glue);
+    steno_debug_ln("this state[%u]: space: %u, cap: %u, glue: %u", hist_ind, hist->state.space, hist->state.cap, hist->state.glue);
 #endif
-    // Set default state for next history entry
-    hist_get(HIST_LIMIT(hist_ind + 1))->state = process_output(hist_ind);
+    state_t new_state = process_output(hist_ind);
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("steno(): processed: state: space: %u, cap: %u, glue: %u", hist->state.space, hist->state.cap, hist->state.glue);
+    steno_debug_ln("next state[%u]: space: %u, cap: %u, glue: %u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
 #endif
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
@@ -187,11 +186,12 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     } else {
         stroke_start_ind = hist_ind;
     }
+    hist_get(hist_ind)->state = new_state;
 
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE)
     steno_debug_ln("--------\n");
 #endif
-    if(editing_state == ED_IDLE){
+    if (editing_state == ED_IDLE) {
         select_lcd();
         lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
         lcd_puts_at(0, 0, last_stroke, 2);
