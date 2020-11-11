@@ -105,33 +105,37 @@ void lcd_draw_hline(int16_t x, int16_t y, int16_t w, int16_t color) {
 }
 
 void lcd_draw_vline(int16_t x, int16_t y, int16_t h, int16_t color) {
-    for (int16_t i = y; i < y + h; i++) {
-        lcd_draw_pixel(x, i, color);
+    set_addr_window(x, y, 1, h);
+    for (int16_t i = 0; i < h; i++) {
+        spi_send_word(color);
     }
 }
 
 void lcd_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
-    /* for (int16_t i = x; i < x + w; i++) { */
-    /*     lcd_draw_vline(i, y, h, color); */
-    /* } */
-    for (int16_t i = y; i < y + h; i++) {
-        lcd_draw_hline(x, i, w, color);
+    set_addr_window(x, y, w, h);
+    for (int16_t i = 0; i < h; i++) {
+        for (int16_t j = 0; j < w; j++) {
+            spi_send_word(color);
+        }
     }
 }
 
 void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint16_t bg) {
-    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || (x + 6 - 1) < 0 || (y + 8 - 1) < 0) {
+    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || (x + LCD_FONT_WIDTH - 1) < 0 || (y + LCD_FONT_HEIGHT - 1) < 0) {
         return;
     }
 
-    if (c >= 176) {
-        c++; // Handle 'classic' charset behavior
+    c -= ' ';
+#ifdef CONSOLE_ENABLE
+    if (c < 0 || c > ('~' - ' ')) {
+        steno_error_ln("Attempting to draw out of range character: %02X", c + ' ');
     }
+#endif
 
     select_lcd();
     for (int8_t i = 0; i < 5; i++) { // Char bitmap = 5 columns
         uint8_t line = pgm_read_byte(&font[c * 5 + i]);
-        for (int8_t j = 0; j < 8; j++, line >>= 1) {
+        for (int8_t j = 0; j < LCD_FONT_HEIGHT; j++, line >>= 1) {
             if (line & 1) {
                 if (size == 1) {
                     lcd_draw_pixel(x + i, y + j, fg);
@@ -149,9 +153,9 @@ void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint
     }
     if (bg != fg) { // If opaque, draw vertical line for last column
         if (size == 1) {
-            lcd_draw_vline(x + 5, y, 8, bg);
+            lcd_draw_vline(x + 5, y, LCD_FONT_HEIGHT, bg);
         } else {
-            lcd_fill_rect(x + 5 * size, y, size, 8 * size, bg);
+            lcd_fill_rect(x + 5 * size, y, size, LCD_FONT_HEIGHT * size, bg);
         }
     }
     unselect_lcd();
@@ -160,14 +164,14 @@ void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint
 void lcd_putc(char c, uint8_t size) {
     if (c == '\n') {                             // Newline?
         cursor_x = 0;                            // Reset x to zero,
-        cursor_y += size * 8;                    // advance y one line
+        cursor_y += size * LCD_FONT_HEIGHT;      // advance y one line
     } else if (c != '\r') {                      // Ignore carriage returns
-        if ((cursor_x + size * 6) > LCD_WIDTH) { // Off right?
+        if ((cursor_x + size * LCD_FONT_WIDTH) > LCD_WIDTH) { // Off right?
             cursor_x = 0;                        // Reset x to zero,
-            cursor_y += size * 8;                // advance y one line
+            cursor_y += size * LCD_FONT_HEIGHT;  // advance y one line
         }
         lcd_draw_char(cursor_x, cursor_y, c, size, LCD_BLACK, LCD_WHITE);
-        cursor_x += size * 6; // Advance x one char
+        cursor_x += size * LCD_FONT_WIDTH; // Advance x one char
     }
 }
 
@@ -190,15 +194,15 @@ void lcd_puts(char *str, uint8_t size) {
 void lcd_back(uint8_t size) {
     if (cursor_x == 0) {
         if (cursor_y != 0) {
-            cursor_x = LCD_WIDTH - 6 * size;
-            cursor_y -= 8 * size;
+            cursor_x = LCD_WIDTH - LCD_FONT_WIDTH * size;
+            cursor_y -= LCD_FONT_HEIGHT * size;
         } else {
             return;
         }
     } else {
-        cursor_x = cursor_x - 6 * size;
+        cursor_x = cursor_x - LCD_FONT_WIDTH * size;
     }
-    lcd_fill_rect(cursor_x, cursor_y, size * 6, size * 8, LCD_WHITE);
+    lcd_fill_rect(cursor_x, cursor_y, size * LCD_FONT_WIDTH, size * LCD_FONT_HEIGHT, LCD_WHITE);
 }
 
 void lcd_clear(void) {

@@ -56,6 +56,8 @@ void lcd_clear(void);
 
 #define LCD_WIDTH 240
 #define LCD_HEIGHT 320
+#define LCD_FONT_WIDTH 6
+#define LCD_FONT_HEIGHT 8
 #define ILI9341_TFTWIDTH 240  // ILI9341 max TFT width
 #define ILI9341_TFTHEIGHT 320 // ILI9341 max TFT height
 
