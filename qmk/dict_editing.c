@@ -110,6 +110,87 @@ void prompt_user_remove(void) {
     memset(curr_stroke, 0, 30);
 }
 
+void prompt_user_edit(void) {
+#ifdef STENO_DEBUG_DICTED
+    steno_debug_ln("prompt_user_edit executed");
+#endif
+    editing_state = ED_ACTIVE_EDIT;
+    select_lcd();
+    lcd_fill_rect(0, 0, LCD_WIDTH, 48, LCD_WHITE);
+    lcd_puts_at(0, 0, "Enter Stroke:\n", 2);
+    unselect_lcd();
+    memset(curr_stroke, 0, 30);
+}
+
+void display_stroke_to_edit(void) {
+#ifdef STENO_DEBUG_DICTED
+    steno_debug_ln("display stroke edit executed");
+#endif
+
+    find_strokes((uint8_t *) curr_stroke, curr_stroke_size);
+    // last_entry_ptr is where the address is stored
+    address_ptr = ENTRY_GET_ADDR(last_entry_ptr);
+    if (last_entry_ptr == 0 || last_entry_ptr == 0xFFFFFF) {
+        editing_state = ED_ERROR;
+        select_lcd();
+        lcd_pos(0, 16);
+        lcd_puts("No Entry", 2);
+        unselect_lcd();
+        return;
+    }
+#ifdef STENO_DEBUG_DICTED
+    steno_debug_ln("address_ptr = %lX", address_ptr);
+#endif
+    uint8_t stroke_byte_len = 3 * curr_stroke_size;
+    flash_read(address_ptr, entry_buf, stroke_byte_len + 1);
+    uint8_t entry_len = entry_buf[stroke_byte_len];
+    flash_read(address_ptr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
+    char entry_trans[entry_len];
+
+    entry_length = stroke_byte_len + 1 + entry_len + 1;
+
+    memcpy(entry_trans, entry_buf + stroke_byte_len + 2, entry_len);
+
+    select_lcd();
+    lcd_pos(0, 16);
+    lcd_puts("Entry to edit:\n", 2);
+    lcd_puts(entry_trans, 2);
+    lcd_puts("\nTo edit, press enter (R-R)", 2);
+    unselect_lcd();
+}
+
+void prompt_user_edit_translation(void) {
+    remove_stroke();
+    select_lcd();
+    lcd_pos(0, 64);
+    lcd_puts("\nEnter New Translation:\n", 2);
+    unselect_lcd();
+    /* memset(page_buffer, 0, FLASH_PP_SIZE); */
+    entry_buf_len = 0;
+}
+
+void edit_finished(void) {
+#ifdef STENO_DEBUG_DICTED
+    steno_debug("Editing done with stroke: ");
+#endif
+    for (uint8_t i = 0; i < curr_stroke_size; i++) {
+        uint32_t stroke = (uint32_t) curr_stroke[3 * i + 2] << 16 | (uint32_t) curr_stroke[3 * i + 1] << 8 |
+                          (uint32_t) curr_stroke[3 * i];
+#ifdef STENO_DEBUG_DICTED
+        char buf[24];
+        stroke_to_string(stroke, buf, NULL);
+        steno_debug("%s/", buf);
+#endif
+    }
+    page_buffer[entry_buf_len] = 0;
+#ifdef STENO_DEBUG_DICTED
+    steno_debug_ln("\nEditing done with translation: %s", page_buffer);
+#endif
+    select_lcd();
+    lcd_clear();
+    unselect_lcd();
+}
+
 void display_stroke_to_remove(void) {
 #ifdef STENO_DEBUG_DICTED
     steno_debug_ln("display stroke remove executed");

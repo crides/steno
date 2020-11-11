@@ -360,6 +360,15 @@ state_t process_output(uint8_t h_ind) {
                 }
                 break;
 
+            case 17: //edit translation
+                if (editing_state == ED_ACTIVE_EDIT_TRANS) {
+                    dict_edit_puts("{edit_trans}");
+                    str_len += 10;
+                } else {
+                    prompt_user_edit();
+                }
+                break;
+
             case 18: //remove translation
                 if (editing_state == ED_ACTIVE_ADD_TRANS) {
                     dict_edit_puts("{rm_trans}");

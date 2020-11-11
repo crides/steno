@@ -6,8 +6,11 @@ typedef enum {
     ED_ACTIVE_ADD,
     ED_ACTIVE_ADD_TRANS,
     ED_ACTIVE_REMOVE,
-    ED_ACTIVE_CHANGE,
+    ED_ACTIVE_EDIT,
     ED_ACTIVE_REMOVE_TRANS,
+    ED_ACTIVE_EDIT_TRANS,
+    ED_ACTIVE_EDIT_TRANS_2,
+    ED_ACTIVE_EDIT_TRANS_3,
     ED_ERROR,
 } editing_state_t;
 
@@ -23,5 +26,10 @@ void add_finished(void);
 void remove_stroke(void);
 void display_stroke_to_remove(void);
 void prompt_user_remove(void);
+void prompt_user_edit(void);
+void display_stroke_to_edit(void);
+void prompt_user_edit_translation(void);
+void edit_finished(void);
+
 
 #endif
