@@ -9,6 +9,7 @@ mod bar;
 mod compile;
 mod dict;
 mod freemap;
+mod hash;
 mod keycode;
 mod rule;
 mod stroke;

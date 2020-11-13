@@ -2,6 +2,8 @@
 use std::fmt::{self, Debug, Display, Formatter};
 use std::str::FromStr;
 
+use crate::hash;
+
 pub static KEYS: &str = "#STKPWHRAO*EUFRPBLGTSDZ";
 
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Copy)]
@@ -27,12 +29,7 @@ impl Stroke {
     /// From FNV-1a
     pub fn hash(self, init: Option<u32>) -> u32 {
         let bytes = self.0.to_le_bytes();
-        let mut hash = init.unwrap_or(0x811c9dc5u32);
-        for byte in &bytes {
-            hash = hash.wrapping_mul(0x01000193);
-            hash ^= *byte as u32;
-        }
-        hash
+        hash::hash(&bytes, init)
     }
 }
 

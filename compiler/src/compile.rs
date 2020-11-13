@@ -2,6 +2,7 @@
 //! counterparts for types in `dict`.
 use std::io::{self, prelude::*};
 use std::iter;
+use std::collections::BTreeMap;
 
 use crate::dict::{Attr, Dict, Entry, Input};
 use crate::freemap::FreeMap;
@@ -87,9 +88,15 @@ pub struct RawDict {
     /// KV-pointer + key length
     buckets: Vec<u32>,
     kvpairs: Vec<Vec<u8>>,
+    freemap: Vec<u32>,
 }
 
 impl RawDict {
+    const KVPAIR_START: usize = 0x300000;
+    const FREEMAP_START: usize = 0xF00000;
+    const SCRATCH_START: usize = 0xF22000;
+    const ORTHOGRAPHY_START: usize = 0xFC0000;
+
     pub fn from_dict(d: Dict) -> RawDict {
         // 1M entries of 3 bytes; key length cannot be 15
         let mut buckets = vec![0xFFFFFF; 2usize.pow(20)];
@@ -131,24 +138,110 @@ impl RawDict {
             kvpairs.push(block);
         }
         dbg!(max_collision);
-        RawDict { buckets, kvpairs }
+        RawDict { buckets, kvpairs, freemap: map.0 }
     }
 
     /// Write the RawDict out as bytes
     pub fn write(&self, w: &mut dyn Write) -> io::Result<()> {
+        let mut file = Uf2File::new();
         for bucket in &self.buckets {
-            w.write_all(&bucket.to_le_bytes()[0..3])?;
+            file.write_all(&bucket.to_le_bytes()[0..3]);
         }
-        let mut written = 3 * (1usize << 20);
+        file.seek(RawDict::KVPAIR_START);
         for pair in &self.kvpairs {
-            written += pair.len();
-            w.write_all(&pair)?;
+            file.write_all(&pair);
         }
-        let rem = vec![0xFFu8; 16];
-        // Padding to 15MB (12MB for the entries)
-        while written < 16 * (1usize << 20) {
-            w.write_all(&rem)?;
-            written += 16;
+        file.seek(RawDict::FREEMAP_START);
+        for word in &self.freemap {
+            file.write_all(&word.to_le_bytes());
+        }
+        file.write_to(w)
+    }
+}
+
+#[allow(dead_code)]
+struct Uf2 {
+    magic0: u32,
+    magic1: u32,
+    flags: u32,
+    target_addr: u32,
+    payload_size: u32,
+    block_no: u32,
+    block_num: u32,
+    family_id: u32,
+    data: Vec<u8>,
+    magic_end: u32,
+}
+
+/// A lazily filled file containing Uf2 chunks. 
+struct Uf2File {
+    map: BTreeMap<usize, Vec<u8>>,
+    cur_block: usize,
+    cur_block_ind: usize,
+}
+
+impl Uf2File {
+    const MAGIC0: u32 = 0x0A324655;
+    const MAGIC1: u32 = 0x9E5D5157;
+    const MAGIC_END: u32 = 0x0AB16F30;
+    // Family ID present
+    const FLAGS: u32 = 0x00002000;
+    const FAMILY_ID: u32 = 0x00302cc0;  // STOEUPB
+    const UF2_DATA_SIZE: usize = 476;
+    const DATA_SIZE: usize = 256;
+
+    pub fn new() -> Self {
+        let mut file = Self {
+            map: BTreeMap::new(),
+            cur_block: 0,
+            cur_block_ind: 0,
+        };
+        file.seek(0);
+        file
+    }
+
+    fn seek(&mut self, addr: usize) {
+        self.cur_block = addr / Uf2File::DATA_SIZE;
+        self.cur_block_ind = addr % Uf2File::DATA_SIZE;
+        if !self.map.contains_key(&self.cur_block) {
+            self.map.insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
+        }
+    }
+
+    fn write(&mut self, byte: u8) {
+        if self.cur_block_ind == Uf2File::DATA_SIZE {
+            self.cur_block += 1;
+            self.cur_block_ind = 0;
+            self.map.insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
+        }
+        self.map.get_mut(&self.cur_block).unwrap()[self.cur_block_ind] = byte;
+        self.cur_block_ind += 1;
+    }
+
+    fn write_all(&mut self, bytes: &[u8]) {
+        for byte in bytes {
+            self.write(*byte);
+        }
+    }
+
+    pub fn write_to(self, w: &mut dyn Write) -> io::Result<()> {
+        let filtered: Vec<_> = self.map.into_iter().filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8)).collect();
+        let num_blocks = filtered.len() as u32;
+        let data_padding = [0u8; Uf2File::UF2_DATA_SIZE - Uf2File::DATA_SIZE];
+        for (block_no, (block_addr, data)) in filtered.iter().enumerate() {
+            w.write_all(&Uf2File::MAGIC0.to_le_bytes())?;
+            w.write_all(&Uf2File::MAGIC1.to_le_bytes())?;
+            w.write_all(&Uf2File::FLAGS.to_le_bytes())?;
+            w.write_all(&((block_addr * Uf2File::DATA_SIZE) as u32).to_le_bytes())?;
+            w.write_all(&(Uf2File::DATA_SIZE as u32).to_le_bytes())?;
+            w.write_all(&(block_no as u32).to_le_bytes())?;
+            w.write_all(&num_blocks.to_le_bytes())?;
+            w.write_all(&Uf2File::FAMILY_ID.to_le_bytes())?;
+            assert_eq!(data.len(), Uf2File::DATA_SIZE);
+            assert_eq!(data.len() + data_padding.len(), Uf2File::UF2_DATA_SIZE);
+            w.write_all(&data)?;
+            w.write_all(&data_padding)?;
+            w.write_all(&Uf2File::MAGIC_END.to_le_bytes())?;
         }
         Ok(())
     }
