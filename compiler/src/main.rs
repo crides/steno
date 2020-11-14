@@ -19,7 +19,6 @@ use std::io::{Seek, SeekFrom};
 
 use clap::{App, Arg, SubCommand};
 
-use compile::RawDict;
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::Stroke;
@@ -48,9 +47,8 @@ fn main() {
             let input_file = File::open(input_file).expect("input file");
             let input = serde_json::from_reader(input_file).expect("read json");
             let dict = Dict::parse_from_json(&input).unwrap();
-            let ir = RawDict::from_dict(dict);
             let mut output_file = File::create(output_file).expect("output file");
-            ir.write(&mut output_file).expect("write output");
+            compile::to_writer(dict, &mut output_file).expect("write output");
             println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());
         }
         ("apply-rules", Some(m)) => {

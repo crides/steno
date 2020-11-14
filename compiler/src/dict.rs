@@ -1,6 +1,6 @@
 //! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
 //! values which are already byte level (e.g. keycodes) for simplicity
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt::Display;
 
 use lalrpop_util::ParseError;
@@ -16,7 +16,7 @@ lazy_static! {
     static ref META_RE: Regex = Regex::new(r"[^{}]+|\{[^{}]*\}").unwrap();
 }
 
-pub type JsonDict = HashMap<String, String>;
+pub type JsonDict = BTreeMap<String, String>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Input {
@@ -304,7 +304,7 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
 /// Parsed value representation for a JSON dictionary. Differs from the JSON dictionary only in that the
 /// values here are parsed.
 #[derive(Debug, Clone)]
-pub struct Dict(pub HashMap<Vec<Stroke>, Entry>);
+pub struct Dict(pub BTreeMap<Vec<Stroke>, Entry>);
 
 impl Dict {
     pub fn parse_from_json(m: &JsonDict) -> Result<Dict, ParseDictError> {
@@ -325,7 +325,7 @@ impl Dict {
                 pbar.inc(1);
                 Ok((strokes, entry))
             })
-            .collect::<Result<HashMap<_, _>, ParseDictError>>()?;
+            .collect::<Result<BTreeMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");
         Ok(Dict(dict))
     }
