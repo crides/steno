@@ -1,7 +1,8 @@
 #include "stroke.h"
 #include "flash.h"
+#include "steno.h"
 
-static uint32_t get_start(uint8_t lvl) {
+static uint32_t get_offset(uint8_t lvl) {
     switch (lvl) {
         case 0: return FREEMAP_LVL_0;
         case 1: return FREEMAP_LVL_1;
@@ -11,55 +12,41 @@ static uint32_t get_start(uint8_t lvl) {
     return -1;
 }
 
-static uint32_t find_free(const uint32_t word, const uint8_t start, const uint8_t block) {
-    const uint8_t size = pow(2, block);
-    uint32_t mask = pow(2, size) - 1;
-    for (uint8_t i = 0; i < 32; i += size) {
-        if (i < start) {
-            mask <<= size;
-            continue;
-        }
-        if ((word & mask) == mask) {
-            return i;
-        }
-        mask <<= size;
-    }
-    return -1;
-}
-
 static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block, uint32_t *ret_ind) {
     // NOTE: `word` is word (32-bit) index, *not byte*
     const uint8_t this_lvl_block = lvl == 0 ? block : 0;
-    const uint32_t start_ind = get_start(lvl);
-    const uint32_t word_addr = 4 * (start_ind + word);
+    const uint32_t offset = get_offset(lvl);
+    const uint8_t size = pow(2, this_lvl_block);
+    uint32_t mask = pow(2, size) - 1;
+    const uint32_t word_addr = offset + 4 * word;
     uint32_t alloc_word;
     flash_read(word_addr, (uint8_t *) &alloc_word, 4);
-    const uint8_t size = pow(2, block);
-    const uint32_t mask = pow(2, size) - 1;
-    for (uint8_t start = 0; start < 32; start ++) {
-        uint32_t ind = find_free(alloc_word, start, this_lvl_block);
-        if (ind != -1) {
-            if (lvl != 0) {
-                uint32_t i;
-                uint8_t full = _req(lvl - 1, ind, block, &i);
-                if (i == -1) {
+    steno_debug_ln("req lvl %u bloq %u word %lu alok %08lX", lvl, block, word, alloc_word);
+    for (uint8_t i = 0; i < 32; i += size) {
+        if ((alloc_word & mask) == mask) {
+            const uint32_t sub_ind = i + word * 32;
+            const uint32_t write_word = ~mask;
+            steno_debug_ln("sind %u", i);
+            if (lvl == 0) {
+                flash_write(word_addr, (uint8_t *) &write_word, 4);
+                alloc_word &= write_word;
+                *ret_ind = sub_ind;
+            } else {
+                uint32_t ret;
+                uint8_t full = _req(lvl - 1, sub_ind, block, &ret);
+                if (ret == -1) {
                     continue;
                 } else {
-                    ind = i;
                     if (full) {
-                        uint32_t write_word = ~(mask << ind);
                         flash_write(word_addr, (uint8_t *) &write_word, 4);
                         alloc_word &= write_word;
                     }
+                    *ret_ind = ret;
                 }
-            } else {
-                uint32_t write_word = ~(mask << ind);
-                flash_write(word_addr, (uint8_t *) &write_word, 4);
-                alloc_word &= write_word;
             }
-            *ret_ind = word * 32 + ind;
             return alloc_word == 0;
         }
+        mask <<= size;
     }
     *ret_ind = -1;
     return 0;

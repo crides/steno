@@ -14,6 +14,10 @@
 #define QSPI_CMD_QUADIO    0x35
 #endif
 
+#ifdef STENO_DEBUG_FLASH
+uint8_t flash_debug_enable = 1;
+#endif
+
 void flash_init(void) {
 #ifdef __AVR__
     // Assume SPI inited
@@ -93,7 +97,9 @@ void flash_init(void) {
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("flash_read(# 0x%02X @ 0x%06lX)", len, addr);
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_read(# 0x%02X @ 0x%06lX)", len, addr);
+    }
 #endif
     select_card();
     spi_send_byte(0x03);    // read 
@@ -134,7 +140,9 @@ void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 void flash_read_page(uint32_t addr, uint8_t *buf) {
 #ifdef __AVR__
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("flash_read_page(@ 0x%06lX)", addr);
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_read_page(@ 0x%06lX)", addr);
+    }
 #endif
     select_card();
     spi_send_byte(0x03);    // read 
@@ -168,7 +176,9 @@ void flash_prep_write(void) {
 void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("flash_write(# 0x%02X @ 0x%06lX)", len, addr);
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_write(# 0x%02X @ 0x%06lX)", len, addr);
+    }
 #endif
     flash_prep_write();
     select_card();
@@ -187,7 +197,9 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 void flash_write_page(uint32_t addr, uint8_t *buf) {
 #ifdef __AVR__
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("flash_write_page(@ 0x%06lX)", addr);
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_write_page(@ 0x%06lX)", addr);
+    }
 #endif
     flash_prep_write();
     select_card();
@@ -218,7 +230,9 @@ void flash_erase_4k(uint32_t addr) {
 
 #ifdef __AVR__
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("flash_erase_4k(@ 0x%06lX)", addr);
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_erase_4k(@ 0x%06lX)", addr);
+    }
 #endif
     flash_prep_write();
     select_card();
@@ -236,7 +250,6 @@ void flash_erase_device(void) {
     flash_prep_write();
     select_card();
     spi_send_byte(0xC7);
-    spi_send_byte(0x60);
     unselect_card();
 #else
     uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_KB, addr);

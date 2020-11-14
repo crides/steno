@@ -126,7 +126,7 @@ void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint
     }
 
     c -= ' ';
-#ifdef CONSOLE_ENABLE
+#if 0
     if (c < 0 || c > ('~' - ' ')) {
         steno_error_ln("Attempting to draw out of range character: %02X", c + ' ');
         return;

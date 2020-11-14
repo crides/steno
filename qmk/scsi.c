@@ -39,8 +39,11 @@
 #include "scsi.h"
 #include "flash.h"
 #include "stroke.h"
+#include "lcd.h"
+#include "dict_editing.h"
 
-static uint8_t scsi_buf[256];
+static uint8_t packet_buf[EPSIZE];
+/* static uint8_t uf2_header[32]; */
 
 /** Structure to hold the SCSI response data to a SCSI INQUIRY command. This gives information about the device's
  *  features and capabilities.
@@ -131,8 +134,6 @@ bool handle_scsi_command(USB_ClassInfo_MS_Device_t *const msc_interface_info) {
 }
 
 void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint32_t block_addr, uint16_t blocks) {
-    extern bool flashing;
-    static uint32_t blocks_written = 0;
     if (Endpoint_WaitUntilReady()) {
         return;
     }
@@ -142,47 +143,41 @@ void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint3
             return;
         }
     }
-    // FIXME Why do we need + 1? (observed to be the case)
-    if (block_addr >= (FS_DATA_BLOCKS + 1) && block_addr < (FS_BLOCKS + 1)) {
-        uint32_t block_no = block_addr - FS_DATA_BLOCKS - 1;
-        if (block_no == 0) {
-            flashing = true;
-            steno_debug_ln("start erasing");
-            // FIXME use & check `flash_erase_device`
-            for (uint32_t i = 0; i < 256; i ++) {
-                flash_erase_64k(i * 65536);
-            }
-            steno_debug_ln("start flashing");
-            blocks_written = 0;
+    for ( ; blocks > 0; blocks --) {
+        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        uint8_t _header[32];
+        memcpy(_header, packet_buf, 32);
+        memcpy(page_buffer, packet_buf + 32, 32);
+        Endpoint_Read_Stream_LE(page_buffer + 32, EPSIZE, NULL);
+        Endpoint_Read_Stream_LE(page_buffer + 96, EPSIZE, NULL);
+        Endpoint_Read_Stream_LE(page_buffer + 160, EPSIZE, NULL);
+        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        memcpy(page_buffer + 224, packet_buf, 32);
+        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        if (msc_interface_info->State.IsMassStoreReset) {
+            steno_debug_ln("reset");
+            return;
         }
-        for (uint16_t i = 0; i < blocks; i ++) {
-            // XXX For some reason, Linux seems to write the file starting from the
-            // first block, all the way to the end, and then write the 0th block
-            for (uint8_t packet_num = 0; packet_num < 8; packet_num ++) {
-                Endpoint_Read_Stream_LE(scsi_buf, EPSIZE, NULL);
-                flash_write(((block_no + i) * 8 + packet_num) * EPSIZE, scsi_buf, EPSIZE);
+
+        uint32_t *header = (uint32_t *) _header;
+#ifdef STENO_DEBUG_FLASH
+        steno_debug_ln("flag %08lX addr %08lX bl# %08lX len %08lX", header[2], header[3], header[5], header[6]);
+#endif
+        if (header[0] == UF2_MAGIC0 && header[1] == UF2_MAGIC1 && ((uint32_t *) packet_buf)[15] == UF2_MAGIC_END
+                && (header[2] & UF2_FLAG_FAMILYID) && (!(header[2] & UF2_FLAG_NOFLASH))
+                && ((header[3] & 0xFF) == 0) && header[4] == 256 && header[7] == UF2_FAMILY_ID) {
+            if (header[5] == 0) {
+                steno_debug_ln("erase");
+                flash_erase_device();
+                steno_debug_ln("flash");
             }
-            if (msc_interface_info->State.IsMassStoreReset) {
-                return;
-            }
+            flash_write_page(header[3], page_buffer);
         }
-        blocks_written += blocks;
-        if (blocks_written >= (FLASH_BLOCKS - 1)) {
-            steno_debug_ln("done flashing");
-            flashing = false;
+        if (!(Endpoint_IsReadWriteAllowed())) {
+            Endpoint_ClearOUT();
         }
-    } else {
-        for (uint16_t i = 0; i < blocks; i ++) {
-            for (uint8_t packet_num = 0; packet_num < 8; packet_num ++) {
-                Endpoint_Read_Stream_LE(scsi_buf, EPSIZE, NULL);
-            }
-            if (msc_interface_info->State.IsMassStoreReset) {
-                return;
-            }
-        }
-    }
-    if (!(Endpoint_IsReadWriteAllowed())) {
-        Endpoint_ClearOUT();
     }
 }
 
@@ -198,8 +193,8 @@ void scsi_read(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint32
                     return;
                 }
             }
-            fat_read_block(block_addr + i, packet_num, (uint8_t *) scsi_buf);
-            Endpoint_Write_Stream_LE(scsi_buf, EPSIZE, NULL);
+            fat_read_block(block_addr + i, packet_num, (uint8_t *) packet_buf);
+            Endpoint_Write_Stream_LE(packet_buf, EPSIZE, NULL);
             if (msc_interface_info->State.IsMassStoreReset) {
                 return;
             }
@@ -322,11 +317,17 @@ static bool scsi_read_write_10(USB_ClassInfo_MS_Device_t *const msc_interface_in
     }
 
     /* Determine if the packet is a READ (10) or WRITE (10) command, call appropriate function */
+#ifdef STENO_DEBUG_FLASH
+    flash_debug_enable = 0;
+#endif
     if (IsDataRead == DATA_READ) {
         scsi_read(msc_interface_info, block_addr, blocks);
     } else {
         scsi_write(msc_interface_info, block_addr, blocks);
     }
+#ifdef STENO_DEBUG_FLASH
+    flash_debug_enable = 1;
+#endif
 
     /* Update the bytes transferred counter and succeed the command */
     msc_interface_info->State.CommandBlock.DataTransferLength -= ((uint32_t) blocks * BLOCK_SIZE);

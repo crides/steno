@@ -86,14 +86,18 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
     /* memset(last_trans, 0, 128); */
     stroke_to_string(stroke, last_stroke, NULL);
     /* #endif */
+#ifdef STENO_DEBUG_DICTED
     steno_debug_ln("Current Editing State: %d", editing_state);
+#endif
     if (editing_state == ED_ACTIVE_ADD) {
         if (stroke == 0x008100) {
             dicted_add_prompt_trans();
             editing_state = ED_ACTIVE_ADD_TRANS;
         } else {
             set_stroke(stroke);
+#ifdef STENO_DEBUG_DICTED
             steno_debug_ln("entered editing state");
+#endif
         }
         return false;
     }
@@ -123,7 +127,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
             editing_state = ED_ACTIVE_REMOVE_TRANS;
         } else {
             set_stroke(stroke);
+#ifdef STENO_DEBUG_DICTED
             steno_debug_ln("Added stroke to remove");
+#endif
         }
         return false;
     }
@@ -136,7 +142,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
             unselect_lcd();
             editing_state = ED_IDLE;
         }
+#ifdef STENO_DEBUG_DICTED
         steno_debug_ln("removed stroke");
+#endif
         return false;
     }
 
@@ -144,7 +152,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         if (stroke == 0x008100) {
             editing_state = ED_ACTIVE_EDIT_TRANS;
             dicted_edit_conf_strokes();
+#ifdef STENO_DEBUG_DICTED
             steno_debug_ln("dicted_edit_conf_strokes() executed");
+#endif
         } else {
             set_stroke(stroke);
         }
@@ -155,7 +165,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         if (stroke == 0x008100) {
             dicted_edit_prompt_trans();
             editing_state = ED_ACTIVE_EDIT_CONF_TRANS;
+#ifdef STENO_DEBUG_DICTED
             steno_debug_ln("dicted_edit_prompt_trans() executed");
+#endif
         }
         return false;
     }
@@ -164,7 +176,9 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         if (stroke == 0x008100) {
             dicted_edit_done();
             editing_state = ED_IDLE;
+#ifdef STENO_DEBUG_DICTED
             steno_debug_ln("edited translation");
+#endif
             return false;
         }
         // `process_output()` will handle the translation and write to buffer

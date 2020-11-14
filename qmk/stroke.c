@@ -14,30 +14,6 @@
 uint32_t last_entry_ptr;
 uint8_t entry_buf[128];
 
-// Assumes whole entry block is in the buffer
-inline uint8_t last_entry_len(void) {
-    uint8_t stroke_num = last_entry_ptr & 0x0F;
-    return entry_buf[stroke_num * 3];
-}
-
-// Assumes whole entry block is in the buffer
-inline uint8_t *last_entry_start(void) {
-    uint8_t stroke_num = last_entry_ptr & 0x0F;
-    return &entry_buf[stroke_num * 3 + 1];
-}
-
-uint32_t hash_stroke(uint32_t hash, uint32_t stroke) {
-    hash *= FNV_FACTOR;
-    hash ^= (stroke) & 0xFF;
-    hash *= FNV_FACTOR;
-    hash ^= (stroke >> 8) & 0xFF;
-    hash *= FNV_FACTOR;
-    hash ^= (stroke >> 16) & 0xFF;
-    hash *= FNV_FACTOR;
-    /* hash ^= (stroke >> 24) & 0xFF; */
-    return hash;
-}
-
 void hash_stroke_ptr(uint32_t *hash, uint8_t *stroke) {
     *hash *= FNV_FACTOR;
     *hash ^= stroke[0];
@@ -116,7 +92,7 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
     return stroke;
 }
 
-void find_strokes(uint8_t *strokes, uint8_t len) {
+void find_strokes(uint8_t *strokes, uint8_t len, uint8_t free) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug_ln("  find_strokes():");
 #endif
@@ -134,22 +110,30 @@ void find_strokes(uint8_t *strokes, uint8_t len) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug_ln("    bucket_ind: %06lX", bucket_ind);
 #endif
-    while (1) {
+    for (; ; bucket_ind += 3) {
         flash_read(bucket_ind, (uint8_t *) &last_entry_ptr, 3);
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    entry: %06lX", last_entry_ptr);
 #endif
-        uint8_t entry_stroke_len = ENTRY_GET_LEN(last_entry_ptr);
+        if (free) {
+            if (last_entry_ptr == 0xFFFFFF) {
+                // FIXME Special usage
+                last_entry_ptr = bucket_ind;
+                return;
+            } else {
+                continue;
+            }
+        }
+        const uint8_t entry_stroke_len = ENTRY_GET_LEN(last_entry_ptr);
         if (entry_stroke_len == 0 || entry_stroke_len == 0xF) {
             last_entry_ptr = 0;
             return;
         }
         if (entry_stroke_len != len) {
-            bucket_ind += 3;
             continue;
         }
-        uint8_t byte_len = 3 * len;
-        uint32_t byte_ptr = ENTRY_GET_ADDR(last_entry_ptr);
+        const uint8_t byte_len = 3 * len;
+        const uint32_t byte_ptr = ENTRY_GET_ADDR(last_entry_ptr);
         flash_read(byte_ptr, entry_buf, byte_len + 1);          // Also read the entry length
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    strokes:");
@@ -158,11 +142,10 @@ void find_strokes(uint8_t *strokes, uint8_t len) {
         }
 #endif
         if (memcmp(strokes, entry_buf, byte_len) == 0) {
-            uint8_t entry_len = entry_buf[byte_len];
+            const uint8_t entry_len = entry_buf[byte_len];
             flash_read(byte_ptr + byte_len + 1, entry_buf + byte_len + 1, entry_len + 1);
             return;
         } else {
-            bucket_ind += 3;
             continue;
         }
     }
@@ -199,7 +182,7 @@ void search_entry(uint8_t h_ind) {
 #endif
         uint8_t *strokes_start = &strokes[3 * (max_strokes_len - 1 - i)];
         memcpy(strokes_start, &stroke, 3);
-        find_strokes(strokes_start, i + 1);
+        find_strokes(strokes_start, i + 1, 0);
         if (last_entry_ptr != 0) {
             entry_ptr = last_entry_ptr;
 #ifdef STENO_DEBUG_STROKE

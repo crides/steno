@@ -102,10 +102,32 @@ struct TextFile {
     char const *content;
 };
 
+typedef struct {
+    uint32_t magic0;
+    uint32_t magic1;
+    uint32_t flags;
+    uint32_t target_addr;
+    uint32_t payload_size;
+    uint32_t block_no;
+    uint32_t block_num;
+    uint32_t family_id;
+} uf2_header_t;
+
 /* Function Prototypes: */
 bool handle_scsi_command(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
 void fat_read_block(uint32_t block_no, uint8_t packet_num, uint8_t *data);
 void fat_write_block(uint32_t block_no, uint8_t packet_num, uint8_t *data);
+
+#define UF2_MAGIC0 0x0A324655
+#define UF2_MAGIC1 0x9E5D5157
+#define UF2_MAGIC_END 0x0AB16F30
+// Family ID present
+#define UF2_FLAG_FAMILYID 0x00002000
+#define UF2_FLAG_NOFLASH 0x00000001
+// STOEUPB
+#define UF2_FAMILY_ID 0x00302cc0
+#define UF2_DATA_SIZE 476
+#define DATA_SIZE 256
 
 #if defined(INCLUDE_FROM_SCSI_C)
 static bool scsi_inquiry(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);

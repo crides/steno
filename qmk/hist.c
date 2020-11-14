@@ -158,7 +158,7 @@ void hist_undo(uint8_t h_ind) {
     history_t *hist = hist_get(h_ind);
     uint8_t len = hist->len;
     if (!len) {
-        steno_error_ln("Invalid current history entry");
+        steno_error_ln("bad cur hist entry");
         steno_back();
         return;
     }
@@ -179,7 +179,7 @@ void hist_undo(uint8_t h_ind) {
 #endif
         if (!old_hist->len) {
             hist->len = 0;
-            steno_error_ln("Invalid prev hist entry");
+            steno_error_ln("bad prev hist entry");
             return;
         }
         process_output(old_hist_ind);
@@ -208,7 +208,7 @@ state_t process_output(uint8_t h_ind) {
 #endif
             if (!old_hist->len) {
                 hist->len = 0;
-                steno_error_ln("Invalid prev hist entry");
+                steno_error_ln("bad prev hist entry");
                 break;
             }
             for (uint8_t j = 0; j < old_hist->len; j++) {
@@ -240,7 +240,9 @@ state_t process_output(uint8_t h_ind) {
             steno_send_char(' ');
             hist->len++;
         }
-        send_string(buf);
+        for (char *str = buf; *str; str ++) {
+            steno_send_char(*str);
+        }
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("%s'", buf);
         steno_debug_ln("  -> %u", hist->len);

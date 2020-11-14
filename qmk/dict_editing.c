@@ -68,13 +68,66 @@ void set_stroke(uint32_t stroke) {
 }
 
 void dicted_add_prompt_trans(void) {
+    find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
+    uint8_t stroke_len = ENTRY_GET_LEN(last_entry_ptr);
+    if (stroke_len != 0 && stroke_len != 0xFFFFFF) {
+        editing_state = ED_ERROR;
+        select_lcd();
+        lcd_puts("\nEntry already exists", 2);
+        unselect_lcd();
+        return;
+    }
     select_lcd();
     lcd_puts("\nEnter Translation:\n", 2);
     unselect_lcd();
     entry_buf_len = 0;
 }
 
+void add_entry(void) {
+    uint8_t bloq;
+    const uint8_t entry_len = curr_stroke_size * 3 + 2 + entry_buf_len;
+    if (entry_len <= 16) {
+        bloq = 0;
+    } else if (entry_len <= 32) {
+        bloq = 1;
+    } else if (entry_len <= 64) {
+        bloq = 2;
+    } else {
+        bloq = 3;
+    }
+    if (entry_buf_len == 0) {
+        select_lcd();
+        lcd_puts("\nAborted", 2);
+        editing_state = ED_ERROR;
+        unselect_lcd();
+        return;
+    }
+
+    uint32_t block_ind = freemap_req(bloq);
+    if (block_ind == -1) {
+        select_lcd();
+        lcd_puts("\nNo storage", 2);
+        editing_state = ED_ERROR;
+        unselect_lcd();
+        return;
+    }
+    uint32_t block_addr = block_ind * 16 + KVPAIR_BLOCK_START;
+    attr_t attr = { .space_prev = 1, .space_after = 1, .glue = 0 };
+    steno_debug_ln("blok addr %06lX", block_addr);
+    flash_write(block_addr, (uint8_t *) curr_stroke, curr_stroke_size * 3);
+    flash_write(block_addr + curr_stroke_size * 3, &entry_buf_len, 1);
+    flash_write(block_addr + curr_stroke_size * 3 + 1, (uint8_t *) &attr, 1);
+    flash_write(block_addr + curr_stroke_size * 3 + 2, page_buffer, entry_buf_len);
+    // FIXME Special usage
+    find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 1);
+    uint32_t bucket_addr = last_entry_ptr;
+    last_entry_ptr = 0;
+    uint32_t bucket = ((block_addr - KVPAIR_BLOCK_START) & 0xFFFFF0) | (curr_stroke_size & 0x0F);
+    flash_write(bucket_addr, (uint8_t *) &bucket, 3);
+}
+
 void dicted_add_done(void) {
+    page_buffer[entry_buf_len] = 0;
 #ifdef STENO_DEBUG_DICTED
     steno_debug("Adding done with stroke: ");
     for (uint8_t i = 0; i < curr_stroke_size; i++) {
@@ -84,11 +137,9 @@ void dicted_add_done(void) {
         stroke_to_string(stroke, buf, NULL);
         steno_debug("%s/", buf);
     }
-#endif
-    page_buffer[entry_buf_len] = 0;
-#ifdef STENO_DEBUG_DICTED
     steno_debug_ln("\nAdding done with translation: %s", page_buffer);
 #endif
+    add_entry();
     select_lcd();
     lcd_clear();
     unselect_lcd();
@@ -131,7 +182,7 @@ void dicted_edit_conf_strokes(void) {
     }
 #endif
 
-    find_strokes((uint8_t *) curr_stroke, curr_stroke_size);
+    find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
     // last_entry_ptr is where the address is stored
     if (last_entry_ptr == 0 || last_entry_ptr == 0xFFFFFF) {
         editing_state = ED_ERROR;
@@ -173,20 +224,19 @@ void dicted_edit_prompt_trans(void) {
 void dicted_edit_done(void) {
 #ifdef STENO_DEBUG_DICTED
     steno_debug("Editing done with stroke: ");
-#endif
     for (uint8_t i = 0; i < curr_stroke_size; i++) {
         uint32_t stroke = (uint32_t) curr_stroke[3 * i + 2] << 16 | (uint32_t) curr_stroke[3 * i + 1] << 8 |
                           (uint32_t) curr_stroke[3 * i];
-#ifdef STENO_DEBUG_DICTED
         char buf[24];
         stroke_to_string(stroke, buf, NULL);
         steno_debug("%s/", buf);
-#endif
     }
+#endif
     page_buffer[entry_buf_len] = 0;
 #ifdef STENO_DEBUG_DICTED
     steno_debug_ln("\nEditing done with translation: %s", page_buffer);
 #endif
+    add_entry();
     select_lcd();
     lcd_clear();
     unselect_lcd();
@@ -204,7 +254,7 @@ void dicted_remove_conf_strokes(void) {
         steno_debug("%s/", buf);
     }
 #endif
-    find_strokes((uint8_t *) curr_stroke, curr_stroke_size);
+    find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
     // last_entry_ptr is where the address is stored
     if (last_entry_ptr == 0 || last_entry_ptr == 0xFFFFFF) {
         editing_state = ED_ERROR;
