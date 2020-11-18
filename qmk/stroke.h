@@ -41,10 +41,10 @@ typedef struct __attribute__((packed)) {
 extern uint32_t last_entry_ptr;
 extern uint8_t entry_buf[128];
 
-bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *len);
-uint32_t qmk_chord_to_stroke(uint8_t chord[6]);
+bool stroke_to_string(const uint32_t stroke, char *buf, uint8_t *len);
+uint32_t qmk_chord_to_stroke(const uint8_t chord[6]);
 uint8_t last_entry_len(void);
 // Both returns implicitly in `last_entry_ptr`
-void find_strokes(uint8_t *strokes, uint8_t len, uint8_t free);
-void search_entry(uint8_t h_ind);
-uint32_t freemap_req(uint8_t block);
+void find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);
+void search_entry(const uint8_t h_ind);
+uint32_t freemap_req(const uint8_t block);

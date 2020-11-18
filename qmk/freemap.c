@@ -21,12 +21,16 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
     const uint32_t word_addr = offset + 4 * word;
     uint32_t alloc_word;
     flash_read(word_addr, (uint8_t *) &alloc_word, 4);
+#ifdef STENO_DEBUG_FLASH
     steno_debug_ln("req lvl %u bloq %u word %lu alok %08lX", lvl, block, word, alloc_word);
+#endif
     for (uint8_t i = 0; i < 32; i += size) {
         if ((alloc_word & mask) == mask) {
             const uint32_t sub_ind = i + word * 32;
             const uint32_t write_word = ~mask;
+#ifdef STENO_DEBUG_FLASH
             steno_debug_ln("sind %u", i);
+#endif
             if (lvl == 0) {
                 flash_write(word_addr, (uint8_t *) &write_word, 4);
                 alloc_word &= write_word;

@@ -13,6 +13,7 @@
 void flash_init(void);
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len);
 void flash_read_page(uint32_t addr, uint8_t *buf);
+void flash_flush(void);
 void flash_write(uint32_t addr, uint8_t *buf, uint8_t len);
 void flash_write_page(uint32_t addr, uint8_t *buf);
 void flash_erase_4k(uint32_t addr);

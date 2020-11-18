@@ -147,31 +147,25 @@ void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint3
         Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
         uint8_t _header[32];
         memcpy(_header, packet_buf, 32);
-        memcpy(page_buffer, packet_buf + 32, 32);
-        Endpoint_Read_Stream_LE(page_buffer + 32, EPSIZE, NULL);
-        Endpoint_Read_Stream_LE(page_buffer + 96, EPSIZE, NULL);
-        Endpoint_Read_Stream_LE(page_buffer + 160, EPSIZE, NULL);
-        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
-        memcpy(page_buffer + 224, packet_buf, 32);
-        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
-        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
-        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        for (uint8_t i = 0; i < 4; i++) {
+            Endpoint_Read_Stream_LE(page_buffer + i * EPSIZE, EPSIZE, NULL);
+        }
+        for (uint8_t i = 0; i < 3; i++) {
+            Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+        }
         if (msc_interface_info->State.IsMassStoreReset) {
-            steno_debug_ln("reset");
+            steno_error_ln("reset");
             return;
         }
 
         uint32_t *header = (uint32_t *) _header;
-#ifdef STENO_DEBUG_FLASH
-        steno_debug_ln("flag %08lX addr %08lX bl# %08lX len %08lX", header[2], header[3], header[5], header[6]);
-#endif
         if (header[0] == UF2_MAGIC0 && header[1] == UF2_MAGIC1 && ((uint32_t *) packet_buf)[15] == UF2_MAGIC_END
                 && (header[2] & UF2_FLAG_FAMILYID) && (!(header[2] & UF2_FLAG_NOFLASH))
                 && ((header[3] & 0xFF) == 0) && header[4] == 256 && header[7] == UF2_FAMILY_ID) {
             if (header[5] == 0) {
-                steno_debug_ln("erase");
+                steno_error_ln("erase");
                 flash_erase_device();
-                steno_debug_ln("flash");
+                steno_error_ln("flash");
             }
             flash_write_page(header[3], page_buffer);
         }
@@ -317,17 +311,11 @@ static bool scsi_read_write_10(USB_ClassInfo_MS_Device_t *const msc_interface_in
     }
 
     /* Determine if the packet is a READ (10) or WRITE (10) command, call appropriate function */
-#ifdef STENO_DEBUG_FLASH
-    flash_debug_enable = 0;
-#endif
     if (IsDataRead == DATA_READ) {
         scsi_read(msc_interface_info, block_addr, blocks);
     } else {
         scsi_write(msc_interface_info, block_addr, blocks);
     }
-#ifdef STENO_DEBUG_FLASH
-    flash_debug_enable = 1;
-#endif
 
     /* Update the bytes transferred counter and succeed the command */
     msc_interface_info->State.CommandBlock.DataTransferLength -= ((uint32_t) blocks * BLOCK_SIZE);

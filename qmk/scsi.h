@@ -139,8 +139,9 @@ static bool scsi_mode_sense_6(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
 #endif
 
 #define FLASH_SIZE (16 * (1ul << 20)) // 16MB
+#define UF2_FLASH_SIZE (30 * (1ul << 20))     // 256 data blocks wrapped in 512 byte blocks
 #define BLOCK_SIZE 512  // GhostFAT does not support other sector sizes (currently) */
-#define FLASH_BLOCKS (FLASH_SIZE / BLOCK_SIZE)
+#define FLASH_BLOCKS (UF2_FLASH_SIZE / BLOCK_SIZE)
 #define DISK_READ_ONLY false
 #define EPSIZE 64
 

@@ -15,7 +15,7 @@
 #endif
 
 #ifdef STENO_DEBUG_FLASH
-uint8_t flash_debug_enable = 1;
+uint8_t flash_debug_enable = 0;
 #endif
 
 void flash_init(void) {
@@ -156,7 +156,7 @@ void flash_read_page(uint32_t addr, uint8_t *buf) {
 }
 
 #ifdef __AVR__
-void flash_prep_write(void) {
+void flash_flush(void) {
     select_card();
     while (1) {
         spi_send_byte(0x05);    // read status reg
@@ -166,7 +166,10 @@ void flash_prep_write(void) {
         }
     }
     unselect_card();
+}
 
+void flash_prep_write(void) {
+    flash_flush();
     select_card();
     spi_send_byte(0x06);    // write enable
     unselect_card();

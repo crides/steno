@@ -14,7 +14,7 @@
 uint32_t last_entry_ptr;
 uint8_t entry_buf[128];
 
-void hash_stroke_ptr(uint32_t *hash, uint8_t *stroke) {
+void hash_stroke_ptr(uint32_t *hash, const uint8_t *stroke) {
     *hash *= FNV_FACTOR;
     *hash ^= stroke[0];
     *hash *= FNV_FACTOR;
@@ -46,7 +46,7 @@ bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
         return true;
     }
 
-    char *KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
+    const char *KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
     bool has_mid = false;
     for (int8_t i = 22; i >= 0; i --) {
         if (stroke & ((uint32_t) 1 << i)) {
@@ -70,8 +70,8 @@ bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
     return false;
 }
 
-uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
-    uint32_t keys = ((uint32_t) chord[5] & 1)
+uint32_t qmk_chord_to_stroke(const uint8_t chord[6]) {
+    const uint32_t keys = ((uint32_t) chord[5] & 1)
         | ((uint32_t) chord[4] & 0x7F) << 1
         | ((uint32_t) chord[3] & 0x3F) << 8
         | ((uint32_t) chord[2] & 0x7F) << (14 - 2)
@@ -92,7 +92,7 @@ uint32_t qmk_chord_to_stroke(uint8_t chord[6]) {
     return stroke;
 }
 
-void find_strokes(uint8_t *strokes, uint8_t len, uint8_t free) {
+void find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug_ln("  find_strokes():");
 #endif
@@ -152,7 +152,7 @@ void find_strokes(uint8_t *strokes, uint8_t len, uint8_t free) {
 }
 
 // Searches the dictionary for the appropriate entry to output, and places result in the corresponding history entry.
-void search_entry(uint8_t h_ind) {
+void search_entry(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug_ln("search_entry(%d):", h_ind);
 #endif
@@ -168,7 +168,7 @@ void search_entry(uint8_t h_ind) {
     uint8_t strokes[3 * max_strokes_len];
     for (uint8_t i = 0; i < max_strokes_len; i ++) {
         history_t *old_hist = hist_get(HIST_LIMIT(h_ind - i));
-        uint8_t strokes_len = ENTRY_GET_LEN(old_hist->entry);
+        const uint8_t strokes_len = ENTRY_GET_LEN(old_hist->entry);
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("  hist[%d].strokes_len = %d", HIST_LIMIT(h_ind - i), strokes_len);
 #endif
@@ -176,7 +176,7 @@ void search_entry(uint8_t h_ind) {
             i += strokes_len - 1;
             continue;
         }
-        uint32_t stroke = old_hist->stroke;
+        const uint32_t stroke = old_hist->stroke;
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("  [%d] = %06lX", i, stroke);
 #endif
@@ -191,4 +191,15 @@ void search_entry(uint8_t h_ind) {
         }
     }
     last_entry_ptr = entry_ptr;
+}
+
+void print_strokes(const uint8_t *strokes, const uint8_t len) {
+    for (uint8_t i = 0; i < len; i++) {
+        const uint32_t stroke = (uint32_t) strokes[3 * i + 2] << 16 | (uint32_t) strokes[3 * i + 1] << 8 |
+                                (uint32_t) strokes[3 * i];
+        char buf[24];
+        stroke_to_string(stroke, buf, NULL);
+        steno_debug("%s/", buf);
+    }
+    steno_debug_ln("");
 }

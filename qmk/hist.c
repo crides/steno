@@ -44,6 +44,9 @@ static void steno_send_char(char c) {
             lcd_putc(c, 2);
         }
     } else {
+        if (last_trans_size < 128) {
+            last_trans[last_trans_size++] = c;
+        }
         send_char(c);
     }
 #ifdef STENO_DEBUG_HIST
@@ -59,19 +62,24 @@ static uint8_t steno_send_unicode(uint32_t u) {
         steno_debug("\\U%06lX", u);
     }
 #endif
+    char buf[16];
+    uint8_t len;
+    if (u < 0xFFFF) {
+        snprintf(buf, 16, "\\u%04lX", u);
+        len = 6;
+    } else {
+        snprintf(buf, 16, "\\U%06lX", u);
+        len = 8;
+    }
     if (editing_state != ED_IDLE) {
-        char buf[16];
-        uint8_t len;
-        if (u < 0xFFFF) {
-            snprintf(buf, 16, "\\u%04lX", u);
-            len = 6;
-        } else {
-            snprintf(buf, 16, "\\U%06lX", u);
-            len = 8;
-        }
         dict_edit_puts(buf);
         return len;
     } else {
+        if (last_trans_size + len < 128) {
+            for (uint8_t i = 0; i < len; i ++) {
+                last_trans[last_trans_size++] = buf[i];
+            }
+        }
         register_unicode(u);
         return 1;
     }

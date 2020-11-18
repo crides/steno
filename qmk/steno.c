@@ -57,7 +57,7 @@ static uint8_t locked = 1;
 #endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
-bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
+bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
 #ifndef __AVR__
     bt_state_time = timer_read32();
 #endif
@@ -66,7 +66,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         steno_debug_ln("flashing");
         return false;
     }
-    uint32_t stroke = qmk_chord_to_stroke(chord);
+    const uint32_t stroke = qmk_chord_to_stroke(chord);
 #ifdef STENO_PHONE
     if (stroke == 0x0CA990) {   //KPROERPG, 2 paws and OE
         locked = !locked;
@@ -91,8 +91,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #endif
     if (editing_state == ED_ACTIVE_ADD) {
         if (stroke == 0x008100) {
-            dicted_add_prompt_trans();
             editing_state = ED_ACTIVE_ADD_TRANS;
+            dicted_add_prompt_trans();
         } else {
             set_stroke(stroke);
 #ifdef STENO_DEBUG_DICTED
@@ -123,8 +123,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     if(editing_state == ED_ACTIVE_REMOVE) {
         if (stroke == 0x008100) {
-            dicted_remove_conf_strokes();
             editing_state = ED_ACTIVE_REMOVE_TRANS;
+            dicted_remove_conf_strokes();
         } else {
             set_stroke(stroke);
 #ifdef STENO_DEBUG_DICTED
@@ -136,11 +136,11 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     if (editing_state == ED_ACTIVE_REMOVE_TRANS) {
         if (stroke == 0x008100) {
+            editing_state = ED_IDLE;
             remove_stroke();
             select_lcd();
             lcd_clear();
             unselect_lcd();
-            editing_state = ED_IDLE;
         }
 #ifdef STENO_DEBUG_DICTED
         steno_debug_ln("removed stroke");
@@ -163,8 +163,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     if (editing_state == ED_ACTIVE_EDIT_TRANS) {
         if (stroke == 0x008100) {
-            dicted_edit_prompt_trans();
             editing_state = ED_ACTIVE_EDIT_CONF_TRANS;
+            dicted_edit_prompt_trans();
 #ifdef STENO_DEBUG_DICTED
             steno_debug_ln("dicted_edit_prompt_trans() executed");
 #endif
@@ -174,8 +174,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 
     if (editing_state == ED_ACTIVE_EDIT_CONF_TRANS) {
         if (stroke == 0x008100) {
-            dicted_edit_done();
             editing_state = ED_IDLE;
+            dicted_edit_done();
 #ifdef STENO_DEBUG_DICTED
             steno_debug_ln("edited translation");
 #endif
@@ -189,9 +189,8 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
         hist_undo(hist_ind);
         if (editing_state == ED_IDLE) {
             select_lcd();
-            lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-            lcd_puts_at(0, 0, last_stroke, 2);
-            lcd_puts_at(0, 16, last_trans, 2);
+            lcd_fill_rect(0, 0, LCD_WIDTH, 64, LCD_WHITE);
+            lcd_puts_at(0, 0, "*", 2);
             unselect_lcd();
         }
         return false;
@@ -205,7 +204,7 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  entry: %06lX", last_entry_ptr);
 #endif
-    uint8_t strokes_len = ENTRY_GET_LEN(last_entry_ptr);
+    const uint8_t strokes_len = ENTRY_GET_LEN(last_entry_ptr);
     if (strokes_len > 1) {
         hist->state = hist_get(HIST_LIMIT(hist_ind - strokes_len + 1))->state;
     }
@@ -216,6 +215,29 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("next state[%u]: space: %u, cap: %u, glue: %u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
 #endif
+    if (editing_state == ED_IDLE) {
+        select_lcd();
+        lcd_fill_rect(0, 0, LCD_WIDTH, 64, LCD_WHITE);
+        char buf[24];
+        if (strokes_len > 0) {
+            const uint32_t first_stroke = *((uint32_t *) entry_buf);
+            stroke_to_string(first_stroke, buf, NULL);
+            lcd_puts_at(0, 0, buf, 2);
+            for (uint8_t i = 1; i < strokes_len; i ++) {
+                lcd_putc('/', 2);
+                const uint32_t stroke = *((uint32_t *) (entry_buf + 3 * i));
+                stroke_to_string(stroke, buf, NULL);
+                lcd_puts(buf, 2);
+            }
+            lcd_putc('\n', 2);
+            last_trans[last_trans_size] = 0;
+            lcd_puts(last_trans, 2);
+        } else {
+            stroke_to_string(hist->stroke, buf, NULL);
+            lcd_puts_at(0, 0, buf, 2);
+        }
+        unselect_lcd();
+    }
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist[%u]:", hist_ind);
@@ -239,13 +261,6 @@ bool send_steno_chord_user(steno_mode_t mode, uint8_t chord[6]) {
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE) || defined(STENO_DEBUG_DICTED)
     steno_debug_ln("--------\n");
 #endif
-    if (editing_state == ED_IDLE) {
-        select_lcd();
-        lcd_fill_rect(0, 0, LCD_WIDTH, 32, LCD_WHITE);
-        lcd_puts_at(0, 0, last_stroke, 2);
-        lcd_puts_at(0, 16, last_trans, 2);
-        unselect_lcd();
-    }
     return false;
 }
 
