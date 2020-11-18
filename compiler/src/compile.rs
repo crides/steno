@@ -207,7 +207,8 @@ impl Uf2File {
     pub fn write_to(self, w: &mut dyn Write) -> io::Result<()> {
         let filtered: Vec<_> = self.map.into_iter().filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8)).collect();
         let num_blocks = filtered.len() as u32;
-        let data_padding = [0u8; Uf2File::UF2_DATA_SIZE - Uf2File::DATA_SIZE];
+        let data_padding_pre = [0u8; 32];
+        let data_padding_post = [0u8; Uf2File::UF2_DATA_SIZE - Uf2File::DATA_SIZE - 32];
         for (block_no, (block_addr, data)) in filtered.iter().enumerate() {
             w.write_all(&Uf2File::MAGIC0.to_le_bytes())?;
             w.write_all(&Uf2File::MAGIC1.to_le_bytes())?;
@@ -218,9 +219,12 @@ impl Uf2File {
             w.write_all(&num_blocks.to_le_bytes())?;
             w.write_all(&Uf2File::FAMILY_ID.to_le_bytes())?;
             assert_eq!(data.len(), Uf2File::DATA_SIZE);
-            assert_eq!(data.len() + data_padding.len(), Uf2File::UF2_DATA_SIZE);
+            assert_eq!(data.len() + data_padding_pre.len() + data_padding_post.len(), Uf2File::UF2_DATA_SIZE);
+            // NOTE: Custom UF2 format: Moving the data back by 32 bytes so that it's packet (64 byte)
+            // aligned, and that it'll be easier to process
+            w.write_all(&data_padding_pre)?;
             w.write_all(&data)?;
-            w.write_all(&data_padding)?;
+            w.write_all(&data_padding_post)?;
             w.write_all(&Uf2File::MAGIC_END.to_le_bytes())?;
         }
         Ok(())
