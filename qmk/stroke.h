@@ -9,12 +9,13 @@
 #define FNV_FACTOR 0x01000193
 
 #define BUCKET_START 0
-#define KVPAIR_BLOCK_START  0x300000
+#define KVPAIR_BLOCK_START  0x400000
 #define FREEMAP_START       0xF00000
 #define SCRATCH_START       0xF22000
 #define ORTHOGRAPHY_START   0xFC0000
 
-#define ENTRY_GET_LEN(e) (e & 0x0F)
+#define ENTRY_GET_ENTRY_LEN(e) ((e >> 24) & 0xFF)
+#define ENTRY_GET_STROKES_LEN(e) (e & 0x0F)
 #define ENTRY_GET_ADDR(e) ((e & 0xFFFFF0) + KVPAIR_BLOCK_START)
 
 #define FREEMAP_LVL_0 FREEMAP_START
@@ -48,3 +49,5 @@ uint8_t last_entry_len(void);
 void find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);
 void search_entry(const uint8_t h_ind);
 uint32_t freemap_req(const uint8_t block);
+void print_strokes(const uint8_t *strokes, const uint8_t len);
+void read_entry(uint32_t entry_ptr);

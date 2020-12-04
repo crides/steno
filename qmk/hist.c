@@ -177,7 +177,7 @@ void hist_undo(uint8_t h_ind) {
     for (uint8_t i = 0; i < len; i++) {
         steno_back();
     }
-    uint8_t strokes_len = ENTRY_GET_LEN(hist->entry);
+    uint8_t strokes_len = ENTRY_GET_STROKES_LEN(hist->entry);
     uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
     for (uint8_t i = 0; i < repl_len; i++) {
         uint8_t old_hist_ind = HIST_LIMIT(h_ind + i - repl_len);
@@ -204,7 +204,7 @@ state_t process_output(uint8_t h_ind) {
 #endif
     // TODO optimization: compare beginning of current and string to replace
     history_t *hist = hist_get(h_ind);
-    uint8_t strokes_len = ENTRY_GET_LEN(hist->entry);
+    uint8_t strokes_len = ENTRY_GET_STROKES_LEN(hist->entry);
     {
         uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
         int8_t counter = repl_len;
@@ -222,7 +222,7 @@ state_t process_output(uint8_t h_ind) {
             for (uint8_t j = 0; j < old_hist->len; j++) {
                 steno_back();
             }
-            uint8_t old_strokes_len = ENTRY_GET_LEN(old_hist->entry);
+            uint8_t old_strokes_len = ENTRY_GET_STROKES_LEN(old_hist->entry);
             uint8_t old_repl_len = old_strokes_len > 1 ? old_strokes_len - 1 : 0;
             counter -= old_repl_len + 1;
         }
@@ -258,20 +258,14 @@ state_t process_output(uint8_t h_ind) {
         return new_state;
     }
 
-    uint8_t entry_len;
-    uint32_t entry_ptr = hist->entry;
-    {
-        uint32_t byte_ptr = (entry_ptr & 0xFFFFF0) + 0x300000;
-        uint8_t stroke_byte_len = 3 * strokes_len;
-        flash_read(byte_ptr, entry_buf, stroke_byte_len + 1);
-        entry_len = entry_buf[stroke_byte_len];
-        flash_read(byte_ptr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
-    }
+    const uint32_t entry_ptr = hist->entry;
+    read_entry(entry_ptr);
+    const uint8_t entry_len = ENTRY_GET_ENTRY_LEN(entry_ptr);
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  entry_len: %u", entry_len);
 #endif
 
-    attr_t attr = *((attr_t *) &entry_buf[(entry_ptr & 0x0F) * 3 + 1]);
+    attr_t attr = *((attr_t *) &entry_buf[strokes_len * 3]);
     new_state.space = attr.space_after;
     new_state.glue = attr.glue;
     uint8_t space = old_state.space && attr.space_prev && entry_len && !(old_state.glue && attr.glue);
@@ -287,7 +281,7 @@ state_t process_output(uint8_t h_ind) {
 
     uint8_t valid_len = 1, str_len = 0;
     uint8_t set_case;
-    uint8_t *entry = entry_buf + 3 * strokes_len + 2;
+    uint8_t *entry = entry_buf + 3 * strokes_len + 1;
     for (uint8_t i = 0; i < entry_len; i++) {
         // Commands
         set_case = 0;

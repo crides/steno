@@ -12,8 +12,8 @@
 #define STENO_DEBUG
 /* #define DEBUG_FLASH */
 /* #define DEBUG_STROKE */
-#define DEBUG_HIST
-#define DEBUG_DICTED
+/* #define DEBUG_HIST */
+/* #define DEBUG_DICTED */
 
 #define STATUS_STAY_TIME 1500
 #define BUTTON_HOLD_TIME 1000

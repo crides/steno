@@ -18,7 +18,7 @@ extern uint8_t page_buffer[FLASH_PP_SIZE];
 extern uint8_t entry_buf_len;
 
 void set_stroke(uint32_t stroke);
-void remove_stroke(void);
+void remove_entry(void);
 
 void dicted_add_prompt_strokes(void);
 void dicted_add_prompt_trans(void);

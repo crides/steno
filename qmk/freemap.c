@@ -60,5 +60,9 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
 uint32_t freemap_req(uint8_t block) {
     uint32_t ind;
     _req(3, 0, block, &ind);
-    return ind;
+    if (ind < (FREEMAP_START - KVPAIR_BLOCK_START)) {
+        return ind;
+    } else {
+        return -1;
+    }
 }

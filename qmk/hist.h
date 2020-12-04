@@ -30,7 +30,7 @@ typedef struct __attribute__((packed)) {
     state_t state;
     uint32_t stroke : 24;
     // Pointer + strokes length of the entry; invalid if 0 or -1
-    uint32_t entry : 24;
+    uint32_t entry;
 } history_t;
 
 void hist_undo(uint8_t h_ind);

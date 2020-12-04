@@ -57,23 +57,35 @@ static uint8_t locked = 1;
 #endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
+void _send_steno_chord_user(const uint8_t chord[6]);
 bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
+#ifdef CONSOLE_ENABLE
+    uint16_t time = timer_read();
+#endif
+    _send_steno_chord_user(chord);
+#ifdef CONSOLE_ENABLE
+    steno_debug_ln("time: %ums", timer_elapsed(time));
+#endif
+    return false;
+}
+
+void _send_steno_chord_user(const uint8_t chord[6]) {
 #ifndef __AVR__
     bt_state_time = timer_read32();
 #endif
 
     if (flashing) {
         steno_debug_ln("flashing");
-        return false;
+        return;
     }
     const uint32_t stroke = qmk_chord_to_stroke(chord);
 #ifdef STENO_PHONE
     if (stroke == 0x0CA990) {   //KPROERPG, 2 paws and OE
         locked = !locked;
-        return false;
+        return;
     }
     if (locked) {
-        return false;
+        return;
     }
 #endif
 
@@ -99,13 +111,13 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
             steno_debug_ln("entered editing state");
 #endif
         }
-        return false;
+        return;
     }
     if (editing_state == ED_ACTIVE_ADD_TRANS) {
         if (stroke == 0x008100) {
             editing_state = ED_IDLE;
             dicted_add_done();
-            return false;
+            return;
         }
         // `process_output()` will handle the translation and write to buffer
     }
@@ -118,7 +130,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
             unselect_lcd();
         }
 
-        return false;
+        return;
     }
 
     if(editing_state == ED_ACTIVE_REMOVE) {
@@ -131,13 +143,13 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
             steno_debug_ln("Added stroke to remove");
 #endif
         }
-        return false;
+        return;
     }
 
     if (editing_state == ED_ACTIVE_REMOVE_TRANS) {
         if (stroke == 0x008100) {
             editing_state = ED_IDLE;
-            remove_stroke();
+            remove_entry();
             select_lcd();
             lcd_clear();
             unselect_lcd();
@@ -145,7 +157,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
 #ifdef STENO_DEBUG_DICTED
         steno_debug_ln("removed stroke");
 #endif
-        return false;
+        return;
     }
 
     if (editing_state == ED_ACTIVE_EDIT_CONF_STROKES) {
@@ -158,7 +170,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
         } else {
             set_stroke(stroke);
         }
-        return false;
+        return;
     }
 
     if (editing_state == ED_ACTIVE_EDIT_TRANS) {
@@ -169,7 +181,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
             steno_debug_ln("dicted_edit_prompt_trans() executed");
 #endif
         }
-        return false;
+        return;
     }
 
     if (editing_state == ED_ACTIVE_EDIT_CONF_TRANS) {
@@ -179,7 +191,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
 #ifdef STENO_DEBUG_DICTED
             steno_debug_ln("edited translation");
 #endif
-            return false;
+            return;
         }
         // `process_output()` will handle the translation and write to buffer
     }
@@ -193,7 +205,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
             lcd_puts_at(0, 0, "*", 2);
             unselect_lcd();
         }
-        return false;
+        return;
     }
 
     history_t *hist = hist_get(hist_ind);
@@ -204,7 +216,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  entry: %06lX", last_entry_ptr);
 #endif
-    const uint8_t strokes_len = ENTRY_GET_LEN(last_entry_ptr);
+    const uint8_t strokes_len = ENTRY_GET_STROKES_LEN(last_entry_ptr);
     if (strokes_len > 1) {
         hist->state = hist_get(HIST_LIMIT(hist_ind - strokes_len + 1))->state;
     }
@@ -241,7 +253,7 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist[%u]:", hist_ind);
-        steno_debug_ln("  len: %u, stroke_len: %u", hist->len, ENTRY_GET_LEN(hist->entry));
+        steno_debug_ln("  len: %u, stroke_len: %u", hist->len, ENTRY_GET_STROKES_LEN(hist->entry));
         state_t state = hist->state;
         steno_debug_ln("  space: %u, cap: %u, glue: %u", state.space, state.cap, state.glue);
         char buf[24];
@@ -261,7 +273,6 @@ bool send_steno_chord_user(const steno_mode_t mode, const uint8_t chord[6]) {
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE) || defined(STENO_DEBUG_DICTED)
     steno_debug_ln("--------\n");
 #endif
-    return false;
 }
 
 // Setup the necessary stuff, init SD card or SPI flash. Delay so that it's easy for `hid-listen` to recognize

@@ -13,7 +13,7 @@ editing_state_t editing_state = ED_IDLE;
 // Buffer for a page; used for unparsed/formatted entry and copying between pages
 uint8_t page_buffer[FLASH_PP_SIZE];
 uint8_t entry_buf_len = 0;
-static char curr_stroke[30];
+static uint8_t curr_stroke[30];
 static uint8_t curr_stroke_size = 0;
 static uint8_t entry_length = 0;
 
@@ -77,7 +77,7 @@ void dicted_add_prompt_trans(void) {
     }
 
     find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
-    uint8_t stroke_len = ENTRY_GET_LEN(last_entry_ptr);
+    uint8_t stroke_len = ENTRY_GET_STROKES_LEN(last_entry_ptr);
     if (stroke_len != 0 && stroke_len != 0xFFFFFF) {
         editing_state = ED_ERROR;
         select_lcd();
@@ -138,8 +138,6 @@ void add_entry(void) {
     const uint32_t bucket_addr = last_entry_ptr;
     last_entry_ptr = 0;
     const uint32_t bucket = ((block_addr - KVPAIR_BLOCK_START) & 0xFFFFF0) | (curr_stroke_size & 0x0F);
-    uint8_t *bytes = (uint8_t *) &bucket;
-    steno_debug_ln("bucket: %06lX, %02X%02X%02X", bucket, bytes[0], bytes[1], bytes[2]);
     flash_write(bucket_addr, (uint8_t *) &bucket, 3);
     flash_flush();
 #ifdef STENO_DEBUG_FLASH
@@ -214,17 +212,12 @@ void dicted_edit_conf_strokes(void) {
         unselect_lcd();
         return;
     }
-    const uint32_t last_entry_addr = ENTRY_GET_ADDR(last_entry_ptr);
-#ifdef STENO_DEBUG_DICTED
-    steno_debug_ln("last_entry_addr = %lX", last_entry_addr);
-#endif
+    read_entry(last_entry_ptr);
+    const uint8_t entry_len = ENTRY_GET_ENTRY_LEN(last_entry_ptr);
     const uint8_t stroke_byte_len = 3 * curr_stroke_size;
-    flash_read(last_entry_addr, entry_buf, stroke_byte_len + 1);
-    const uint8_t entry_len = entry_buf[stroke_byte_len];
-    flash_read(last_entry_addr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
     char entry_trans[entry_len + 1];
 
-    entry_length = stroke_byte_len + 1 + entry_len + 1;
+    entry_length = stroke_byte_len + 1 + entry_len;
 
     memcpy(entry_trans, entry_buf + stroke_byte_len + 2, entry_len);
     entry_trans[entry_len] = 0;
@@ -237,7 +230,7 @@ void dicted_edit_conf_strokes(void) {
 }
 
 void dicted_edit_prompt_trans(void) {
-    remove_stroke();
+    remove_entry();
     select_lcd();
     extern uint8_t hist_ind;
     hist_get(hist_ind)->state.space = 0;
@@ -284,18 +277,12 @@ void dicted_remove_conf_strokes(void) {
         unselect_lcd();
         return;
     }
-    const uint32_t last_entry_addr = ENTRY_GET_ADDR(last_entry_ptr);
-#ifdef STENO_DEBUG_DICTED
-    steno_debug_ln("last_entry_addr = %lX", last_entry_addr);
-#endif
+    read_entry(last_entry_ptr);
+    const uint8_t entry_len = ENTRY_GET_ENTRY_LEN(last_entry_ptr);
     const uint8_t stroke_byte_len = 3 * curr_stroke_size;
-    flash_read(last_entry_addr, entry_buf, stroke_byte_len + 1);
-    const uint8_t entry_len = entry_buf[stroke_byte_len];
-    flash_read(last_entry_addr + stroke_byte_len + 1, entry_buf + stroke_byte_len + 1, entry_len + 1);
     char entry_trans[entry_len + 1];
 
-    entry_length = stroke_byte_len + 1 + entry_len + 1;
-    steno_debug_ln("entry_length: %02X", entry_length);
+    entry_length = stroke_byte_len + 1 + entry_len;
 
     memcpy(entry_trans, entry_buf + stroke_byte_len + 2, entry_len);
     entry_trans[entry_len] = 0;
@@ -308,12 +295,12 @@ void dicted_remove_conf_strokes(void) {
     unselect_lcd();
 }
 
-void remove_stroke(void) {
+void remove_entry(void) {
 #ifdef STENO_DEBUG_FLASH
     flash_debug_enable = 1;
 #endif
 #ifdef STENO_DEBUG_DICTED
-    steno_debug_ln("Started remove_stroke()");
+    steno_debug_ln("Started remove_entry()");
 #endif
 
     const uint32_t last_entry_addr = ENTRY_GET_ADDR(last_entry_ptr);
@@ -324,13 +311,12 @@ void remove_stroke(void) {
     for (uint32_t address_ptr = block_addr_start, scratch_addr = SCRATCH_START; address_ptr < block_addr_start + 0x1000; address_ptr += FLASH_PP_SIZE) {
         flash_flush();
         flash_read_page(address_ptr, page_buffer);
-        steno_debug_ln("word: %02X%02X%02X%02X", page_buffer[0], page_buffer[1], page_buffer[2], page_buffer[3]);
         if (last_entry_page_addr == address_ptr) {
             const uint8_t offset = last_entry_addr & 0xFF;
             memset(page_buffer + offset, FLASH_ERASED_BYTE, entry_length);
-/* #ifdef STENO_DEBUG_DICTED */
+#ifdef STENO_DEBUG_DICTED
             steno_debug_ln("cleared: offset: %02X, len: %02X", offset, entry_length);
-/* #endif */
+#endif
         }
         flash_write_page(scratch_addr, page_buffer);
         scratch_addr += FLASH_PP_SIZE;
@@ -343,9 +329,10 @@ void remove_stroke(void) {
         flash_write_page(address_ptr, page_buffer);
         scratch_addr += FLASH_PP_SIZE;
     }
+    // TODO Free block in allocator
 
 #ifdef STENO_DEBUG_DICTED
-    steno_debug_ln("Finished remove_stroke()");
+    steno_debug_ln("Finished remove_entry()");
 #endif
     flash_flush();
 #ifdef STENO_DEBUG_FLASH
