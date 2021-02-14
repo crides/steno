@@ -1,41 +1,75 @@
 # Firmware
 
-## Overview
+## Background
 
-Shortly after I built the [first version](../pcb/README.md#Version-1) of the steno board, I got the idea of building a plug-and-playable steno keyboard. The idea was that I can compile the dictionary into a special format that's easier for the MCU to process, and load it on to a SD card. When I type on the keyboard, the MCU then doesn't send the strokes to the PC for Plover to process, but rather process the translation by itself, and send the actual key codes to the PC. Note that I originally planned to do this on a ATMega32u4, which runs on only 8MHz, 2.5kB of RAM, and 28kB of available application program space (the other 4k devoted to bootloader). The currently implementation runs on the [32u4 Bluefruit feather](https://www.adafruit.com/product/2829) fine, with most of the Plover dictionary formats compatible (including all the commands that don't include retro- functions). Currently, only text input is possible, and one would need to load a new dictionary from a PC in order to change the dictionary.
+Shortly after I built the [first version](../pcb/README.md#Version-1) of the steno board, I got the idea of building a plug-and-playable steno keyboard. The idea was that I can compile the dictionary into a special format that's easier for the MCU to process, and load it on to a SD card. When I type on the keyboard, the MCU then doesn't send the strokes to the PC for Plover to process, but rather process the translation by itself, and send the actual key codes to the PC. Note that I originally planned to do this on a 3.3V ATMega32u4, which runs on only 8MHz, 2.5kB of RAM, and 28kB of available application program space (the other 4k devoted to bootloader). The currently implementation runs on the [32u4 Bluefruit feather](https://www.adafruit.com/product/2829) fine, with most of the Plover dictionary formats compatible (including all the commands that don't include retro- functions). Currently, only text input is possible, and one would need to load a new dictionary from a PC in order to change the dictionary.
 
-## How do I use it?
+## Usage
 
 ### Requirements
 
-- A compatible chip or controller board that uses these chips: ATMega32u4 or nRF52840
-- Some storage: A SDCard connector or a QSPI external flash with at least 8MB (I'm using MT25QL128ABA1ESE)
+- A compatible chip or controller board that uses a ATMega32u4 (typically promicro but also the Elite-C)
+- Some storage: A SDCard connector or a QSPI external flash with at least 8MB (I'm using MT25QL128ABA1ESE (16MB SPI NOR flash))
 - A keyboard
 - QMK toolchain
 
-Configure the firmware. There are 2 blocks at the top of `rules.mk`, comment one of them and uncomment the other. One of them is for AVR, and the other is for the nRF. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed. Also configure in `config.h` what storage you are using (`USE_SPI_FLASH`). And because of design differences, if you're using a QSPI flash, uncomment `#define STENO_PHONE`.
+Configure the firmware. One of them is for AVR, and the other is for the nRF. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed. Also configure in `config.h` what storage you are using (`USE_SPI_FLASH`).
 
-Put/Link this directory in/from `qmk_firmware/keyboards`. If you're using nRF52840, you need the [`nrf52` branch of sekigon's fork](https://github.com/sekigon-gonnoc/qmk_firmware/tree/nrf52). Compile and load the firmware, and you will need a compiled dictionary. You can either get one from the repo as `steno.bin` (which is my current compiled dictionary), or grab the [compiler](../compiler) and compile your own. Load the dictionary by either copying to the SDCard, or use the `download` command in the compiler if using a QSPI flash.
+Put/Link this directory in/from `qmk_firmware/keyboards`. Compile and load the firmware, and you will need a compiled dictionary. You can either get one from the repo as `steno.bin` (which is my current compiled dictionary), or grab the [compiler](../compiler) and compile your own. Load the dictionary by either copying to the SDCard, or use the `download` command in the compiler if using a QSPI flash.
 
 ## Implementation
 
-This firmware uses the [QMK firmware](https://qmk.fm), but strips off any useless features for a fully steno board, like layers. It uses the steno driver, but intercepts all the strokes by using `send_steno_chord_user`. Instead of sending them off to the host, the firmware performs several look ups in the dictionary, parses the entry, and outputs the needed key strokes. Loading dictionaries is done by implementing a raw HID device and receiving packets from a PC using the compiler, and this is currently only available for AVR, and I'm still working on a way to load dictionaries on ARM using Mass Storage Class.
+### Version 2
 
-The dictionary format will be documented in more detail in the [compiler documentation](../compiler/README.md), but basically the format is designed so that the MCU don't have to do a lot of work in order to look up some entry. The dictionary is organized as a tree, with each edge being a single stroke, and a whole path being a series of strokes, possibly leading to a entry, which would be stored in the node if there's one. The reason why it's a tree is because it's much easier to store and handle fixed sized data, as one can store them in place, without any kinds of pointers and size markers. The size of a stroke in this case is fixed, as it's a 23 bit integer corresponding to the 23 different keys on the steno board. In the early prototyping stage, the children of a node is organized as an array of pairs of strokes and the node addresses, sorted by the input stroke, so that the array can be binary searched, and the compiled dictionary would be very compact. Currently, in order to have better overall performance and make room for supporting in place dictionary editing, the children are organized as a hash map. Hash maps require empty space to perform well, and although that may seem like wasted space, it can also be used to cheaply add or remove entries in the future.
+The core change of this version is to add the ability of editing the dictionary. Due to the nature of flash devices, it's important to keep things aligned to the erase unit size (which, for the flash I've been using, is 4KB).
 
-In order to support Plover commands but to reduce the complexity, those are implemented as attributes of a entry. They are simply flags in the compiled dictionary, and they are evaluated when the outputs are you evaluated, changing the output or changing the state of the system which will go on affecting the next output along with the next entry attributes.
+The core structure has been changed to a flat hashmap for easier manipulation. The whole dictionary is divided into 3 parts: entry buckets, value blocks, and some metadata.
 
-When searching for a entry, the firmware has an internal array of nodes. Each time a user inputs a stroke, the firmware will look up the stroke in the children of those nodes and the root node. If any new nodes are found, those become the new search array. Out of these nodes, the one with the longest match with an entry will be used, and the output will be evaluated and sent to the host.
+The entry buckets are 1M (read: 2^20) entries of 4 byte long each. Each entry (if not `0xFFFFFFFF` i.e. erased value) include a 20-bit value block offset, 4-bit stroke length, and a 8-bit entry length. Each entry is indexed by the lower 20 bits of the FNV-1a hash of the whole stroke sequence for an entry, moving on to the next bucket if there's a collision (open addressing).
 
-## Current Issues
+The value blocks are 16-byte blocks, totalling 11MiB, managed by a block allocator that sits in the metadata section. Each bucket can point to any number of blocks that's a power of 2, i.e. each entry can take 16, 32, 64 etc. bytes. The larger blocks are always aligned to erase unit boundaries, as guaranteed by the block allocator. Each value block contains the raw strokes, the entry attributes, and the entry itself.
 
-- Sometimes the firmware goes crazy and seems to get stuck in an infinite loop, although there doesn't seem to be anything in my firmware that creates one directly. It could be one related to unhandled state transitions or something like that.
-- The nRF firmware sometimes will read garbage data. I suspected the issue was that the timing requirements of the QSPI protocol wansn't matched, but fixing that doesn't seem to fix the core issue. I also suspected that it might be a IRQ priority (which doesn't seem like it) or that my traces don't handle high frequencies like this (32MHz, not much, but I haven't dealt with traces that require this much either) very well.
+The block allocator is a 4-level 32-ary buddy system allocator, which will support 2^20 total blocks. This is done so that the implementation can be easier at the slight price of wasted space. At each level there are 32^n (0 &lt;= n &lt; 4) 32bit words, where each bit represent if its children is not fully used, or if the block is not used if at the bottom level. When a new block needs to be allocated, the tree is traversed to find a 1 in all the top levels, and then descend 1 level down until the bottom level, and try to find a series of 1s that matches the block size and is aligned. If not, then it'll backtrack to find a new location. After the block is allocated, all the bits corresponding to the block will be set to 0, and the bits on the upper levels are set accordingly.
 
-Also see [current issues in the compiler](../compiler/README.md#Current Issues)
+The searching algorithm for stroke is a lot different from the last version. Since looking up one stroke sequence is a lot cheaper, determining the output became searching the last 1, 2, ... n strokes in the dictionary. When searching for an stroke sequence, the hash of the sequence will be computed, and the lower 20 bits will be multiplied with 16 and added `0x40000` (4MiB) to get the start of the value block. If a valid entry is found, the stroke length will be compared with the current strokes. If there's a match, then the value block will be read to check if the strokes match. If there's a match then the entry will be read.
+
+Editing is fairly easy thanks to the new dictionary structure. Adding is just allocating a new block, writing the strokes and entry to the block, generating a bucket entry and writing it to a bucket. Removing can be as simple as removing the bucket entry (writing all `0x00`). Properly removing the entry would need erasing the bucket entry and value blocks, and freeing the blocks in the allocator. Editing is just removing and adding most of the time, but could be reduced down to just erasing and rewriting the value blocks if allocating new blocks is not needed.
+
+Dictionary loading in version 2 uses a MSC with UF2. The device will enumerate as a HID and MSC when plugged in, and users can just drop the compiled dictionary in. This is technically only needed for the first time, and the OS reading the drive significantly slows down the startup process, and this shall be changed in the future.
+
+Orthography was to be implemented inside firmware. The plan was to move the orthographic rules from the compiler into the firmware itself. The regex rules can be done by rewriting them in code, and the simple rules and the word list are to be restructured as prefix trees as ha are read only. The nature of the words means that a prefix tree will save a lot of storage space, but also make the searches broken into a lot of random reads. A better design still needs to be researched.
+
+#### Issues
+
+- Deallocation of the blocks aren't fully implemented, especially for the buckets and reset the bits in the allocator.
+- The weird firmware issue in the last version seem to have went away.
+- The storage space usage has gone up by a bit. This is partially due to node deduplication being not trivial. Turns out there is 680kB of repeated entries in the Plover dictionary (duplicated entries are not really a problem for the dictionary, but a potential problem for the underlying system).
+
+### Version 1
+
+This firmware uses the [QMK firmware](https://qmk.fm), but strips off any useless features for a fully steno board, like layers. It uses the steno driver, but intercepts all the strokes by using `send_steno_chord_user`. Instead of sending them off to the host, the firmware performs several look ups in the dictionary, parses the entry, and outputs the needed key strokes. Loading dictionaries is done by implementing a raw HID device and receiving packets from a PC using the compiler.
+
+The binary dictionary is structured as a prefix tree on the strokes. The prefix tree structure was chosen because I thought it would make it easier and more space efficient to manage the dynamically sized stroke sequence better, and the nature of steno means there will be a fair amount of overlapping between the prefix of the strokes. Each sequence of strokes is broken down into edges, which each one representing one stroke. Each node will either be an entry in the dictionary or an intermediate node on the path to one. Each node will contain a hashmap of a stroke mapping to the address of a child node, or a linear array of the stroke and address pairs sorted on the stroke if the number of children is less than 8. This is done to save space on the smaller nodes, and there are a lot of them in the Plover dictionary. In order to achieve good performance, the hash is calculated using the FNV-1a hash function, and the capacity of the hashmap is the prime right after N times the number of children, where N was chosen to be 6 in the latest revision. The entry and the length, along with the capacity (not size) of the hashmap or the size of the linear array and all of its key-value pairs, and finally the attributes (the next section; not in order).
+
+The header for a node, that is, everything before the dynamically sized stuff (i.e. entry and children). This is immediately followed by the entry with length `entry_len` and the children structure (which could be either a hashmap or a sorted array).
+```c
+typedef struct __attribute__((packed)) {
+    uint32_t node_num : 24;
+    uint8_t entry_len;
+    attr_t attrs;
+} header_t;
+```
+
+In order to support Plover commands but to reduce the complexity, those are implemented as attributes of a entry (with the capitalization and space control attributes). They are simply flags in the entry of the compiled dictionary, and they are evaluated when the outputs are you evaluated, changing the output or changing the state of the system which will go on affecting the next output along with the next entry attributes.
+
+The searching algorithm is meant to take advantage of the prefix tree structure of the dictionary. Instead of looking up the stroke sequence directly which would require walking the tree multiple times, we keep an internal array of "search nodes". Each time a user inputs a stroke, the firmware will look up the stroke in the children of the search nodes and the root node. If any new nodes are found, those become the new search nodes. Out of the new search nodes, the one with the longest match with an entry will be used, and the output will be evaluated and sent to the host. This way of searching strokes makes more efficient, but also added some interesting problems to how a search path should be terminated, and how an entry is actually selected.
+
+#### Issues
+
+Sometimes the firmware goes crazy and seems to get stuck in an infinite loop, although there doesn't seem to be anything in my firmware that creates one directly. It could be one related to unhandled state transitions or something like that.
+
+Simple editing could be easily supported, but was not. As there are a lot of empty space in the hashmap, it's easy to put a new node at the very end of the dictionary (but there was no way of knowing that quickly...), and overwrite an empty entry in the hashmap. However, if there are too many children in a node, it's possible to just add a new node at the end, but the whole old node will be wasted, and it's hard to reuse that space again, as the node is not aligned to erase unit boundaries.
 
 ## Future Work
 
 - Add optimization that reuse the common parts of words. Currently, whenever a new entry is inputted, the old entry would always be deleted, regardless whether there's a common part or not. This is because, in order to save memory, only the length of the previous stroke is recorded, and the easiest way would just to delete what we had entered before and reenter the whole thing. The easiest way to add the optimization is to make a buffer for the previous output, and compare how much has changed. This however would not work when undos have occurred. The next easiest solution would be to read in the previous entry every time we want to output something, and evaluate the entry and do the comparison. This however, might cause performance issues. The most complete way would be to store the entire output in the previous history entry.
-- Make it easier to load the dictionary from a PC. Currently dictionary loading only works with the AVR firmware, as it uses raw HID for the process, and that's not available at the moment in the nRF QMK fork. A solution that can work on both would be to implement a USB Mass Storage device, make it into a fake FAT device (like how Adafruit would load the firmware through a MSC), and load the dictionary that way. It would also make it potentially less environment dependent.
-- Implement in-place dictionary editing. The required architecture should be in place. Hash maps should be fairly easy to modify, as there are already space leftover for performance reasons, and the empty space are erased.

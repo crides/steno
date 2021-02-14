@@ -1,22 +1,24 @@
 # Dictionary Compiler
 
-## Overview
-
 In order to get fast dictionary read speed from a not very powerful MCU, the dictionary need to be compiled to a more MCU friendly format. This generally mean a well structured binary format with as little as variable sized data as possible. We don't want to have dynamic sized data because that either means we need to have terminating markers (think null terminated strings in C) and pointers (which can be good a lot of times, but also wastes space in unneeded times). In this case, the size of a single stroke is fixed, as it can be represented as a single 23 bit integer. But a whole sequence of strokes would be of dynamic size. The entry would have to be dynamic sized.
 
-## Implementation
+## Version 2
+
+In the version 2 design, a lot of the work is to be handled by the MCU (including orthographic stuff), so the compiler was only responsible for bootstrapping the dictionary. The general algorithm of compiling is the same as version 1, and the rest of the dictionary structure can be found in the firmware documentation. The only notable difference would be that the binary is directly converted to UF2 for flashing.
+
+## Version 1
 
 The compiler is implemented in Rust, and is made up of 3 main parts: orthographic transform, dictionary compilation, and dictionary downloading.
 
 ### Orthographic Transform
 
-Plover does this in the runtime, and this is needed to correctly bridge the gap between syllables and the actual spelling. For example, if you stroke `RUPB/-G` the output should be "running" and not "runing". My implementation follows how [Dotterel](https://github.com/nimble0/dotterel) (which is a steno engine on android devices), which uses some regex rules that match and replace the word when it's followed by a suffix (i.e. an entry that has no space before it) and a big dictionary to check if the result is a real word or not. Although it's possible to put a regex engine in a AVR chip, it's not that easy to implement it. And it's only the rules themselves, the word list would require a lot more memory to handle. In addition, we also need to check if several regexs match or not, which is very expensive.
+Plover does this in the runtime, and this is needed to correctly bridge the gap between syllables and the actual spelling. For example, if you stroke `RUPB/-G` the output should be "running" and not "runing". My implementation follows [Dotterel](https://github.com/nimble0/dotterel) (which is a steno engine on android devices), and the orthographic rules data is converted from the one used in Dotterel. It uses some regex rules that match and replace the word when it's followed by a suffix (i.e. an entry that has no space before it) and a big dictionary to check if the result is a real word or not. Although it's possible to put a regex engine in a AVR chip, it's not that easy to implement it. And it's only the rules themselves, the word list would require a lot more memory to handle. In addition, we also need to check if several regexs match or not, which is very expensive.
 
-Hence, I chose to do it at the dictionary level. This can save the amount of resources required to fix orthographic problems, but it's also static, and care is required to make sure all the possibilities are considered. So the real implementation is the same as described above. The compiler first load the dictionary, filter out all the suffixes, apply them to each word in the dictionary, and at the end check if the result is a word or not. If it is, then we add the new stroke and entry into the dictionary.
+Hence, I chose to do it at the dictionary level. This can save the amount of resources required to fix orthographic problems, but also only the first level rule application is done, so some repeated application of suffixes in this implementation will be incorrect. The compiler first load the dictionary, filter out all the suffixes, apply them to each word in the dictionary, and at the end check if the result is a word or not. If it is, then we add the new stroke and entry into the dictionary.
 
 ### Dictionary Compilation
 
-Once we have a dictionary that has undergone correct orthographic transformation, we can compile it into binary form. The JSON dictionary is first read into memory, the strokes are parsed into 23 bit integers, and a tree is constructed from the dictionary. Every edge inside the tree is one stroke, and each node may or may not have a value which corresponds to the entry the series of strokes traversed to get to this node maps to in the dictionary. At each node, its children are stored in a hash map.
+Once we have a dictionary that has undergone correct orthographic transformation, we can compile it into binary form. The dictionary strucutre will be discussed in detail in the firmware documentation, but basically the JSON dictionary is converted to a prefix tree in binary.
 
 When the entries are parsed, the commands, key codes, and raw text are concatenated together into a single chunk according to the commands. For every entry, a new state is created, and the commands will mutate the state, which goes to influence how the next texts are concatenated. At the end, this will output one piece of text and some attributes. This is also done to reduce the amount of resources needed at runtime to parse all the commands.
 
