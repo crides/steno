@@ -15,8 +15,7 @@ pub struct RawEntry(Vec<u8>);
 impl From<Entry> for RawEntry {
     fn from(e: Entry) -> RawEntry {
         let attr: RawAttr = e.attr.into();
-        let bytes = iter::once(e.byte_len() as u8)
-            .chain(iter::once(attr.0))
+        let bytes = iter::once(attr.0)
             .chain(e.inputs.iter().flat_map(|i| match i {
                 Input::Keycodes(keycodes) => {
                     assert!(keycodes.len() <= 127);
@@ -83,30 +82,34 @@ impl From<Attr> for RawAttr {
     }
 }
 
-const KVPAIR_START: usize = 0x300000;
+#[allow(dead_code)]
+const KVPAIR_START: usize = 0x400000;
+#[allow(dead_code)]
 const FREEMAP_START: usize = 0xF00000;
+#[allow(dead_code)]
 const SCRATCH_START: usize = 0xF22000;
+#[allow(dead_code)]
 const ORTHOGRAPHY_START: usize = 0xFC0000;
 
 pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
     let mut file = Uf2File::new();
     // Buffering buckets so less book keeping
-    // 1M entries of 3 bytes; key length cannot be 15
-    let mut buckets = vec![0xFFFFFF; 2usize.pow(20)];
-    let mut map = FreeMap::new();
-    let mut max_collision = 0;
+    // 1M entries of 4 bytes; key length cannot be 15
+    let mut buckets = vec![0xFFFFFFFF; 2usize.pow(20)];
+    let mut map = FreeMap::new((FREEMAP_START - KVPAIR_START) as u32);
+    let mut collisions = BTreeMap::new();
     for (strokes, entry) in d.0.into_iter() {
         let hash = hash_strokes(&strokes);
         let mut index = hash as usize % 2usize.pow(20);
-        let mut collisions = 0;
-        while buckets[index] != 0xFFFFFF {
+        let mut collision = 0;
+        while buckets[index] != 0xFFFFFFFF {
             index = (index + 1) % 2usize.pow(20);
-            collisions += 1;
+            collision += 1;
         }
-        if collisions > max_collision {
-            max_collision = collisions;
-        }
-        let pair_size = strokes.len() * 3 + 2 + entry.byte_len();
+        collisions.entry(collision).and_modify(|c| *c += 1).or_insert(1);
+        let entry_len = entry.byte_len();
+        assert!(entry_len < 256);
+        let pair_size = strokes.len() * 3 + 1 + entry_len;
         let block_no = if pair_size <= 16 {
             map.req(0)
         } else if pair_size <= 32 {
@@ -116,9 +119,9 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
         } else {
             panic!("Entry too big!");
         };
-        assert!(strokes.len() < 15);
+        assert!(strokes.len() < 15 && strokes.len() > 0);
         let block_offset = block_no.unwrap() << 4;
-        buckets[index] = block_offset | strokes.len() as u32;
+        buckets[index] = (entry_len as u32) << 24 | block_offset | strokes.len() as u32;
         file.seek(KVPAIR_START + block_offset as usize);
         for stroke in strokes {
             file.write_all(&stroke.raw().to_le_bytes()[0..3]);
@@ -127,13 +130,13 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
         file.write_all(&raw_entry.as_bytes());
     }
 
-    dbg!(max_collision);
+    dbg!(collisions);
     file.seek(0);
     for bucket in buckets {
-        file.write_all(&bucket.to_le_bytes()[0..3]);
+        file.write_all(&bucket.to_le_bytes());
     }
     file.seek(FREEMAP_START);
-    for word in map.0 {
+    for word in map.map {
         file.write_all(&word.to_le_bytes());
     }
     file.write_to(w)
