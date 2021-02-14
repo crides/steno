@@ -2,19 +2,26 @@
 
 #ifdef __AVR__
 #include <avr/io.h>
-
-#define configure_pin_sck() DDRB |= _BV(DDB1)
-#define configure_pin_mosi() DDRB |= _BV(DDB2)
-#define configure_pin_miso() DDRB &= ~_BV(DDB3)
-#define configure_pin_ss() DDRC |= _BV(DDC6)
-
-#define select_card() PORTC &= ~_BV(PORTC6)
-#define unselect_card() PORTC |= _BV(PORTC6)
 #else
 #include <stdint.h>
 #endif
 
+// Program page size
+#define FLASH_PP_SIZE 256
+#define FLASH_ERASED_BYTE 0xFF
+
 void flash_init(void);
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len);
+void flash_read_page(uint32_t addr, uint8_t *buf);
+void flash_flush(void);
 void flash_write(uint32_t addr, uint8_t *buf, uint8_t len);
-void flash_erase_page(uint32_t addr);
+void flash_write_page(uint32_t addr, uint8_t *buf);
+void flash_erase_4k(uint32_t addr);
+void flash_erase_64k(uint32_t addr);
+void flash_erase_device(void);
+uint64_t flash_check_crc_range(uint32_t start, uint32_t end, uint64_t crc);
+
+#include "steno.h"
+#ifdef STENO_DEBUG_FLASH
+extern uint8_t flash_debug_enable;
+#endif

@@ -1,306 +1,433 @@
 // History management and output control
-#include "hist.h"
-#include "steno.h"
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdio.h>
+
+#include "hist.h"
+#include "steno.h"
+#include "flash.h"
 #include "process_keycode/process_unicode_common.h"
+#include "dict_editing.h"
+#include "lcd.h"
 
-history_t history[HIST_SIZE];
-uint8_t hist_ind = 0;
+static history_t history[HIST_SIZE];
 
-void hist_add(history_t hist) {
-    hist_ind ++;
-    if (hist_ind == HIST_SIZE) {
-        hist_ind = 0;
+extern char last_trans[128];
+extern uint8_t last_trans_size;
+
+static void dict_edit_puts(char *str) {
+    while (*str && entry_buf_len < 255) {
+        page_buffer[entry_buf_len ++] = *str;
+        lcd_putc(*str, 2);
+        str ++;
     }
+}
 
-    if (history[hist_ind].len) {
-        free(history[hist_ind].search_nodes);
-    }
-
-#ifdef STENO_DEBUG_HIST
-    steno_debug_ln("hist[%u]:", hist_ind);
-    steno_debug_ln("  len: %u, repl_len: %u", hist.len, hist.repl_len);
-    state_t state = hist.state;
-    steno_debug_ln("  space: %u, cap: %u, glue: %u", state.space, state.cap, state.prev_glue);
-    if (hist.output.type == RAW_STROKE) {
-        char buf[24];
-        stroke_to_string(hist.output.stroke, buf, NULL);
-        steno_debug_ln("  output: %s", buf);
+static void steno_back(void) {
+    if (editing_state != ED_IDLE) {
+        if (entry_buf_len > 0) {
+            entry_buf_len --;
+            select_lcd();
+            lcd_back(2);
+            unselect_lcd();
+        }
     } else {
-        uint32_t node = hist.output.node;
-        steno_debug_ln("  output: %lX", node);
+        tap_code(KC_BSPC);
+    }
+}
+
+static void steno_send_char(char c) {
+    if (editing_state != ED_IDLE) {
+        if (entry_buf_len < 255) {
+            page_buffer[entry_buf_len ++] = c;
+            lcd_putc(c, 2);
+        }
+    } else {
+        if (last_trans_size < 128) {
+            last_trans[last_trans_size++] = c;
+        }
+        send_char(c);
+    }
+#ifdef STENO_DEBUG_HIST
+    steno_debug("%c", c);
+#endif
+}
+
+static uint8_t steno_send_unicode(uint32_t u) {
+#ifdef STENO_DEBUG_HIST
+    if (u < 0xFFFF) {
+        steno_debug("\\u%04lX", u);
+    } else {
+        steno_debug("\\U%06lX", u);
     }
 #endif
-    history[hist_ind] = hist;
+    char buf[16];
+    uint8_t len;
+    if (u < 0xFFFF) {
+        snprintf(buf, 16, "\\u%04lX", u);
+        len = 6;
+    } else {
+        snprintf(buf, 16, "\\U%06lX", u);
+        len = 8;
+    }
+    if (editing_state != ED_IDLE) {
+        dict_edit_puts(buf);
+        return len;
+    } else {
+        if (last_trans_size + len < 128) {
+            for (uint8_t i = 0; i < len; i ++) {
+                last_trans[last_trans_size++] = buf[i];
+            }
+        }
+        register_unicode(u);
+        return 1;
+    }
+}
+
+static uint8_t steno_send_keycodes(uint8_t *keycodes, uint8_t len) {
+#ifdef STENO_DEBUG_HIST
+    steno_debug("keys(%u):", len);
+#endif
+    char buf[16];
+    uint8_t output_len = 3;
+    uint8_t mods = 0;
+    if (editing_state != ED_IDLE) {
+        dict_edit_puts("\\k[");
+    }
+    for (uint8_t i = 0; i < len; i++) {
+        if ((keycodes[i] & 0xFC) == 0xE0) {
+            uint8_t mod = keycodes[i] & 0x03;
+            uint8_t mod_char;
+            switch (mod) {
+            case 0: mod_char = 'c'; break;
+            case 1: mod_char = 's'; break;
+            case 2: mod_char = 'a'; break;
+            case 3: mod_char = 'g'; break;
+            }
+            uint8_t mod_mask = 1 << mod;
+            if (mods & mod_mask) {
+                if (editing_state != ED_IDLE) {
+                    dict_edit_puts(")");
+                    output_len += 1;
+                } else {
+                    unregister_code(keycodes[i]);
+                }
+#ifdef STENO_DEBUG_HIST
+                steno_debug(" %c", mod_char);
+#endif
+            } else {
+                if (editing_state != ED_IDLE) {
+                    snprintf(buf, 16, "\\%c(", mod_char);
+                    dict_edit_puts(buf);
+                    output_len += 3;
+                } else {
+                    register_code(keycodes[i]);
+                }
+#ifdef STENO_DEBUG_HIST
+                steno_debug(" %c", toupper(mod_char));
+#endif
+            }
+            mods ^= mod_mask;
+        } else {
+#ifdef STENO_DEBUG_HIST
+            steno_debug(" %02X", keycodes[i]);
+#endif
+            if (editing_state != ED_IDLE) {
+                snprintf(buf, 16, " %02X", keycodes[i]);
+                dict_edit_puts(buf);
+                output_len += 3;
+            } else {
+                tap_code(keycodes[i]);
+            }
+        }
+    }
+#ifdef STENO_DEBUG_HIST
+    steno_debug("\n");
+#endif
+    if (editing_state != ED_IDLE) {
+        dict_edit_puts("]");
+        return output_len + 1;
+    } else {
+        return 0;
+    }
+}
+
+inline history_t *hist_get(uint8_t ind) {
+    return &history[ind];
 }
 
 // Undo the last history entry. First delete the output, and then start from the initial state of the
 // multi-stage input, and rebuild the output from there.
-void hist_undo() {
+void hist_undo(uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("hist_undo()");
 #endif
-    history_t hist = history[hist_ind];
-    uint8_t len = hist.len;
+    history_t *hist = hist_get(h_ind);
+    uint8_t len = hist->len;
     if (!len) {
-        steno_error_ln("Invalid current history entry");
-        tap_code(KC_BSPC);
+        steno_error_ln("bad cur hist entry");
+        steno_back();
         return;
     }
 
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  bspc len: %u", len);
 #endif
-    for (uint8_t i = 0; i < len; i ++) {
-        tap_code(KC_BSPC);
+    for (uint8_t i = 0; i < len; i++) {
+        steno_back();
     }
-    state = hist.state;
-    search_nodes_len = hist.search_nodes_len;
-    memcpy(search_nodes, hist.search_nodes, search_nodes_len * sizeof(search_node_t));
-    uint8_t hist_ind_save = hist_ind;
-    for (uint8_t i = 0; i < hist.repl_len; i ++) {
-        hist_ind = (hist_ind_save + i - hist.repl_len) % HIST_SIZE;
-        history_t old_hist = history[hist_ind];
-        assert((hist_ind & 0xE0) == 0);
+    uint8_t strokes_len = ENTRY_GET_STROKES_LEN(hist->entry);
+    uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
+    for (uint8_t i = 0; i < repl_len; i++) {
+        uint8_t old_hist_ind = HIST_LIMIT(h_ind + i - repl_len);
+        history_t *old_hist = hist_get(old_hist_ind);
 #ifdef STENO_DEBUG_HIST
-        steno_debug_ln("  hist_ind: %u", hist_ind);
+        steno_debug_ln("  old_hist_ind: %u", old_hist_ind);
 #endif
-        state = old_hist.state;
-        if (!history[hist_ind].len) {
-            history[hist_ind_save].len = 0;
-            steno_error_ln("Invalid prev hist entry");
+        if (!old_hist->len) {
+            hist->len = 0;
+            steno_error_ln("bad prev hist entry");
             return;
         }
-        // `process_output` expects the previous history entry to be on `hist_ind`, but the
-        // information for recreating the output is on the next history entry
-        hist_ind = (hist_ind - 1) % HIST_SIZE;
-        process_output(&state, old_hist.output, old_hist.repl_len);
+        process_output(old_hist_ind);
     }
-    hist_ind = hist_ind_save;
-
-    if (hist_ind == 0) {
-        hist_ind = HIST_SIZE - 1;
-    } else {
-        hist_ind --;
-    }
-}
-
-uint16_t hex_to_keycode(uint8_t hex) {
-    if (hex == 0x0) {
-        return KC_0;
-    } else if (hex < 0xA) {
-        return KC_1 + (hex - 0x1);
-    } else {
-        return KC_A + (hex - 0xA);
-    }
-}
-
-void register_hex32(uint32_t hex) {
-    bool onzerostart = true;
-    for (int i = 7; i >= 0; i--) {
-        if (i <= 3) {
-            onzerostart = false;
-        }
-        uint8_t digit = ((hex >> (i * 4)) & 0xF);
-        if (digit == 0) {
-            if (!onzerostart) {
-                tap_code(hex_to_keycode(digit));
-            }
-        } else {
-            tap_code(hex_to_keycode(digit));
-            onzerostart = false;
-        }
-    }
-}
-
-#ifdef OLED_DRIVER_ENABLE
-extern char last_trans[128];
-extern uint8_t last_trans_size;
-#endif
-// Custom version of `send_string` that takes care of custom Unicode formats
-uint8_t _send_unicode_string(char *buf, uint8_t len) {
-    uint8_t str_len = 0;
-    for (uint8_t i = 0; i < len; buf ++, i ++) {
-        if (*buf == 1) {    // Custom unicode start byte
-            uint32_t code_point = (uint32_t) buf[1] | (uint32_t) buf[2] << 8 | (uint32_t) buf[3] << 16;
-#ifdef STENO_DEBUG_HIST
-            steno_debug("<%lX>", code_point);
-#endif
-            tap_code16(LCTL(LSFT(KC_U)));
-            register_hex32(code_point);
-            tap_code(KC_ENT);
-            buf += 3;
-            i += 3;
-        } else {
-#ifdef OLED_DRIVER_ENABLE
-            last_trans[last_trans_size++] = *buf;
-#endif
-            send_char(*buf);
-        }
-        str_len ++;
-    }
-    return str_len;
+    return;
 }
 
 // Process the output. If it's a raw stroke (no nodes found for the input), then just output the stroke;
 // otherwise, load the entry, perform the necessary transformations for capitalization, and output according
 // to the bytes. Also takes care of outputting key codes and Unicode characters.
-uint8_t process_output(state_t *state, output_t output, uint8_t repl_len) {
-    // TODO optimization: compare beginning of current and string to replace
+state_t process_output(uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("process_output()");
 #endif
-    int8_t counter = repl_len;
-    while (counter > 0) {
-        uint8_t old_hist_ind = (hist_ind - repl_len + counter) % HIST_SIZE;
-        history_t old_hist = history[old_hist_ind];
+    // TODO optimization: compare beginning of current and string to replace
+    history_t *hist = hist_get(h_ind);
+    uint8_t strokes_len = ENTRY_GET_STROKES_LEN(hist->entry);
+    {
+        uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
+        int8_t counter = repl_len;
+        while (counter > 0) {
+            uint8_t old_hist_ind = HIST_LIMIT(h_ind + counter - repl_len - 1);
+            history_t *old_hist = hist_get(old_hist_ind);
 #ifdef STENO_DEBUG_HIST
-        steno_debug_ln("  old_hist_ind: %u, bspc len: %u", old_hist_ind, old_hist.len);
+            steno_debug_ln("  old_hist_ind: %u, bspc len: %u", old_hist_ind, old_hist->len);
 #endif
-        if (!old_hist.len) {
-            history[hist_ind].len = 0;
-            steno_error_ln("Invalid prev hist entry");
-            break;
+            if (!old_hist->len) {
+                hist->len = 0;
+                steno_error_ln("bad prev hist entry");
+                break;
+            }
+            for (uint8_t j = 0; j < old_hist->len; j++) {
+                steno_back();
+            }
+            uint8_t old_strokes_len = ENTRY_GET_STROKES_LEN(old_hist->entry);
+            uint8_t old_repl_len = old_strokes_len > 1 ? old_strokes_len - 1 : 0;
+            counter -= old_repl_len + 1;
         }
-        for (uint8_t j = 0; j < old_hist.len; j ++) {
-            tap_code(KC_BSPC);
-        }
-        counter -= old_hist.repl_len + 1;
     }
 
-    state_t old_state = *state;
+    state_t old_state = hist->state, new_state = old_state;
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  old_state: space: %u, cap: %u, glue: %u", old_state.space, old_state.cap, old_state.prev_glue);
+    steno_debug_ln("  old_state: space: %u, cap: %u, glue: %u", old_state.space, old_state.cap, old_state.glue);
 #endif
-    uint8_t space = old_state.space, cap = old_state.cap;
-    state->prev_glue = 0;
-    state->space = 1;
 
-    if (output.type == RAW_STROKE) {
-        uint8_t len;
+    if (hist->entry == 0) {
 #ifdef STENO_DEBUG_HIST
-        uint32_t stroke = output.stroke;
-        steno_debug_ln("  stroke: %lX", stroke);
+        steno_debug_ln("  stroke: %lX", hist->stroke & 0xFFFFFF);
 #endif
-        if (stroke_to_string(output.stroke, _buf, &len)) {
-            state->prev_glue = 1;
+        char buf[24];
+        if (stroke_to_string(hist->stroke, buf, &hist->len)) {
+            new_state.glue = 1;
         }
 #ifdef STENO_DEBUG_HIST
         steno_debug("  output: '");
 #endif
-        if (space && !(old_state.prev_glue && state->prev_glue)) {
-            send_char(' ');
-            steno_debug(" ");
-            len ++;
+        if (old_state.space && !(old_state.glue && new_state.glue)) {
+            steno_send_char(' ');
+            hist->len++;
         }
-        send_string(_buf);
+        for (char *str = buf; *str; str ++) {
+            steno_send_char(*str);
+        }
 #ifdef STENO_DEBUG_HIST
-        steno_debug_ln("%s'", _buf);
-        steno_debug_ln("  -> %u", len);
+        steno_debug_ln("%s'", buf);
+        steno_debug_ln("  -> %u", hist->len);
 #endif
-        return len;
+        return new_state;
     }
 
-    uint32_t node = output.node;
-    seek(node);
-    read_header();
-    read_string();
-    uint8_t entry_len = _header.entry_len;
+    const uint32_t entry_ptr = hist->entry;
+    read_entry(entry_ptr);
+    const uint8_t entry_len = ENTRY_GET_ENTRY_LEN(entry_ptr);
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  node: %lX, entry_len: %u", node, entry_len);
+    steno_debug_ln("  entry_len: %u", entry_len);
 #endif
 
-    attr_t attr = _header.attrs;
-    state->cap = attr.caps;
-    if (state->cap == ATTR_CAPS_KEEP) {
-        state->cap = old_state.cap;
-    }
-    state->space = attr.space_after;
-    state->prev_glue = attr.glue;
-    space = space && attr.space_prev && entry_len && !(old_state.prev_glue && state->prev_glue);
+    attr_t attr = *((attr_t *) &entry_buf[strokes_len * 3]);
+    new_state.space = attr.space_after;
+    new_state.glue = attr.glue;
+    uint8_t space = old_state.space && attr.space_prev && entry_len && !(old_state.glue && attr.glue);
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  attr: glue: %u, cap: %u, str_only: %u", attr.glue, attr.caps, attr.str_only);
-    steno_debug_ln("  output:");
+    steno_debug_ln("  entry_buf:");
+    steno_debug("    %02X%02X%02X%02X", entry_buf[0], entry_buf[1], entry_buf[2], entry_buf[3]);
+    steno_debug(" %02X%02X%02X%02X", entry_buf[4], entry_buf[5], entry_buf[6], entry_buf[7]);
+    steno_debug(" %02X%02X%02X%02X", entry_buf[8], entry_buf[9], entry_buf[10], entry_buf[11]);
+    steno_debug_ln(" %02X%02X%02X%02X", entry_buf[12], entry_buf[13], entry_buf[14], entry_buf[15]);
+    steno_debug_ln("  attr: glue: %u", attr.glue);
+    steno_debug("  output: '");
 #endif
 
-    uint8_t has_raw_key = 0, str_len = 0;
-    uint8_t mods = 0;
-    for (uint8_t i = 0; i < entry_len; i ++) {
-        if ((_buf[i] & 0x80) && !attr.str_only) {
-            space = 0;
-            has_raw_key = 1;
-            uint8_t key_end = _buf[i] & 0x7F;
-            i ++;
+    uint8_t valid_len = 1, str_len = 0;
+    uint8_t set_case;
+    uint8_t *entry = entry_buf + 3 * strokes_len + 1;
+    for (uint8_t i = 0; i < entry_len; i++) {
+        // Commands
+        set_case = 0;
+        if (entry[i] < 32) {
 #ifdef STENO_DEBUG_HIST
-            steno_debug("    keys: len: %u,", key_end);
+            steno_debug("'\n    ");
 #endif
-            key_end += i;
-            for ( ; i < key_end; i ++) {
-#ifdef STENO_DEBUG_HIST
-                steno_debug(" %02X", _buf[i]);
-#endif
-                if ((_buf[i] & 0xFC) == 0xE0) {
-                    uint8_t mod_mask = 1 << (_buf[i] & 0x03);
-                    if (mods & mod_mask) {
-                        unregister_code(_buf[i]);
-#ifdef STENO_DEBUG_HIST
-                        steno_debug("^");
-#endif
-                    } else {
-                        register_code(_buf[i]);
-#ifdef STENO_DEBUG_HIST
-                        steno_debug("v");
-#endif
-                    }
-                    mods ^= mod_mask;
+            switch (entry[i]) {
+            case 0: // raw bytes of "length"
+                space = 0;
+                uint8_t len = entry[i + 1];
+                uint8_t keycode_len = steno_send_keycodes(entry + i + 2, len);
+                if (keycode_len > 0) {
+                    str_len += keycode_len;
                 } else {
-                    tap_code(_buf[i]);
+                    valid_len = 0;
                 }
-            }
-#ifdef STENO_DEBUG_HIST
-            steno_debug_ln("");
-#endif
-        } else {
-            uint8_t byte_len;
-            if (attr.str_only) {
-                byte_len = entry_len;
-            } else {
-                byte_len = _buf[i];
-                i ++;
-            }
-            switch (cap) {
-                case ATTR_CAPS_UPPER:
-                    for (uint8_t j = 0; j < byte_len; j ++) {
-                        _buf[j] = toupper(_buf[j]);
-                    }
-                    break;
-                case ATTR_CAPS_CAPS:
-                    _buf[i] = toupper(_buf[i]);
-                    break;
-            }
+                i += len + 1;   // Not + 2 because of increment at the end of the loop
+                break;
 
+            case 1: // lowercase next entry
+                new_state.cap = CAPS_LOWER;
 #ifdef STENO_DEBUG_HIST
-            steno_debug("    str: '", str_len);
+                steno_debug_ln("LOWER");
 #endif
-            cap = ATTR_CAPS_LOWER;
-            if (space) {
+                break;
+
+            // TODO handle keep cases at the end of entry
+            case 2: // Uppercase next entry
+                new_state.cap = CAPS_UPPER;
 #ifdef STENO_DEBUG_HIST
-                steno_debug(" ");
+                steno_debug_ln("UPPER");
 #endif
-                str_len ++;
-                send_char(' ');
+                set_case = 1;
+                break;
+
+            case 3: // capitalize next entry
+                new_state.cap = CAPS_CAP;
+#ifdef STENO_DEBUG_HIST
+                steno_debug_ln("CAP");
+#endif
+                set_case = 1;
+                break;
+
+            case 4:; // keep case after "length" amount of characters
+                uint8_t length = entry[i + 1];
+#ifdef STENO_DEBUG_HIST
+                steno_debug_ln("KEEP(%u)", length);
+#endif
+                for (int j = 0; j < length; j++) {
+                    if (entry[j] >= 32 && entry[j] <= 127) {
+                        steno_send_char(entry[j]);
+                        i++;
+                        str_len++;
+                    } else if (entry[i] >= 128) {
+                        int32_t code_point = 0;
+                        const char *str = decode_utf8((char *) &entry[i], &code_point);
+                        if (code_point > 0) {
+                            str_len += steno_send_unicode(code_point);
+                        }
+                        i += str - (char *) &entry[i];
+                    }
+                }
+                new_state.cap = old_state.cap;
+                set_case = 1;
+                break;
+
+            case 5: // reset formatting
+                new_state.cap = CAPS_LOWER;
+                break;
+
+            case 16: // add translation
+                if (editing_state != ED_IDLE) {
+                    dict_edit_puts("{add_trans}");
+                    str_len += 11;
+                } else {
+                    dicted_add_prompt_strokes();
+                }
+                break;
+
+            case 17: //edit translation
+                if (editing_state == ED_ACTIVE_EDIT_TRANS) {
+                    dict_edit_puts("{edit_trans}");
+                    str_len += 10;
+                } else {
+                    dicted_edit_prompt_strokes();
+                }
+                break;
+
+            case 18: //remove translation
+                if (editing_state != ED_IDLE) {
+                    dict_edit_puts("{rm_trans}");
+                    str_len += 10;
+                } else {
+                    dicted_remove_prompt_strokes();
+                }
+                break;
+
+            default:
+                steno_error_ln("\nInvalid command: %X", entry[i]);
+                return new_state;
             }
-            str_len += _send_unicode_string(_buf + i, byte_len);
 #ifdef STENO_DEBUG_HIST
-            steno_debug_ln("%s'", _buf + i);
+            steno_debug("    '");
 #endif
-            i += byte_len;
+        } else if (entry[i] < 127) {
+            if (space) {
+                str_len++;
+                steno_send_char(' ');
+                space = 0;
+            }
+            switch (new_state.cap) {
+            case CAPS_LOWER:
+                steno_send_char(entry[i]);
+                break;
+            case CAPS_CAP:
+                steno_send_char(toupper(entry[i]));
+                new_state.cap = CAPS_LOWER;
+                break;
+            case CAPS_UPPER:
+                steno_send_char(toupper(entry[i]));
+                if (entry[i] == ' ') {
+                    new_state.cap = CAPS_LOWER;
+                }
+                break;
+            }
+            str_len++;
+            // Unicode
+        } else {
+            int32_t code_point = 0;
+            const char *str = decode_utf8((char *) &entry[i], &code_point);
+            if (code_point > 0) {
+                steno_send_unicode(code_point);
+            }
+            str_len = 1;
+            i = str - (char *) entry;
         }
     }
+    if (!set_case) {
+        new_state.cap = CAPS_LOWER;
+    }
+
 #ifdef STENO_DEBUG_HIST
+    steno_debug_ln("'");
     steno_debug_ln("  -> %u", str_len);
 #endif
-    return has_raw_key ? 0 : str_len;
+    hist->len = valid_len ? str_len : 0;
+    return new_state;
 }

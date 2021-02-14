@@ -369,23 +369,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hid"
-version = "0.4.1"
-dependencies = [
- "hidapi-sys",
- "libc",
-]
-
-[[package]]
-name = "hidapi-sys"
-version = "0.1.4"
-dependencies = [
- "cc",
- "libc",
- "pkg-config",
-]
-
-[[package]]
 name = "humantime"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -774,8 +757,6 @@ dependencies = [
  "bitfield",
  "chrono",
  "clap",
- "hid",
- "hidapi-sys",
  "indicatif",
  "lalrpop",
  "lalrpop-util",

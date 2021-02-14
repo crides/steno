@@ -2,6 +2,7 @@
 #include <string.h>
 #include "flash.h"
 #include "steno.h"
+#include "spi.h"
 
 #ifndef __AVR__
 #include "nrf_drv_qspi.h"
@@ -13,19 +14,13 @@
 #define QSPI_CMD_QUADIO    0x35
 #endif
 
+#ifdef STENO_DEBUG_FLASH
+uint8_t flash_debug_enable = 0;
+#endif
+
 void flash_init(void) {
 #ifdef __AVR__
-    /* enable outputs for MOSI, SCK, SS, input for MISO */
-    DDRB |= _BV(DDB0);
-    configure_pin_mosi();
-    configure_pin_sck();
-    configure_pin_ss();
-    configure_pin_miso();
-
-    unselect_card();
-
-    SPCR = _BV(MSTR) | _BV(SPE);
-    SPSR = _BV(SPI2X);
+    // Assume SPI inited
 #else
     nrf_drv_qspi_config_t config = {
         .xip_offset  = 0,
@@ -99,61 +94,69 @@ void flash_init(void) {
 #endif
 }
 
-#ifdef __AVR__
-void spi_send_byte(uint8_t b) {
-    SPDR = b;
-    while(!(SPSR & _BV(SPIF)));
-}
-
-uint8_t spi_recv_byte(void) {
-    SPDR = 0xff;
-    while(!(SPSR & _BV(SPIF)));
-
-    return SPDR;
-}
-#endif
-
 void flash_read(uint32_t addr, uint8_t *buf, uint8_t len) {
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_read(# 0x%02X @ 0x%06lX)", len, addr);
+    }
+#endif
     select_card();
     spi_send_byte(0x03);    // read 
-    spi_send_byte((addr >> 16) & 0xFF);
-    spi_send_byte((addr >> 8) & 0xFF);
-    spi_send_byte(addr & 0xFF);
+    spi_send_addr(addr);
     for (uint8_t i = 0; i < len; i ++) {
         buf[i] = spi_recv_byte();
     }
     unselect_card();
 #else
-    uint8_t _buf[128];
+    uint8_t buf[128];
     uint32_t read_len = (len / 4 + 1) * 4;
-    uint32_t err_code = nrfx_qspi_read(_buf, read_len, addr);
+    uint32_t err_code = nrfx_qspi_read(buf, read_len, addr);
 #ifdef STENO_DEBUG_FLASH
     steno_debug_ln("flash_read(%X :+ %u) -> %u", addr, len, err_code);
     for (uint8_t i = 0; i < len; i += 4) {
         switch (len - i) {
             case 1:
-                steno_debug("  %i: %02x", i, _buf[i]);
+                steno_debug("  %i: %02x", i, buf[i]);
                 break;
             case 2:
-                steno_debug("  %i: %02x %02x", i, _buf[i], _buf[i + 1]);
+                steno_debug("  %i: %02x %02x", i, buf[i], buf[i + 1]);
                 break;
             case 3:
-                steno_debug("  %i: %02x %02x %02x", i, _buf[i], _buf[i + 1], _buf[i + 2]);
+                steno_debug("  %i: %02x %02x %02x", i, buf[i], buf[i + 1], buf[i + 2]);
                 break;
             default:
-                steno_debug("  %i: %02x %02x %02x %02x", i, _buf[i], _buf[i + 1], _buf[i + 2], _buf[i + 3]);
+                steno_debug("  %i: %02x %02x %02x %02x", i, buf[i], buf[i + 1], buf[i + 2], buf[i + 3]);
                 break;
         }
     }
 #endif
     APP_ERROR_CHECK(err_code);
-    memcpy(buf, _buf, len);
+    memcpy(buf, buf, len);
 #endif
 }
 
-void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
+// Read a program page into buffer
+void flash_read_page(uint32_t addr, uint8_t *buf) {
 #ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_read_page(@ 0x%06lX)", addr);
+    }
+#endif
+    select_card();
+    spi_send_byte(0x03);    // read 
+    spi_send_addr(addr);
+    for (uint8_t i = 0; i < 255; i ++) {
+        buf[i] = spi_recv_byte();
+    }
+    buf[255] = spi_recv_byte();
+    unselect_card();
+#endif
+}
+
+#ifdef __AVR__
+void flash_flush(void) {
     select_card();
     while (1) {
         spi_send_byte(0x05);    // read status reg
@@ -163,16 +166,27 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
         }
     }
     unselect_card();
+}
 
+void flash_prep_write(void) {
+    flash_flush();
     select_card();
     spi_send_byte(0x06);    // write enable
     unselect_card();
+}
+#endif
 
+void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
+#ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_write(# 0x%02X @ 0x%06lX)", len, addr);
+    }
+#endif
+    flash_prep_write();
     select_card();
     spi_send_byte(0x02);    // program
-    spi_send_byte((addr >> 16) & 0xFF);
-    spi_send_byte((addr >> 8) & 0xFF);
-    spi_send_byte(addr & 0xFF);
+    spi_send_addr(addr);
     for (uint8_t i = 0; i < len; i ++) {
         spi_send_byte(buf[i]);
     }
@@ -183,30 +197,105 @@ void flash_write(uint32_t addr, uint8_t *buf, uint8_t len) {
 #endif
 }
 
-void flash_erase_page(uint32_t addr) {
+void flash_write_page(uint32_t addr, uint8_t *buf) {
 #ifdef __AVR__
-    select_card();
-    while (1) {
-        spi_send_byte(0x05);    // read status reg
-        uint8_t status = spi_recv_byte();
-        if (!(status & 0x01)) {
-            break;
-        }
+#ifdef STENO_DEBUG_FLASH
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_write_page(@ 0x%06lX)", addr);
     }
-    unselect_card();
-
+#endif
+    flash_prep_write();
     select_card();
-    spi_send_byte(0x06);    // write enable
+    spi_send_byte(0x02);    // program
+    spi_send_addr(addr);
+    for (uint8_t i = 0; i < 255; i ++) {
+        spi_send_byte(buf[i]);
+    }
+    spi_send_byte(buf[255]);
     unselect_card();
+#endif
+}
 
+void flash_erase_64k(uint32_t addr) {
+#ifdef __AVR__
+    flash_prep_write();
     select_card();
     spi_send_byte(0xD8);
-    spi_send_byte((addr >> 16) & 0xFF);
-    spi_send_byte((addr >> 8) & 0xFF);
-    spi_send_byte(addr & 0xFF);
+    spi_send_addr(addr);
     unselect_card();
 #else
     uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_64KB, addr);
     APP_ERROR_CHECK(err_code);
 #endif
+}
+
+void flash_erase_4k(uint32_t addr) {
+
+#ifdef __AVR__
+#ifdef STENO_DEBUG_FLASH
+    if (flash_debug_enable) {
+        steno_debug_ln("flash_erase_4k(@ 0x%06lX)", addr);
+    }
+#endif
+    flash_prep_write();
+    select_card();
+    spi_send_byte(0x20);
+    spi_send_addr(addr);
+    unselect_card();
+#else
+    uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr);
+    APP_ERROR_CHECK(err_code);
+#endif
+}
+
+void flash_erase_device(void) {
+#ifdef __AVR__
+    flash_prep_write();
+    select_card();
+    spi_send_byte(0xC7);
+    unselect_card();
+#else
+    uint32_t err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_KB, addr);
+    APP_ERROR_CHECK(err_code);
+#endif
+}
+
+uint64_t flash_check_crc_range(uint32_t start, uint32_t end, uint64_t crc) {
+    select_card();
+    spi_send_byte(0x9B);
+    spi_send_byte(0x27);
+    spi_send_byte(0xFE);
+    for (uint8_t i = 0; i < 8; i ++) {
+        spi_send_byte((crc >> (i * 8)) & 0xFF);
+    }
+    spi_send_byte(start & 0xFF);
+    spi_send_byte((start >> 8) & 0xFF);
+    spi_send_byte((start >> 16) & 0xFF);
+    spi_send_byte((start >> 24) & 0xFF);
+    spi_send_byte(end & 0xFF);
+    spi_send_byte((end >> 8) & 0xFF);
+    spi_send_byte((end >> 16) & 0xFF);
+    spi_send_byte((end >> 24) & 0xFF);
+    unselect_card();
+    _delay_ms(((end - start) >> 20) * 3);    // Assuming 3ms per 1MB block; typ 1.3ms
+    select_card();
+    spi_send_byte(0x70);        // Flag status register
+    uint8_t flag = spi_recv_byte();
+    unselect_card();
+    if (flag & 0x10) {
+        steno_error_ln("CRC check error");
+        select_card();
+        spi_send_byte(0x96);
+        for (uint8_t i = 0; i < 8; i ++) {
+            spi_recv_byte();
+        }
+        uint64_t actual_crc;
+        for (uint8_t i = 0; i < 8; i ++) {
+            actual_crc |= (uint64_t) spi_recv_byte() << (i * 8);
+        }
+        return actual_crc;
+    } else {
+        steno_debug_ln("CRC check OK");
+        return 0;
+    }
 }

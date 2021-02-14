@@ -3,7 +3,7 @@
 //! keyboard doesn't need to handle the complicated orthographic rules at runtime.
 use std::collections::HashMap;
 
-use onig::{Regex, Captures};
+use onig::{Captures, Regex};
 
 use crate::bar::progress_bar;
 
@@ -40,7 +40,9 @@ fn replace(re: &Regex, text: &str, repl: &str) -> String {
         let mut output = String::new();
         let (first_start, first_end) = (pos.next().unwrap(), pos.next().unwrap());
         output.push_str(&repl[first_start..first_end]);
-        while let (Some(group_start), Some(group_end), Some(text_start), Some(text_end)) = (pos.next(), pos.next(), pos.next(), pos.next()) {
+        while let (Some(group_start), Some(group_end), Some(text_start), Some(text_end)) =
+            (pos.next(), pos.next(), pos.next(), pos.next())
+        {
             let group = repl[(group_start + 1)..group_end].parse().unwrap();
             output.push_str(caps.at(group).unwrap());
             output.push_str(&repl[text_start..text_end]);

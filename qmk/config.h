@@ -7,12 +7,13 @@
 
 #define CUSTOM_STENO
 #define USE_SPI_FLASH
-#define STENO_PHONE
+/* #define STENO_PHONE */
 
 #define STENO_DEBUG
-#define DEBUG_FLASH
+/* #define DEBUG_FLASH */
 /* #define DEBUG_STROKE */
 /* #define DEBUG_HIST */
+/* #define DEBUG_DICTED */
 
 #define STATUS_STAY_TIME 1500
 #define BUTTON_HOLD_TIME 1000
@@ -41,8 +42,8 @@
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 6
 #else
-#define MATRIX_ROWS 3
-#define MATRIX_COLS 10
+#define MATRIX_ROWS 5
+#define MATRIX_COLS 6
 #endif
 
 #define THIS_DEVICE_ROWS MATRIX_ROWS
@@ -63,8 +64,8 @@
 #define MATRIX_ROW_PINS { C7, D6, D7, B7, B6 }
 #define MATRIX_COL_PINS { F7, F6, F5, F4, F1, F0 }
 #else
-#define MATRIX_ROW_PINS { F7, F6, F5 }
-#define MATRIX_COL_PINS { F4, F1, F0, D2, D3, D7, B6, B7, D6, C7 }
+#define MATRIX_ROW_PINS { D1, D2, D3, F0, F1 }
+#define MATRIX_COL_PINS { D7, B4, B5, B6, C6, C7 }
 #endif
 #else
 #ifdef STENO_PHONE
@@ -86,7 +87,10 @@
 #define LOCKING_SUPPORT_ENABLE
 #define LOCKING_RESYNC_ENABLE
 #define PREVENT_STUCK_MODIFIERS
+#define UNICODE_SELECTED_MODES UC_LNX
 
+#define LAYER_STATE_8BIT
+#define NO_RESET
 #define NO_ACTION_LAYER
 #define NO_ACTION_TAPPING
 #define NO_ACTION_ONESHOT

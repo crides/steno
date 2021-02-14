@@ -2,6 +2,8 @@
 use std::fmt::{self, Debug, Display, Formatter};
 use std::str::FromStr;
 
+use crate::hash;
+
 pub static KEYS: &str = "#STKPWHRAO*EUFRPBLGTSDZ";
 
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Copy)]
@@ -23,6 +25,20 @@ impl Stroke {
     pub fn raw(self) -> u32 {
         self.0
     }
+
+    /// From FNV-1a
+    pub fn hash(self, init: Option<u32>) -> u32 {
+        let bytes = self.0.to_le_bytes();
+        hash::hash(&bytes, init)
+    }
+}
+
+pub fn hash_strokes(strokes: &[Stroke]) -> u32 {
+    let mut hash = None;
+    for stroke in strokes {
+        hash = Some(stroke.hash(hash));
+    }
+    hash.unwrap()
 }
 
 impl Display for Stroke {
@@ -70,7 +86,7 @@ impl Display for Stroke {
 impl Debug for Stroke {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         f.debug_tuple("Stroke")
-            .field(&format_args!("{:x}", &self.0))
+            .field(&format_args!("{:06x}", &self.0))
             .field(&format_args!("{}", &self))
             .finish()
     }

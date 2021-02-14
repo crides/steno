@@ -1,12 +1,12 @@
 //! Handles everything related to converting Rust dictionary related values to bytes. Provides raw
-//! counterparts for types in `dict`. 
-use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
+//! counterparts for types in `dict`.
 use std::io::{self, prelude::*};
+use std::iter;
+use std::collections::BTreeMap;
 
-use crate::dict::{Attr, Caps, Dict, Entry, Input};
-use crate::hashmap::LPHashMap;
-use crate::stroke::Stroke;
+use crate::dict::{Attr, Dict, Entry, Input};
+use crate::freemap::FreeMap;
+use crate::stroke::hash_strokes;
 
 /// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
 /// keyboard storage.
@@ -14,41 +14,41 @@ pub struct RawEntry(Vec<u8>);
 
 impl From<Entry> for RawEntry {
     fn from(e: Entry) -> RawEntry {
-        let bytes = e
-            .input
-            .iter()
-            .flat_map(|i| match i {
+        let attr: RawAttr = e.attr.into();
+        let bytes = iter::once(attr.0)
+            .chain(e.inputs.iter().flat_map(|i| match i {
                 Input::Keycodes(keycodes) => {
                     assert!(keycodes.len() <= 127);
                     if keycodes.is_empty() {
                         vec![]
                     } else {
-                        let mut bytes = vec![(keycodes.len() as u8) | 0x80];
+                        let mut bytes = vec![0, keycodes.len() as u8];
                         bytes.extend(keycodes);
                         bytes
                     }
                 }
-                Input::String(s) => {
-                    assert!(s.len() <= 127);
-                    if !s.is_empty() {
-                        let mut bytes: Vec<u8> = s.chars()
-                            .flat_map(|c| {
-                                if c.is_ascii() {
-                                    vec![c as u8]
-                                } else {
-                                    let mut bytes = vec![1];
-                                    bytes.extend_from_slice(&(c as u32).to_le_bytes()[0..3]);
-                                    bytes
-                                }
-                            })
-                            .collect();
-                        bytes.insert(0, bytes.len() as u8);
-                        bytes
-                    } else {
-                        vec![]
-                    }
+                Input::String(s) => s.as_bytes().to_vec(),
+                Input::Keep(s) => {
+                    let mut bytes = s.as_bytes().to_vec();
+                    bytes.insert(0, 4);
+                    bytes.insert(1, s.len() as u8);
+                    bytes
                 }
-            })
+                Input::Lower => vec![1],
+                Input::Upper => vec![2],
+                Input::Capitalized => vec![3],
+                Input::ResetFormat => vec![5],
+                Input::LowerLast => vec![8],
+                Input::UpperLast => vec![9],
+                Input::CapitalizedLast => vec![10],
+                Input::Repeat => vec![11],
+                Input::ToggleStar => vec![12],
+                Input::AddSpace => vec![13],
+                Input::RemoveSpace => vec![14],
+                Input::AddTranslation => vec![16],
+                Input::EditTranslation => vec![17],
+                Input::RemoveTranslation => vec![18],
+            }))
             .collect();
         RawEntry(bytes)
     }
@@ -65,192 +65,170 @@ bitfield! {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     pub struct RawAttr(u8);
     impl Debug;
-    caps, set_caps: 1, 0;
-    space_prev, set_space_prev: 2, 2;
-    space_after, set_space_after: 3, 3;
-    glue, set_glue: 4, 4;
-    present, set_present: 5, 5;
-    str_only, set_str_only: 6, 6;
+    space_prev, set_space_prev: 0, 0;
+    space_after, set_space_after: 1, 1;
+    glue, set_glue: 2, 2;
+    present, set_present: 3, 3;
 }
 
 impl From<Attr> for RawAttr {
     fn from(a: Attr) -> RawAttr {
         let mut ra = RawAttr(0);
-        ra.set_caps(match a.caps {
-            Caps::Lower => 0,
-            Caps::Keep => 1,
-            Caps::Caps => 2,
-            Caps::Upper => 3,
-        });
         ra.set_glue(a.glue.into());
         ra.set_space_prev(a.space_prev.into());
         ra.set_space_after(a.space_after.into());
         ra.set_present(a.present.into());
-        ra.set_str_only(a.str_only.into());
         ra
     }
 }
 
-/// A hashable counter part for `Dict`, contains only the information needed
-#[derive(Debug, Eq, Clone)]
-pub struct HashableDict {
-    pub entry: Option<Entry>,
-    pub children: Vec<(Stroke, Option<Entry>)>,
-}
+#[allow(dead_code)]
+const KVPAIR_START: usize = 0x400000;
+#[allow(dead_code)]
+const FREEMAP_START: usize = 0xF00000;
+#[allow(dead_code)]
+const SCRATCH_START: usize = 0xF22000;
+#[allow(dead_code)]
+const ORTHOGRAPHY_START: usize = 0xFC0000;
 
-impl PartialEq for HashableDict {
-    fn eq(&self, other: &Self) -> bool {
-        if self.entry != other.entry {
-            return false;
+pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
+    let mut file = Uf2File::new();
+    // Buffering buckets so less book keeping
+    // 1M entries of 4 bytes; key length cannot be 15
+    let mut buckets = vec![0xFFFFFFFF; 2usize.pow(20)];
+    let mut map = FreeMap::new((FREEMAP_START - KVPAIR_START) as u32);
+    let mut collisions = BTreeMap::new();
+    for (strokes, entry) in d.0.into_iter() {
+        let hash = hash_strokes(&strokes);
+        let mut index = hash as usize % 2usize.pow(20);
+        let mut collision = 0;
+        while buckets[index] != 0xFFFFFFFF {
+            index = (index + 1) % 2usize.pow(20);
+            collision += 1;
         }
-        for ((stroke, entry), (other_stroke, other_entry)) in
-            self.children.iter().zip(other.children.iter())
-        {
-            if stroke != other_stroke {
-                return false;
-            }
-            if entry.is_none() || other_entry.is_none() || entry != other_entry {
-                return false;
-            }
+        collisions.entry(collision).and_modify(|c| *c += 1).or_insert(1);
+        let entry_len = entry.byte_len();
+        assert!(entry_len < 256);
+        let pair_size = strokes.len() * 3 + 1 + entry_len;
+        let block_no = if pair_size <= 16 {
+            map.req(0)
+        } else if pair_size <= 32 {
+            map.req(1)
+        } else if pair_size <= 64 {
+            map.req(2)
+        } else {
+            panic!("Entry too big!");
+        };
+        assert!(strokes.len() < 15 && strokes.len() > 0);
+        let block_offset = block_no.unwrap() << 4;
+        buckets[index] = (entry_len as u32) << 24 | block_offset | strokes.len() as u32;
+        file.seek(KVPAIR_START + block_offset as usize);
+        for stroke in strokes {
+            file.write_all(&stroke.raw().to_le_bytes()[0..3]);
         }
-        true
+        let raw_entry: RawEntry = entry.into();
+        file.write_all(&raw_entry.as_bytes());
     }
+
+    dbg!(collisions);
+    file.seek(0);
+    for bucket in buckets {
+        file.write_all(&bucket.to_le_bytes());
+    }
+    file.seek(FREEMAP_START);
+    for word in map.map {
+        file.write_all(&word.to_le_bytes());
+    }
+    file.write_to(w)
 }
 
-impl HashableDict {
-    pub fn from_dict(d: &Dict) -> Self {
-        let Dict { entry, children } = d;
-        let mut children: Vec<(Stroke, Option<_>)> = children
-            .iter()
-            .map(|(k, v)| (*k, v.entry.clone()))
-            .collect();
-        children.sort_by_key(|(k, _v)| *k);
-        Self {
-            entry: entry.clone(),
-            children,
+#[allow(dead_code)]
+struct Uf2 {
+    magic0: u32,
+    magic1: u32,
+    flags: u32,
+    target_addr: u32,
+    payload_size: u32,
+    block_no: u32,
+    block_num: u32,
+    family_id: u32,
+    data: Vec<u8>,
+    magic_end: u32,
+}
+
+/// A lazily filled file containing Uf2 chunks. 
+struct Uf2File {
+    map: BTreeMap<usize, Vec<u8>>,
+    cur_block: usize,
+    cur_block_ind: usize,
+}
+
+impl Uf2File {
+    const MAGIC0: u32 = 0x0A324655;
+    const MAGIC1: u32 = 0x9E5D5157;
+    const MAGIC_END: u32 = 0x0AB16F30;
+    // Family ID present
+    const FLAGS: u32 = 0x00002000;
+    const FAMILY_ID: u32 = 0x00302cc0;  // STOEUPB
+    const UF2_DATA_SIZE: usize = 476;
+    const DATA_SIZE: usize = 256;
+
+    pub fn new() -> Self {
+        let mut file = Self {
+            map: BTreeMap::new(),
+            cur_block: 0,
+            cur_block_ind: 0,
+        };
+        file.seek(0);
+        file
+    }
+
+    fn seek(&mut self, addr: usize) {
+        self.cur_block = addr / Uf2File::DATA_SIZE;
+        self.cur_block_ind = addr % Uf2File::DATA_SIZE;
+        if !self.map.contains_key(&self.cur_block) {
+            self.map.insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
         }
     }
-}
 
-impl Hash for HashableDict {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.entry.hash(state);
-        self.children.hash(state);
-    }
-}
-
-/// Representation of individual nodes in IR
-struct IRNode {
-    entry: Entry,
-    children: LPHashMap,
-}
-
-impl IRNode {
-    fn new(node_num: u32, entry: Entry) -> Self {
-        let children = LPHashMap::new(node_num as usize);
-        Self { entry, children }
+    fn write(&mut self, byte: u8) {
+        if self.cur_block_ind == Uf2File::DATA_SIZE {
+            self.cur_block += 1;
+            self.cur_block_ind = 0;
+            self.map.insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
+        }
+        self.map.get_mut(&self.cur_block).unwrap()[self.cur_block_ind] = byte;
+        self.cur_block_ind += 1;
     }
 
-    fn add_child(&mut self, input: u32, addr: u32) {
-        self.children.add_child(input, addr);
-    }
-}
-
-/// A middle layer between `Dict` and the actual bytes. Used for laying nodes in a flattened structure from a
-/// tree like structure in `Dict`, for filling out the addresses of the nodes in the `children` map before
-/// actually being written out. Contains states for building the middle layer representation.
-pub struct IR {
-    cur_addr: u32,
-    nodes: Vec<IRNode>,
-}
-
-impl IR {
-    pub fn new() -> IR {
-        IR {
-            cur_addr: 0,
-            nodes: Vec::new(),
+    fn write_all(&mut self, bytes: &[u8]) {
+        for byte in bytes {
+            self.write(*byte);
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.nodes.len()
-    }
-
-    pub fn addr(&self) -> u32 {
-        self.cur_addr
-    }
-
-    pub fn add_node(&mut self, node_num: u32, entry: Entry) {
-        let len = entry.byte_len();
-        let new_node = IRNode::new(node_num, entry);
-        self.cur_addr += 6 * new_node.children.total_size() as u32 + len as u32 + 5;
-        self.nodes.push(new_node);
-    }
-
-    /// Turns a `Dict` into `IR`. Uses some caching to merge the nodes that have the same output for reducing
-    /// storage size
-    pub fn from_dict(dict: Dict) -> Self {
-        let mut ir = IR::new();
-        let mut node_cache = HashMap::new();
-        let mut max_collisions = 0;
-        assert_eq!(ir._from_dict(dict, &mut node_cache, &mut max_collisions), 0);
-        println!("Max collisions: {}", max_collisions);
-        ir
-    }
-
-    /// Recursive helper function. Appends each child node to IR before filling out the addresses in the
-    /// `children` map.
-    fn _from_dict(
-        &mut self,
-        dict: Dict,
-        node_cache: &mut HashMap<HashableDict, u32>,
-        max_collisions: &mut usize,
-    ) -> u32 {
-        let addr = self.addr();
-        let mut children: Vec<(Stroke, Dict)> = dict.children.into_iter().collect();
-        children.sort_by(|a, b| a.0.cmp(&b.0));
-        let cur_ind = self.len();
-        self.add_node(children.len() as u32, dict.entry.unwrap_or_default());
-
-        for child in children.into_iter() {
-            let hash = HashableDict::from_dict(&child.1);
-            let child_addr = if !node_cache.contains_key(&hash) {
-                let child_addr = self._from_dict(child.1, node_cache, max_collisions);
-                if hash.children.iter().all(|(_s, ent)| ent.is_some()) {
-                    node_cache.insert(hash.clone(), child_addr);
-                }
-                child_addr
-            } else {
-                node_cache.get(&hash).copied().unwrap()
-            };
-            self.nodes[cur_ind].add_child(child.0.raw(), child_addr);
-        }
-        let stats = self.nodes[cur_ind].children.stats();
-        if stats.0 > *max_collisions {
-            *max_collisions = stats.0;
-        }
-        addr
-    }
-
-    /// Write the IR out as bytes
-    pub fn write(&self, w: &mut dyn Write) -> io::Result<()> {
-        let mut bytes: Vec<u8> = Vec::new();
-        for node in self.nodes.iter() {
-            bytes.clear();
-            // Note: this is 3 bytes long. MSB is at the end cuz LE.
-            bytes.extend_from_slice(&(node.children.total_size() as u32).to_le_bytes()[0..3]);
-            bytes.push(node.entry.byte_len() as u8);
-            let attr = node.entry.attr;
-            let raw_attr: RawAttr = attr.into();
-            bytes.push(raw_attr.0);
-            let raw_entry: RawEntry = node.entry.clone().into();
-            if attr.str_only {
-                bytes.extend_from_slice(&raw_entry.as_bytes()[1..]);
-            } else {
-                bytes.extend_from_slice(raw_entry.as_bytes());
-            }
-            w.write_all(&bytes)?;
-            node.children.write_all_to(w)?;
+    pub fn write_to(self, w: &mut dyn Write) -> io::Result<()> {
+        let filtered: Vec<_> = self.map.into_iter().filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8)).collect();
+        let num_blocks = filtered.len() as u32;
+        let data_padding_pre = [0u8; 32];
+        let data_padding_post = [0u8; Uf2File::UF2_DATA_SIZE - Uf2File::DATA_SIZE - 32];
+        for (block_no, (block_addr, data)) in filtered.iter().enumerate() {
+            w.write_all(&Uf2File::MAGIC0.to_le_bytes())?;
+            w.write_all(&Uf2File::MAGIC1.to_le_bytes())?;
+            w.write_all(&Uf2File::FLAGS.to_le_bytes())?;
+            w.write_all(&((block_addr * Uf2File::DATA_SIZE) as u32).to_le_bytes())?;
+            w.write_all(&(Uf2File::DATA_SIZE as u32).to_le_bytes())?;
+            w.write_all(&(block_no as u32).to_le_bytes())?;
+            w.write_all(&num_blocks.to_le_bytes())?;
+            w.write_all(&Uf2File::FAMILY_ID.to_le_bytes())?;
+            assert_eq!(data.len(), Uf2File::DATA_SIZE);
+            assert_eq!(data.len() + data_padding_pre.len() + data_padding_post.len(), Uf2File::UF2_DATA_SIZE);
+            // NOTE: Custom UF2 format: Moving the data back by 32 bytes so that it's packet (64 byte)
+            // aligned, and that it'll be easier to process
+            w.write_all(&data_padding_pre)?;
+            w.write_all(&data)?;
+            w.write_all(&data_padding_post)?;
+            w.write_all(&Uf2File::MAGIC_END.to_le_bytes())?;
         }
         Ok(())
     }
