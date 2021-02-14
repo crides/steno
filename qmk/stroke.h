@@ -39,6 +39,27 @@ typedef struct __attribute__((packed)) {
     uint8_t glue : 1;
 } attr_t;
 
+typedef struct __attribute__((packed)) {
+    uint8_t letter : 5;
+    uint32_t offset;
+} node_t;
+
+typedef struct __attribute__((packed)) {
+    uint8_t node_num : 5;
+    uint32_t offset;
+} header_t;
+
+typedef struct __attribute__((packed)) {
+    uint8_t word_len : 4;
+    uint8_t suffix_len : 4;
+    char word[13];
+    char suffix[9];
+    uint8_t use_suffix : 1;
+    uint8_t use_word_chars : 3;
+    uint8_t extra_text_len : 4;
+    char extra_text[8];
+} orthography_entry_t;
+
 extern uint32_t last_entry_ptr;
 extern uint8_t entry_buf[128];
 
