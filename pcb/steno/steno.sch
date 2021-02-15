@@ -13,9 +13,9 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text GLabel 7850 2400 2    50   BiDi ~ 0
+Text GLabel 7850 3500 2    50   BiDi ~ 0
 ROW1
-Text GLabel 7850 2500 2    50   BiDi ~ 0
+Text GLabel 7850 3600 2    50   BiDi ~ 0
 ROW2
 Text GLabel 7850 1200 2    50   BiDi ~ 0
 SCLK_5V
@@ -23,9 +23,9 @@ Text GLabel 7850 1300 2    50   BiDi ~ 0
 MOSI_5V
 Text GLabel 7850 1400 2    50   BiDi ~ 0
 MISO
-Text GLabel 7850 3500 2    50   BiDi ~ 0
+Text GLabel 7850 2400 2    50   BiDi ~ 0
 ROW4
-Text GLabel 7850 3600 2    50   BiDi ~ 0
+Text GLabel 7850 2500 2    50   BiDi ~ 0
 ROW5
 Text GLabel 7850 2600 2    50   BiDi ~ 0
 ROW3
@@ -74,8 +74,8 @@ $Comp
 L Device:R R2
 U 1 1 5F6E5DBF
 P 6500 2100
-F 0 "R2" V 6293 2100 50  0000 C CNN
-F 1 " 22" V 6384 2100 50  0000 C CNN
+F 0 "R2" V 6400 2100 50  0000 C CNN
+F 1 " 22" V 6500 2100 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6430 2100 50  0001 C CNN
 F 3 "~" H 6500 2100 50  0001 C CNN
 	1    6500 2100
@@ -85,8 +85,8 @@ $Comp
 L Device:C_Small C4
 U 1 1 5F6E722B
 P 6550 2400
-F 0 "C4" V 6321 2400 50  0000 C CNN
-F 1 "1uF" V 6412 2400 50  0000 C CNN
+F 0 "C4" V 6650 2400 50  0000 C CNN
+F 1 "1uF" V 6700 2400 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 6588 2250 50  0001 C CNN
 F 3 "~" H 6550 2400 50  0001 C CNN
 	1    6550 2400
@@ -97,7 +97,7 @@ L Device:Crystal_GND24_Small Y1
 U 1 1 5F6E834C
 P 6350 1400
 F 0 "Y1" V 6304 1544 50  0000 L CNN
-F 1 "16MHz" V 6395 1544 50  0000 L CNN
+F 1 "16MHz" V 6200 1300 50  0000 L CNN
 F 2 "Crystal:Crystal_SMD_EuroQuartz_MJ-4Pin_5.0x3.2mm_HandSoldering" H 6350 1400 50  0001 C CNN
 F 3 "~" H 6350 1400 50  0001 C CNN
 	1    6350 1400
@@ -140,8 +140,8 @@ $Comp
 L Device:R R3
 U 1 1 5F7162AC
 P 6500 2200
-F 0 "R3" V 6293 2200 50  0000 C CNN
-F 1 " 22" V 6384 2200 50  0000 C CNN
+F 0 "R3" V 6600 2200 50  0000 C CNN
+F 1 " 22" V 6500 2200 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6430 2200 50  0001 C CNN
 F 3 "~" H 6500 2200 50  0001 C CNN
 	1    6500 2200
@@ -299,43 +299,42 @@ Connection ~ 7250 4400
 $Comp
 L Device:R R1
 U 1 1 5F7CE710
-P 6650 950
-F 0 "R1" H 6580 904 50  0000 R CNN
-F 1 "10k" H 6580 995 50  0000 R CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" V 6580 950 50  0001 C CNN
-F 3 "~" H 6650 950 50  0001 C CNN
-	1    6650 950 
+P 6800 650
+F 0 "R1" H 6730 604 50  0000 R CNN
+F 1 "10k" H 6730 695 50  0000 R CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 6730 650 50  0001 C CNN
+F 3 "~" H 6800 650 50  0001 C CNN
+	1    6800 650 
 	-1   0    0    1   
 $EndComp
 $Comp
 L power:+5V #PWR03
 U 1 1 5F7CF7B2
-P 6650 800
-F 0 "#PWR03" H 6650 650 50  0001 C CNN
-F 1 "+5V" H 6665 973 50  0000 C CNN
-F 2 "" H 6650 800 50  0001 C CNN
-F 3 "" H 6650 800 50  0001 C CNN
-	1    6650 800 
+P 6800 500
+F 0 "#PWR03" H 6800 350 50  0001 C CNN
+F 1 "+5V" H 6815 673 50  0000 C CNN
+F 2 "" H 6800 500 50  0001 C CNN
+F 3 "" H 6800 500 50  0001 C CNN
+	1    6800 500 
 	1    0    0    -1  
 $EndComp
-Connection ~ 6650 1100
 $Comp
 L power:GND #PWR06
 U 1 1 5F7E9379
-P 6250 1100
-F 0 "#PWR06" H 6250 850 50  0001 C CNN
-F 1 "GND" V 6255 972 50  0000 R CNN
-F 2 "" H 6250 1100 50  0001 C CNN
-F 3 "" H 6250 1100 50  0001 C CNN
-	1    6250 1100
+P 6400 800
+F 0 "#PWR06" H 6400 550 50  0001 C CNN
+F 1 "GND" V 6405 672 50  0000 R CNN
+F 2 "" H 6400 800 50  0001 C CNN
+F 3 "" H 6400 800 50  0001 C CNN
+	1    6400 800 
 	0    1    1    0   
 $EndComp
 $Comp
 L Device:C_Small C2
 U 1 1 5F7F0325
 P 6150 1500
-F 0 "C2" V 5921 1500 50  0000 C CNN
-F 1 "22pF" V 6012 1500 50  0000 C CNN
+F 0 "C2" V 6200 1300 50  0000 C CNN
+F 1 "22pF" V 6200 1500 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 6150 1500 50  0001 C CNN
 F 3 "~" H 6150 1500 50  0001 C CNN
 	1    6150 1500
@@ -491,8 +490,8 @@ $Comp
 L Device:C_Small C3
 U 1 1 5F8C8215
 P 6550 1700
-F 0 "C3" V 6779 1700 50  0000 C CNN
-F 1 "1uF" V 6688 1700 50  0000 C CNN
+F 0 "C3" V 6650 1700 50  0000 C CNN
+F 1 "1uF" V 6450 1700 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 6588 1550 50  0001 C CNN
 F 3 "~" H 6550 1700 50  0001 C CNN
 	1    6550 1700
@@ -588,24 +587,20 @@ $EndComp
 $Comp
 L steno:LCD2.2in U4
 U 1 1 5F837536
-P 6150 4300
-F 0 "U4" H 6478 4351 50  0000 L CNN
-F 1 "LCD2.2in" H 6478 4260 50  0000 L CNN
-F 2 "steno:LCD2.2in" H 6150 3700 50  0001 C CNN
-F 3 "" H 6150 3700 50  0001 C CNN
-	1    6150 4300
+P 6550 5550
+F 0 "U4" H 6878 5601 50  0000 L CNN
+F 1 "LCD2.2in" H 6878 5510 50  0000 L CNN
+F 2 "steno:LCD2.2in" H 6550 4950 50  0001 C CNN
+F 3 "" H 6550 4950 50  0001 C CNN
+	1    6550 5550
 	1    0    0    -1  
 $EndComp
-Text GLabel 5950 4550 0    50   BiDi ~ 0
+Text GLabel 6350 5500 0    50   BiDi ~ 0
 MISO
-Text GLabel 5950 4050 0    50   Input ~ 0
-C\D
-Text GLabel 5950 4150 0    50   Input ~ 0
-LCD_RST
-Text GLabel 5950 4350 0    50   Input ~ 0
-LCD_CS
-Text GLabel 5950 4750 0    50   Input ~ 0
-LITE_3V3
+Text GLabel 6350 5200 0    50   Input ~ 0
+C\D_3V3
+Text GLabel 6350 5300 0    50   Input ~ 0
+LCD_CS_3V3
 $Comp
 L Device:R R5
 U 1 1 5F8001B1
@@ -631,7 +626,7 @@ Wire Wire Line
 Wire Wire Line
 	4900 3350 5200 3350
 Connection ~ 6450 3150
-Text GLabel 7850 3900 2    50   Input ~ 0
+Text GLabel 7850 2900 2    50   Input ~ 0
 LCD_CS
 $Comp
 L power:+5V #PWR018
@@ -647,12 +642,12 @@ $EndComp
 $Comp
 L Switch:SW_Push SW1
 U 1 1 5F6E92B3
-P 6450 1100
-F 0 "SW1" H 6450 1385 50  0000 C CNN
-F 1 "SW_Push" H 6450 1294 50  0000 C CNN
-F 2 "Button_Switch_SMD:SW_SPST_B3U-1000P" H 6450 1300 50  0001 C CNN
-F 3 "~" H 6450 1300 50  0001 C CNN
-	1    6450 1100
+P 6600 800
+F 0 "SW1" H 6600 1085 50  0000 C CNN
+F 1 "SW_Push" H 6600 994 50  0000 C CNN
+F 2 "Button_Switch_SMD:SW_SPST_B3U-1000P" H 6600 1000 50  0001 C CNN
+F 3 "~" H 6600 1000 50  0001 C CNN
+	1    6600 800 
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1515,10 +1510,8 @@ Wire Wire Line
 Connection ~ 4000 1600
 Wire Wire Line
 	4000 1600 4500 1600
-Text GLabel 7850 3700 2    50   Input ~ 0
+Text GLabel 7850 2700 2    50   Input ~ 0
 C\D
-Text GLabel 7850 3800 2    50   Input ~ 0
-LCD_RST
 Text GLabel 7850 3000 2    50   BiDi ~ 0
 COL1
 Text GLabel 7850 1600 2    50   BiDi ~ 0
@@ -1538,12 +1531,12 @@ CS_5V
 $Comp
 L power:+5V #PWR0101
 U 1 1 5F7617F8
-P 5950 3950
-F 0 "#PWR0101" H 5950 3800 50  0001 C CNN
-F 1 "+5V" H 5965 4123 50  0000 C CNN
-F 2 "" H 5950 3950 50  0001 C CNN
-F 3 "" H 5950 3950 50  0001 C CNN
-	1    5950 3950
+P 5800 4900
+F 0 "#PWR0101" H 5800 4750 50  0001 C CNN
+F 1 "+5V" H 5815 5073 50  0000 C CNN
+F 2 "" H 5800 4900 50  0001 C CNN
+F 3 "" H 5800 4900 50  0001 C CNN
+	1    5800 4900
 	0    -1   -1   0   
 $EndComp
 Text GLabel 9000 2350 0    50   BiDi ~ 0
@@ -1558,20 +1551,20 @@ Text GLabel 9600 1900 2    50   BiDi ~ 0
 SCLK_3V3
 Text GLabel 9600 1400 2    50   BiDi ~ 0
 MOSI_3V3
-Text GLabel 5950 4650 0    50   BiDi ~ 0
+Text GLabel 6350 5100 0    50   BiDi ~ 0
 SCLK_3V3
-Text GLabel 5950 4450 0    50   BiDi ~ 0
+Text GLabel 6350 5400 0    50   BiDi ~ 0
 MOSI_3V3
 $Comp
 L power:GND #PWR0108
 U 1 1 5F8C0651
-P 5950 3850
-F 0 "#PWR0108" H 5950 3600 50  0001 C CNN
-F 1 "GND" H 5955 3677 50  0000 C CNN
-F 2 "" H 5950 3850 50  0001 C CNN
-F 3 "" H 5950 3850 50  0001 C CNN
-	1    5950 3850
-	-1   0    0    1   
+P 6350 4900
+F 0 "#PWR0108" H 6350 4650 50  0001 C CNN
+F 1 "GND" V 6355 4727 50  0000 C CNN
+F 2 "" H 6350 4900 50  0001 C CNN
+F 3 "" H 6350 4900 50  0001 C CNN
+	1    6350 4900
+	0    1    1    0   
 $EndComp
 $Comp
 L power:GND #PWR0109
@@ -1587,23 +1580,23 @@ $EndComp
 $Comp
 L 4xxx:4050 U5
 U 1 1 5F9368CD
-P 9300 1400
-F 0 "U5" H 9300 1717 50  0000 C CNN
-F 1 "4050" H 9300 1626 50  0000 C CNN
-F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 9300 1400 50  0001 C CNN
-F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 9300 1400 50  0001 C CNN
-	1    9300 1400
-	1    0    0    -1  
-$EndComp
-$Comp
-L 4xxx:4050 U5
-U 2 1 5F937A2D
 P 9300 1900
 F 0 "U5" H 9300 2217 50  0000 C CNN
 F 1 "4050" H 9300 2126 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 9300 1900 50  0001 C CNN
 F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 9300 1900 50  0001 C CNN
-	2    9300 1900
+	1    9300 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L 4xxx:4050 U5
+U 2 1 5F937A2D
+P 9300 1400
+F 0 "U5" H 9300 1717 50  0000 C CNN
+F 1 "4050" H 9300 1626 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 9300 1400 50  0001 C CNN
+F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 9300 1400 50  0001 C CNN
+	2    9300 1400
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1619,17 +1612,6 @@ F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" 
 $EndComp
 $Comp
 L 4xxx:4050 U5
-U 4 1 5F93A4B9
-P 9300 2800
-F 0 "U5" H 9300 3117 50  0000 C CNN
-F 1 "4050" H 9300 3026 50  0000 C CNN
-F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 9300 2800 50  0001 C CNN
-F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 9300 2800 50  0001 C CNN
-	4    9300 2800
-	1    0    0    -1  
-$EndComp
-$Comp
-L 4xxx:4050 U5
 U 7 1 5F93BD17
 P 8750 3700
 F 0 "U5" H 8980 3746 50  0000 L CNN
@@ -1639,10 +1621,6 @@ F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" 
 	7    8750 3700
 	1    0    0    -1  
 $EndComp
-Text GLabel 9000 2800 0    50   Input ~ 0
-LITE_5V
-Text GLabel 9600 2800 2    50   Input ~ 0
-LITE_3V3
 $Comp
 L power:GND #PWR0102
 U 1 1 5F9AA961
@@ -1665,4 +1643,223 @@ F 3 "" H 8750 3200 50  0001 C CNN
 	1    8750 3200
 	1    0    0    -1  
 $EndComp
+$Comp
+L Device:R R6
+U 1 1 602A898A
+P 7850 950
+F 0 "R6" V 7643 950 50  0000 C CNN
+F 1 "10k" V 7734 950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 7780 950 50  0001 C CNN
+F 3 "~" H 7850 950 50  0001 C CNN
+	1    7850 950 
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_Push SW2
+U 1 1 602B341B
+P 8050 1100
+F 0 "SW2" H 8050 1385 50  0000 C CNN
+F 1 "SW_Push" H 8050 1294 50  0000 C CNN
+F 2 "Button_Switch_SMD:SW_SPST_B3U-1000P" H 8050 1300 50  0001 C CNN
+F 3 "~" H 8050 1300 50  0001 C CNN
+	1    8050 1100
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0104
+U 1 1 602B3E68
+P 7850 800
+F 0 "#PWR0104" H 7850 650 50  0001 C CNN
+F 1 "+5V" H 7865 973 50  0000 C CNN
+F 2 "" H 7850 800 50  0001 C CNN
+F 3 "" H 7850 800 50  0001 C CNN
+	1    7850 800 
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 602B4471
+P 8250 1100
+F 0 "#PWR0105" H 8250 850 50  0001 C CNN
+F 1 "GND" V 8255 972 50  0000 R CNN
+F 2 "" H 8250 1100 50  0001 C CNN
+F 3 "" H 8250 1100 50  0001 C CNN
+	1    8250 1100
+	0    -1   1    0   
+$EndComp
+Connection ~ 7850 1100
+$Comp
+L power:GND #PWR0106
+U 1 1 60376206
+P 6350 5600
+F 0 "#PWR0106" H 6350 5350 50  0001 C CNN
+F 1 "GND" V 6355 5427 50  0000 C CNN
+F 2 "" H 6350 5600 50  0001 C CNN
+F 3 "" H 6350 5600 50  0001 C CNN
+	1    6350 5600
+	0    1    1    0   
+$EndComp
+$Comp
+L power:+3V3 #PWR0107
+U 1 1 6037CF2A
+P 6350 5700
+F 0 "#PWR0107" H 6350 5550 50  0001 C CNN
+F 1 "+3V3" V 6350 5900 50  0000 C CNN
+F 2 "" H 6350 5700 50  0001 C CNN
+F 3 "" H 6350 5700 50  0001 C CNN
+	1    6350 5700
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+3V3 #PWR0110
+U 1 1 603BFB5D
+P 6350 5800
+F 0 "#PWR0110" H 6350 5650 50  0001 C CNN
+F 1 "+3V3" V 6350 6000 50  0000 C CNN
+F 2 "" H 6350 5800 50  0001 C CNN
+F 3 "" H 6350 5800 50  0001 C CNN
+	1    6350 5800
+	0    -1   -1   0   
+$EndComp
+Text GLabel 9950 3200 0    50   Input ~ 0
+C\D
+Text GLabel 10550 3200 2    50   Input ~ 0
+C\D_3V3
+$Comp
+L 4xxx:4050 U5
+U 5 1 604ACEC0
+P 10250 3200
+F 0 "U5" H 10250 3517 50  0000 C CNN
+F 1 "4050" H 10250 3426 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 10250 3200 50  0001 C CNN
+F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 10250 3200 50  0001 C CNN
+	5    10250 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L 4xxx:4050 U5
+U 6 1 604ADD3F
+P 10250 3650
+F 0 "U5" H 10250 3967 50  0000 C CNN
+F 1 "4050" H 10250 3876 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 10250 3650 50  0001 C CNN
+F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 10250 3650 50  0001 C CNN
+	6    10250 3650
+	1    0    0    -1  
+$EndComp
+Text GLabel 9950 3650 0    50   Input ~ 0
+LCD_CS
+Text GLabel 10550 3650 2    50   Input ~ 0
+LCD_CS_3V3
+$Comp
+L Device:R R7
+U 1 1 60662AC5
+P 6200 5900
+F 0 "R7" V 6200 5650 50  0000 C CNN
+F 1 "220" V 6200 5900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6130 5900 50  0001 C CNN
+F 3 "~" H 6200 5900 50  0001 C CNN
+	1    6200 5900
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R8
+U 1 1 60667545
+P 6200 6000
+F 0 "R8" V 6200 5750 50  0000 C CNN
+F 1 "220" V 6200 6000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6130 6000 50  0001 C CNN
+F 3 "~" H 6200 6000 50  0001 C CNN
+	1    6200 6000
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R9
+U 1 1 606677B7
+P 6200 6100
+F 0 "R9" V 6200 5850 50  0000 C CNN
+F 1 "220" V 6200 6100 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6130 6100 50  0001 C CNN
+F 3 "~" H 6200 6100 50  0001 C CNN
+	1    6200 6100
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R10
+U 1 1 60667ADE
+P 6200 6200
+F 0 "R10" V 6200 5950 50  0000 C CNN
+F 1 "220" V 6200 6200 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6130 6200 50  0001 C CNN
+F 3 "~" H 6200 6200 50  0001 C CNN
+	1    6200 6200
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0111
+U 1 1 60667DD4
+P 5850 5900
+F 0 "#PWR0111" H 5850 5650 50  0001 C CNN
+F 1 "GND" V 5855 5727 50  0000 C CNN
+F 2 "" H 5850 5900 50  0001 C CNN
+F 3 "" H 5850 5900 50  0001 C CNN
+	1    5850 5900
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0112
+U 1 1 60668030
+P 5850 6000
+F 0 "#PWR0112" H 5850 5750 50  0001 C CNN
+F 1 "GND" V 5855 5827 50  0000 C CNN
+F 2 "" H 5850 6000 50  0001 C CNN
+F 3 "" H 5850 6000 50  0001 C CNN
+	1    5850 6000
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0113
+U 1 1 6066832D
+P 5850 6100
+F 0 "#PWR0113" H 5850 5850 50  0001 C CNN
+F 1 "GND" V 5855 5927 50  0000 C CNN
+F 2 "" H 5850 6100 50  0001 C CNN
+F 3 "" H 5850 6100 50  0001 C CNN
+	1    5850 6100
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0114
+U 1 1 6066863E
+P 5850 6200
+F 0 "#PWR0114" H 5850 5950 50  0001 C CNN
+F 1 "GND" V 5855 6027 50  0000 C CNN
+F 2 "" H 5850 6200 50  0001 C CNN
+F 3 "" H 5850 6200 50  0001 C CNN
+	1    5850 6200
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6050 6200 5850 6200
+Wire Wire Line
+	6050 6100 5850 6100
+Wire Wire Line
+	5850 6000 6050 6000
+Wire Wire Line
+	6050 5900 5850 5900
+$Comp
+L 4xxx:4050 U5
+U 4 1 5F93A4B9
+P 9300 2800
+F 0 "U5" H 9300 3117 50  0000 C CNN
+F 1 "4050" H 9300 3026 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 9300 2800 50  0001 C CNN
+F 3 "http://www.intersil.com/content/dam/intersil/documents/cd40/cd4050bms.pdf" H 9300 2800 50  0001 C CNN
+	4    9300 2800
+	1    0    0    -1  
+$EndComp
+Text GLabel 6650 1100 0    50   Input ~ 0
+RESET
+Text GLabel 6800 800  2    50   Input ~ 0
+RESET
 $EndSCHEMATC
