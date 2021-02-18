@@ -13,7 +13,7 @@ Shortly after I built the [first version](../pcb/README.md#Version-1) of the ste
 - A keyboard
 - QMK toolchain
 
-Configure the firmware. One of them is for AVR, and the other is for the nRF. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed. Also configure in `config.h` what storage you are using (`USE_SPI_FLASH`).
+Configure the firmware. One of them is for AVR, and the other is for the nRF. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed.
 
 Put/Link this directory in/from `qmk_firmware/keyboards`. Compile and load the firmware, and you will need a compiled dictionary. You can either get one from the repo as `steno.bin` (which is my current compiled dictionary), or grab the [compiler](../compiler) and compile your own. Load the dictionary by either copying to the SDCard, or use the `download` command in the compiler if using a QSPI flash.
 

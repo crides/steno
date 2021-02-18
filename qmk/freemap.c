@@ -16,15 +16,15 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
     // NOTE: `word` is word (32-bit) index, *not byte*
     const uint8_t this_lvl_block = lvl == 0 ? block : 0;
     const uint32_t offset = get_offset(lvl);
-    const uint8_t size = pow(2, this_lvl_block);
-    uint32_t mask = pow(2, size) - 1;
+    const uint8_t size = 1 << this_lvl_block;
+    uint32_t mask = (1 << size) - 1;
     const uint32_t word_addr = offset + 4 * word;
     uint32_t alloc_word;
     flash_read(word_addr, (uint8_t *) &alloc_word, 4);
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("req lvl %u bloq %u word %lu alok %08lX", lvl, block, word, alloc_word);
+    steno_debug_ln("lvl %u bloq %u word %lu alok %08lX", lvl, block, word, alloc_word);
 #endif
-    for (uint8_t i = 0; i < 32; i += size) {
+    for (uint8_t i = 0; i < 32; i += size, mask <<= size) {
         if ((alloc_word & mask) == mask) {
             const uint32_t sub_ind = i + word * 32;
             const uint32_t write_word = ~mask;
@@ -37,7 +37,7 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
                 *ret_ind = sub_ind;
             } else {
                 uint32_t ret;
-                uint8_t full = _req(lvl - 1, sub_ind, block, &ret);
+                const uint8_t full = _req(lvl - 1, sub_ind, block, &ret);
                 if (ret == -1) {
                     continue;
                 } else {
@@ -50,7 +50,6 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
             }
             return alloc_word == 0;
         }
-        mask <<= size;
     }
     *ret_ind = -1;
     return 0;

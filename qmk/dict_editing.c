@@ -38,9 +38,7 @@ void set_stroke(uint32_t stroke) {
     if (stroke == 0x1000) {
         if (curr_stroke_size != 0) {
             curr_stroke_size -= 1;
-            const uint32_t temp_last_stroke = (uint32_t) curr_stroke[3 * curr_stroke_size + 2] << 16 |
-                                              (uint32_t) curr_stroke[3 * curr_stroke_size + 1] << 8 |
-                                              (uint32_t) curr_stroke[3 * curr_stroke_size];
+            const uint32_t temp_last_stroke = STROKE_FROM_PTR(&curr_stroke[STROKE_SIZE * curr_stroke_size]);
             stroke_to_string(temp_last_stroke, temp, NULL);
             select_lcd();
             for (uint8_t i = 0; i < strlen(temp) + 1; i++) {
@@ -48,13 +46,13 @@ void set_stroke(uint32_t stroke) {
             }
             unselect_lcd();
         }
-    } else if (curr_stroke_size < 9) {
+    } else if (curr_stroke_size < 10) {
         if (curr_stroke_size > 0) {
             lcd_puts("/", 2);
         }
-        curr_stroke[3 * curr_stroke_size + 2] = (stroke >> 16) & 0xFF;
-        curr_stroke[3 * curr_stroke_size + 1] = (stroke >> 8) & 0xFF;
-        curr_stroke[3 * curr_stroke_size] = stroke & 0xFF;
+        curr_stroke[STROKE_SIZE * curr_stroke_size + 2] = (stroke >> 16) & 0xFF;
+        curr_stroke[STROKE_SIZE * curr_stroke_size + 1] = (stroke >> 8) & 0xFF;
+        curr_stroke[STROKE_SIZE * curr_stroke_size] = stroke & 0xFF;
         curr_stroke_size++;
         // char last_stroke[24];
         // stroke_to_string(stroke, last_stroke, NULL);
@@ -77,7 +75,7 @@ void dicted_add_prompt_trans(void) {
     }
 
     find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
-    uint8_t stroke_len = ENTRY_GET_STROKES_LEN(last_entry_ptr);
+    uint8_t stroke_len = BUCKET_GET_STROKES_LEN(last_bucket);
     if (stroke_len != 0 && stroke_len != 0xFFFFFF) {
         editing_state = ED_ERROR;
         select_lcd();
@@ -106,7 +104,7 @@ void add_entry(void) {
     }
 
     uint8_t bloq;
-    const uint8_t entry_len = curr_stroke_size * 3 + 2 + entry_buf_len;
+    const uint8_t entry_len = curr_stroke_size * STROKE_SIZE + 1 + entry_buf_len;
     if (entry_len <= 16) {
         bloq = 0;
     } else if (entry_len <= 32) {
@@ -129,16 +127,15 @@ void add_entry(void) {
 #ifdef STENO_DEBUG_DICTED
     steno_debug_ln("blok addr %06lX", block_addr);
 #endif
-    flash_write(block_addr, (uint8_t *) curr_stroke, curr_stroke_size * 3);
-    flash_write(block_addr + curr_stroke_size * 3, &entry_buf_len, 1);
-    flash_write(block_addr + curr_stroke_size * 3 + 1, (uint8_t *) &attr, 1);
-    flash_write(block_addr + curr_stroke_size * 3 + 2, page_buffer, entry_buf_len);
+    flash_write(block_addr, (uint8_t *) curr_stroke, curr_stroke_size * STROKE_SIZE);
+    flash_write(block_addr + curr_stroke_size * STROKE_SIZE, (uint8_t *) &attr, 1);
+    flash_write(block_addr + curr_stroke_size * STROKE_SIZE + 1, page_buffer, entry_buf_len);
     // FIXME Special usage
     find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 1);
-    const uint32_t bucket_addr = last_entry_ptr;
-    last_entry_ptr = 0;
-    const uint32_t bucket = ((block_addr - KVPAIR_BLOCK_START) & 0xFFFFF0) | (curr_stroke_size & 0x0F);
-    flash_write(bucket_addr, (uint8_t *) &bucket, 3);
+    const uint32_t bucket_addr = last_bucket;
+    last_bucket = 0;
+    const uint32_t bucket = (uint32_t) entry_buf_len << 24 | ((block_addr - KVPAIR_BLOCK_START) & 0xFFFFF0) | (curr_stroke_size & 0x0F);
+    flash_write(bucket_addr, (uint8_t *) &bucket, BUCKET_SIZE);
     flash_flush();
 #ifdef STENO_DEBUG_FLASH
     flash_debug_enable = 0;
@@ -150,8 +147,7 @@ void dicted_add_done(void) {
 #ifdef STENO_DEBUG_DICTED
     steno_debug("Adding done with stroke: ");
     for (uint8_t i = 0; i < curr_stroke_size; i++) {
-        const uint32_t stroke = (uint32_t) curr_stroke[3 * i + 2] << 16 | (uint32_t) curr_stroke[3 * i + 1] << 8 |
-                                (uint32_t) curr_stroke[3 * i];
+        const uint32_t stroke = STROKE_FROM_PTR(&curr_stroke[STROKE_SIZE * i]);
         char buf[24];
         stroke_to_string(stroke, buf, NULL);
         steno_debug("%s/", buf);
@@ -204,22 +200,22 @@ void dicted_edit_conf_strokes(void) {
 #endif
 
     find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
-    // last_entry_ptr is where the address is stored
-    if (last_entry_ptr == 0 || last_entry_ptr == 0xFFFFFF) {
+    // last_bucket is where the address is stored
+    if (last_bucket == 0 || last_bucket == 0xFFFFFF) {
         editing_state = ED_ERROR;
         select_lcd();
         lcd_puts("\nNo Entry", 2);
         unselect_lcd();
         return;
     }
-    read_entry(last_entry_ptr);
-    const uint8_t entry_len = ENTRY_GET_ENTRY_LEN(last_entry_ptr);
-    const uint8_t stroke_byte_len = 3 * curr_stroke_size;
+    read_entry(last_bucket);
+    const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(last_bucket);
+    const uint8_t stroke_byte_len = STROKE_SIZE * curr_stroke_size;
     char entry_trans[entry_len + 1];
 
     entry_length = stroke_byte_len + 1 + entry_len;
 
-    memcpy(entry_trans, entry_buf + stroke_byte_len + 2, entry_len);
+    memcpy(entry_trans, entry_buf + stroke_byte_len + 1, entry_len);
     entry_trans[entry_len] = 0;
 
     select_lcd();
@@ -269,22 +265,22 @@ void dicted_remove_conf_strokes(void) {
     print_strokes(curr_stroke, curr_stroke_size);
 #endif
     find_strokes((uint8_t *) curr_stroke, curr_stroke_size, 0);
-    // last_entry_ptr is where the address is stored
-    if (last_entry_ptr == 0 || last_entry_ptr == 0xFFFFFF) {
+    // last_bucket is where the address is stored
+    if (last_bucket == 0 || last_bucket == 0xFFFFFF) {
         editing_state = ED_ERROR;
         select_lcd();
         lcd_puts("\nNo Entry", 2);
         unselect_lcd();
         return;
     }
-    read_entry(last_entry_ptr);
-    const uint8_t entry_len = ENTRY_GET_ENTRY_LEN(last_entry_ptr);
-    const uint8_t stroke_byte_len = 3 * curr_stroke_size;
+    read_entry(last_bucket);
+    const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(last_bucket);
+    const uint8_t stroke_byte_len = STROKE_SIZE * curr_stroke_size;
     char entry_trans[entry_len + 1];
 
     entry_length = stroke_byte_len + 1 + entry_len;
 
-    memcpy(entry_trans, entry_buf + stroke_byte_len + 2, entry_len);
+    memcpy(entry_trans, entry_buf + stroke_byte_len + 1, entry_len);
     entry_trans[entry_len] = 0;
 
     select_lcd();
@@ -303,7 +299,7 @@ void remove_entry(void) {
     steno_debug_ln("Started remove_entry()");
 #endif
 
-    const uint32_t last_entry_addr = ENTRY_GET_ADDR(last_entry_ptr);
+    const uint32_t last_entry_addr = BUCKET_GET_ADDR(last_bucket);
     const uint32_t block_addr_start = last_entry_addr & 0xFFF000; // Alighed to 4k
     flash_erase_4k(SCRATCH_START);
 

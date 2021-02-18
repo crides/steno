@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef __AVR__
 #include <avr/io.h>
-#else
-#include <stdint.h>
-#endif
 
 // Program page size
 #define FLASH_PP_SIZE 256

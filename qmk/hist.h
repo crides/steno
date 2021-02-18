@@ -29,8 +29,8 @@ typedef struct __attribute__((packed)) {
     uint8_t len;
     state_t state;
     uint32_t stroke : 24;
-    // Pointer + strokes length of the entry; invalid if 0 or -1
-    uint32_t entry;
+    // Pointer + strokes length of the bucket; invalid if 0 or -1
+    uint32_t bucket;
 } history_t;
 
 void hist_undo(uint8_t h_ind);
