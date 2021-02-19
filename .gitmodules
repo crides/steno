@@ -7,3 +7,6 @@
 [submodule "compiler/lib/hidapi-1"]
 	path = compiler/lib/hidapi-1
 	url = git@github.com:crides/hidapi-1.git
+[submodule "pcb/libs/pg1350"]
+	path = pcb/libs/pg1350
+	url = https://github.com/crides/pg1350

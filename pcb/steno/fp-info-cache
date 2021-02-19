@@ -1,4 +1,4 @@
-19173544114270418
+19179999216527834
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -83390,6 +83390,34 @@ nice_nano
 0
 29
 29
+pg1350
+PG1350
+
+
+0
+5
+3
+pg1350
+PG1350-no-diode
+
+
+0
+2
+2
+pg1350
+PG1350-reversible
+
+
+0
+7
+3
+pg1350
+PG1350-reversible-no-diode
+
+
+0
+4
+2
 promicro
 ProMicro
 Pro Micro footprint
