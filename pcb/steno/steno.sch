@@ -267,28 +267,6 @@ F 3 "" H 7250 4400 50  0001 C CNN
 $EndComp
 Connection ~ 7250 4400
 $Comp
-L Device:R R1
-U 1 1 5F7CE710
-P 6800 650
-F 0 "R1" H 6730 604 50  0000 R CNN
-F 1 "10k" H 6730 695 50  0000 R CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" V 6730 650 50  0001 C CNN
-F 3 "~" H 6800 650 50  0001 C CNN
-	1    6800 650 
-	-1   0    0    1   
-$EndComp
-$Comp
-L power:+5V #PWR03
-U 1 1 5F7CF7B2
-P 6800 500
-F 0 "#PWR03" H 6800 350 50  0001 C CNN
-F 1 "+5V" H 6815 673 50  0000 C CNN
-F 2 "" H 6800 500 50  0001 C CNN
-F 3 "" H 6800 500 50  0001 C CNN
-	1    6800 500 
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR06
 U 1 1 5F7E9379
 P 6400 800
@@ -765,17 +743,6 @@ F 3 "" H 8750 3200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R R6
-U 1 1 602A898A
-P 7850 950
-F 0 "R6" V 7643 950 50  0000 C CNN
-F 1 "10k" V 7734 950 50  0000 C CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" V 7780 950 50  0001 C CNN
-F 3 "~" H 7850 950 50  0001 C CNN
-	1    7850 950 
-	-1   0    0    -1  
-$EndComp
-$Comp
 L Switch:SW_Push SW2
 U 1 1 602B341B
 P 8050 1100
@@ -784,17 +751,6 @@ F 1 "SW_Push" H 8050 1294 50  0000 C CNN
 F 2 "Button_Switch_SMD:SW_SPST_B3U-1000P" H 8050 1300 50  0001 C CNN
 F 3 "~" H 8050 1300 50  0001 C CNN
 	1    8050 1100
-	-1   0    0    -1  
-$EndComp
-$Comp
-L power:+5V #PWR0104
-U 1 1 602B3E68
-P 7850 800
-F 0 "#PWR0104" H 7850 650 50  0001 C CNN
-F 1 "+5V" H 7865 973 50  0000 C CNN
-F 2 "" H 7850 800 50  0001 C CNN
-F 3 "" H 7850 800 50  0001 C CNN
-	1    7850 800 
 	-1   0    0    -1  
 $EndComp
 $Comp
@@ -808,7 +764,6 @@ F 3 "" H 8250 1100 50  0001 C CNN
 	1    8250 1100
 	0    -1   1    0   
 $EndComp
-Connection ~ 7850 1100
 $Comp
 L power:GND #PWR0106
 U 1 1 60376206
