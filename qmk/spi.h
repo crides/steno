@@ -7,13 +7,13 @@
 #define configure_pin_mosi() DDRB |= _BV(DDB2)
 #define configure_pin_miso() DDRB &= ~_BV(DDB3)
 #define configure_pin_ss() DDRD |= _BV(DDD5)
-#define configure_lcd_cs() DDRF |= _BV(DDF6)
+#define configure_lcd_cs() DDRD |= _BV(DDD6)
 
 #define select_card() PORTD &= ~_BV(PORTD5)
 #define unselect_card() PORTD |= _BV(PORTD5)
 
-#define select_lcd() PORTF &= ~_BV(PORTF6)
-#define unselect_lcd() PORTF |= _BV(PORTF6)
+#define select_lcd() PORTD &= ~_BV(PORTD6)
+#define unselect_lcd() PORTD |= _BV(PORTD6)
 
 void spi_init(void);
 void spi_send_byte(uint8_t);

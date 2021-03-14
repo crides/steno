@@ -39,7 +39,7 @@ static int16_t cursor_x = 0, cursor_y = 0;
 void lcd_init(void) {
     uint8_t cmd, x, numArgs;
     const uint8_t *addr = initcmd;
-    DDRF |= _BV(DDF4);
+    configure_lcd_cd();
     select_lcd();
     lcd_command();
     spi_send_byte(ILI9341_SWRESET);

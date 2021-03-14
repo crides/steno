@@ -51,8 +51,9 @@ void lcd_putc(char c, uint8_t size);
 void lcd_back(uint8_t size);
 void lcd_clear(void);
 
-#define lcd_command() PORTF &= ~_BV(PORTF4)
-#define lcd_data() PORTF |= _BV(PORTF4)
+#define configure_lcd_cd() DDRD |= _BV(DDD4)
+#define lcd_command() PORTD &= ~_BV(PORTD4)
+#define lcd_data() PORTD |= _BV(PORTD4)
 
 #define LCD_WIDTH 240
 #define LCD_HEIGHT 320
