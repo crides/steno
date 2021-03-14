@@ -1,4 +1,4 @@
 (sym_lib_table
   (lib (name pg1350)(type Legacy)(uri ${KIPRJMOD}/pcb/libs/pg1350/pg1350.lib)(options "")(descr ""))
-  (lib (name keyboard_parts)(type Legacy)(uri ${KIPRJMOD}/pcb/libs/KiCad_Libs-master/canadian_schematics/keyboard_parts.li)(options "")(descr ""))
+  (lib (name keyboard_parts)(type Legacy)(uri ${KIPRJMOD}/pcb/libs/KiCad_Libs-master/canadian_schematics/keyboard_parts.lib)(options "")(descr ""))
 )
