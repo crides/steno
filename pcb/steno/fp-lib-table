@@ -1,4 +1,4 @@
 (fp_lib_table
   (lib (name steno)(type KiCad)(uri ${KIPRJMOD}/../steno)(options "")(descr ""))
-  (lib (name pg1350)(type KiCad)(uri /home/steven/gitproj/pg1350)(options "")(descr ""))
+  (lib (name pg1350)(type KiCad)(uri ${KIPRJMOD}/../pg135)(options "")(descr ""))
 )
