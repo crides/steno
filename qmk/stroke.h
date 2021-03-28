@@ -22,6 +22,7 @@
 #define BUCKET_GET_ENTRY_LEN(e) ((e >> 24) & 0xFF)
 #define BUCKET_GET_STROKES_LEN(e) (e & 0x0F)
 #define BUCKET_GET_ADDR(e) ((e & 0xFFFFF0) + KVPAIR_BLOCK_START)
+#define BUCKET_GET_ENTRY_PTR(e) (BUCKET_GET_ADDR(e) + STROKE_SIZE * BUCKET_GET_STROKES_LEN(e) + 1)
 
 #define FREEMAP_LVL_0 FREEMAP_START
 #define FREEMAP_LVL_1 ((1ul << 20) / 32 * 4 + FREEMAP_LVL_0)
@@ -76,4 +77,4 @@ void find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free)
 void search_entry(const uint8_t h_ind);
 uint32_t freemap_req(const uint8_t block);
 void print_strokes(const uint8_t *strokes, const uint8_t len);
-void read_entry(uint32_t entry_ptr);
+void read_entry(const uint32_t bucket, uint8_t *buf);

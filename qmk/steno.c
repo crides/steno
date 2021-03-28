@@ -170,11 +170,11 @@ void _send_steno_chord_user(const uint8_t chord[6]) {
         hist->state = hist_get(HIST_LIMIT(hist_ind - strokes_len + 1))->state;
     }
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("this %u: scg: %u, %u, %u", hist_ind, hist->state.space, hist->state.cap, hist->state.glue);
+    steno_debug_ln("this %u: scg: %u%u%u", hist_ind, hist->state.space, hist->state.cap, hist->state.glue);
 #endif
     const state_t new_state = process_output(hist_ind);
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("next %u: scg: %u, %u, %u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
+    steno_debug_ln("next %u: scg: %u%u%u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
 #endif
     if (editing_state == ED_IDLE) {
         select_lcd();
@@ -204,7 +204,7 @@ void _send_steno_chord_user(const uint8_t chord[6]) {
         steno_debug_ln("hist %u:", hist_ind);
         steno_debug_ln("  len: %u, stroke_len: %u", hist->len, BUCKET_GET_STROKES_LEN(hist->bucket));
         const state_t state = hist->state;
-        steno_debug_ln("  scg: %u, %u, %u", state.space, state.cap, state.glue);
+        steno_debug_ln("  scg: %u%u%u", state.space, state.cap, state.glue);
         char buf[24];
         stroke_to_string(hist->stroke, buf, NULL);
         steno_debug_ln("  stroke: %s", buf);

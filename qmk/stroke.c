@@ -167,19 +167,19 @@ void search_entry(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("  hist[%d].strokes_len = %d", HIST_LIMIT(h_ind - i), strokes_len);
 #endif
-        if (i > 0 && strokes_len > 1) {
-            i += strokes_len - 1;
-            continue;
-        }
         const uint32_t stroke = old_hist->stroke;
-        if (stroke == 0) {
-            break;
-        }
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("  [%d] = %06lX", i, stroke);
 #endif
+        if (stroke == 0) {
+            break;
+        }
         uint8_t *strokes_start = &strokes[STROKE_SIZE * (max_strokes_len - 1 - i)];
         memcpy(strokes_start, &stroke, STROKE_SIZE);
+        if (i > 0 && strokes_len > 1) {
+            i += strokes_len - 2;
+            continue;
+        }
         find_strokes(strokes_start, i + 1, 0);
         if (last_bucket != 0) {
             bucket = last_bucket;
@@ -191,11 +191,11 @@ void search_entry(const uint8_t h_ind) {
     last_bucket = bucket;
 }
 
-void read_entry(uint32_t bucket) {
+void read_entry(const uint32_t bucket, uint8_t *buf) {
     const uint32_t byte_ptr = BUCKET_GET_ADDR(bucket);
     const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(bucket);
     const uint8_t strokes_len = BUCKET_GET_STROKES_LEN(bucket);
-    flash_read(byte_ptr, entry_buf, strokes_len * STROKE_SIZE + 1 + entry_len);
+    flash_read(byte_ptr, buf, strokes_len * STROKE_SIZE + 1 + entry_len);
 }
 
 void print_strokes(const uint8_t *strokes, const uint8_t len) {

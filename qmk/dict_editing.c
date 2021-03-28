@@ -208,7 +208,7 @@ void dicted_edit_conf_strokes(void) {
         unselect_lcd();
         return;
     }
-    read_entry(last_bucket);
+    read_entry(last_bucket, entry_buf);
     const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(last_bucket);
     const uint8_t stroke_byte_len = STROKE_SIZE * curr_stroke_size;
     char entry_trans[entry_len + 1];
@@ -273,7 +273,7 @@ void dicted_remove_conf_strokes(void) {
         unselect_lcd();
         return;
     }
-    read_entry(last_bucket);
+    read_entry(last_bucket, entry_buf);
     const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(last_bucket);
     const uint8_t stroke_byte_len = STROKE_SIZE * curr_stroke_size;
     char entry_trans[entry_len + 1];

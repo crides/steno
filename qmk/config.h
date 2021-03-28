@@ -7,16 +7,10 @@
 #define USE_SPI_FLASH
 
 #define STENO_DEBUG
-#define DEBUG_FLASH
+/* #define DEBUG_FLASH */
 /* #define DEBUG_STROKE */
-/* #define DEBUG_HIST */
-#define DEBUG_DICTED
-
-#define STATUS_STAY_TIME 1500
-#define BUTTON_HOLD_TIME 1000
-#define BT_ACTIVE_HOLD_TIME 3000
-
-#define MATRIX_SCAN_MS 20
+#define DEBUG_HIST
+/* #define DEBUG_DICTED */
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
