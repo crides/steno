@@ -202,7 +202,7 @@ void _send_steno_chord_user(const uint8_t chord[6]) {
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist %u:", hist_ind);
-        steno_debug_ln("  len: %u, stroke_len: %u", hist->len, BUCKET_GET_STROKES_LEN(hist->bucket));
+        steno_debug_ln("  len: %u, stroke: %u, ortho: %u", hist->len, BUCKET_GET_STROKES_LEN(hist->bucket), hist->ortho_len);
         const state_t state = hist->state;
         steno_debug_ln("  scg: %u%u%u", state.space, state.cap, state.glue);
         char buf[24];

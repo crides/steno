@@ -253,7 +253,7 @@ state_t process_output(const uint8_t h_ind) {
     new_state.glue = attr.glue;
     uint8_t space = old_state.space && attr.space_prev && entry_len && !(old_state.glue && attr.glue);
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  attr: glue: %u", attr.glue);
+    steno_debug_ln("  attr: prev, glue, after: %u%u%u", attr.space_prev, attr.glue, attr.space_after);
     steno_debug("  output: '");
 #endif
     const uint8_t *entry = entry_buf + STROKE_SIZE * strokes_len + 1;
@@ -352,7 +352,6 @@ state_t process_output(const uint8_t h_ind) {
 #endif
                 break;
 
-            // TODO handle keep cases at the end of entry
             case 2: // Uppercase next entry
                 new_state.cap = CAPS_UPPER;
 #ifdef STENO_DEBUG_HIST
@@ -370,14 +369,20 @@ state_t process_output(const uint8_t h_ind) {
                 break;
 
             case 4:; // keep case after "length" amount of characters
-                const uint8_t length = entry[i + 1];
+                const uint8_t length = entry[++i];
 #ifdef STENO_DEBUG_HIST
                 steno_debug_ln("KEEP(%u)", length);
 #endif
-                for (int j = 0; j < length; j++) {
-                    if (entry[j] >= 32 && entry[j] <= 127) {
-                        steno_send_char(entry[j]);
-                        i++;
+                i ++;
+                const uint8_t end = length + i;
+                if (space) {
+                    str_len++;
+                    steno_send_char(' ');
+                    space = 0;
+                }
+                for ( ; i < end; i++) {
+                    if (entry[i] >= 32 && entry[i] <= 127) {
+                        steno_send_char(entry[i]);
                         str_len++;
                     } else if (entry[i] >= 128) {
                         int32_t code_point = 0;
