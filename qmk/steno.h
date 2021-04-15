@@ -25,8 +25,6 @@
 #endif
 #endif
 
-#define nrf_log_push(s) (s)
-
 #define steno_error(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_error_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
 #if defined(CONSOLE_ENABLE) && defined(STENO_DEBUG)
@@ -40,5 +38,8 @@
 #define STENO_R_R 0x008100
 
 extern uint8_t stroke_start_ind;
+
+void ebd_steno_init(void);
+void ebd_steno_process_stroke(const uint32_t stroke);
 
 #endif

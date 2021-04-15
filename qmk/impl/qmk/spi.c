@@ -6,10 +6,7 @@ void spi_init(void) {
     configure_pin_sck();
     configure_pin_ss();
     configure_pin_miso();
-    configure_lcd_cs();
-
     unselect_card();
-    unselect_lcd();
 
     SPCR = _BV(MSTR) | _BV(SPE);
     SPSR = _BV(SPI2X);

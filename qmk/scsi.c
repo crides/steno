@@ -37,9 +37,8 @@
 
 #define INCLUDE_FROM_SCSI_C
 #include "scsi.h"
-#include "flash.h"
+#include "store.h"
 #include "stroke.h"
-#include "lcd.h"
 #include "dict_editing.h"
 
 static uint8_t packet_buf[EPSIZE];
@@ -144,31 +143,29 @@ void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint3
         }
     }
     for ( ; blocks > 0; blocks --) {
-        Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
         uint8_t _header[32];
-        memcpy(_header, packet_buf, 32);
+        Endpoint_Read_Stream_LE(_header, 32, NULL);
+        const uint32_t *const header = (uint32_t *) _header;
+        const bool valid_header = (header[0] == UF2_MAGIC0 && header[1] == UF2_MAGIC1 && ((uint32_t *) packet_buf)[15] == UF2_MAGIC_END
+                && (header[2] & UF2_FLAG_FAMILYID) && (!(header[2] & UF2_FLAG_NOFLASH))
+                && ((header[3] & 0xFF) == 0) && header[4] == 256 && header[7] == UF2_FAMILY_ID);
         for (uint8_t i = 0; i < 4; i++) {
-            Endpoint_Read_Stream_LE(page_buffer + i * EPSIZE, EPSIZE, NULL);
-        }
-        for (uint8_t i = 0; i < 3; i++) {
             Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
+            if (valid_header) {
+                if (header[5] == 0 && i == 0) {
+                    steno_error_ln("erase");
+                    store_rewrite_start();
+                    steno_error_ln("flash");
+                }
+                store_rewrite_write(header[3], packet_buf);
+            }
         }
+        Endpoint_Discard_Stream(512 - 256 - 32, NULL);
         if (msc_interface_info->State.IsMassStoreReset) {
             steno_error_ln("reset");
             return;
         }
 
-        uint32_t *header = (uint32_t *) _header;
-        if (header[0] == UF2_MAGIC0 && header[1] == UF2_MAGIC1 && ((uint32_t *) packet_buf)[15] == UF2_MAGIC_END
-                && (header[2] & UF2_FLAG_FAMILYID) && (!(header[2] & UF2_FLAG_NOFLASH))
-                && ((header[3] & 0xFF) == 0) && header[4] == 256 && header[7] == UF2_FAMILY_ID) {
-            if (header[5] == 0) {
-                steno_error_ln("erase");
-                flash_erase_device();
-                steno_error_ln("flash");
-            }
-            flash_write_page(header[3], page_buffer);
-        }
         if (!(Endpoint_IsReadWriteAllowed())) {
             Endpoint_ClearOUT();
         }
@@ -203,8 +200,8 @@ void scsi_read(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint32
  *  and capabilities to the host.
  */
 static bool scsi_inquiry(USB_ClassInfo_MS_Device_t *const msc_interface_info) {
-    uint16_t AllocationLength = SwapEndian_16(*(uint16_t *) &msc_interface_info->State.CommandBlock.SCSICommandData[3]);
-    uint16_t BytesTransferred = MIN(AllocationLength, sizeof(inquiry_data));
+    const uint16_t AllocationLength = SwapEndian_16(*(uint16_t *) &msc_interface_info->State.CommandBlock.SCSICommandData[3]);
+    const uint16_t BytesTransferred = MIN(AllocationLength, sizeof(inquiry_data));
 
     /* Only the standard INQUIRY data is supported, check if any optional INQUIRY bits set */
     if ((msc_interface_info->State.CommandBlock.SCSICommandData[1] & ((1 << 0) | (1 << 1))) ||
@@ -233,8 +230,8 @@ static bool scsi_inquiry(USB_ClassInfo_MS_Device_t *const msc_interface_info) {
  * failed to complete.
  */
 static bool scsi_request_sense(USB_ClassInfo_MS_Device_t *const msc_interface_info) {
-    uint8_t AllocationLength = msc_interface_info->State.CommandBlock.SCSICommandData[4];
-    uint8_t BytesTransferred = MIN(AllocationLength, sizeof(SenseData));
+    const uint8_t AllocationLength = msc_interface_info->State.CommandBlock.SCSICommandData[4];
+    const uint8_t BytesTransferred = MIN(AllocationLength, sizeof(SenseData));
 
     Endpoint_Write_Stream_LE(&SenseData, BytesTransferred, NULL);
     Endpoint_Null_Stream((AllocationLength - BytesTransferred), NULL);
@@ -250,8 +247,8 @@ static bool scsi_request_sense(USB_ClassInfo_MS_Device_t *const msc_interface_in
  * device's capacity on the selected Logical Unit (drive), as a number of OS-sized blocks.
  */
 static bool scsi_read_capacity_10(USB_ClassInfo_MS_Device_t *const msc_interface_info) {
-    uint32_t LastBlockAddressInLUN = FS_BLOCKS - 1;
-    uint32_t MediaBlockSize = BLOCK_SIZE;
+    const uint32_t LastBlockAddressInLUN = FS_BLOCKS - 1;
+    const uint32_t MediaBlockSize = BLOCK_SIZE;
 
     Endpoint_Write_Stream_BE(&LastBlockAddressInLUN, sizeof(LastBlockAddressInLUN), NULL);
     Endpoint_Write_Stream_BE(&MediaBlockSize, sizeof(MediaBlockSize), NULL);

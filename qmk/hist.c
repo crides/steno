@@ -6,43 +6,48 @@
 
 #include "hist.h"
 #include "steno.h"
-#include "flash.h"
+#include "store.h"
 #include "process_keycode/process_unicode_common.h"
 #include "dict_editing.h"
-#include "lcd.h"
 #include "orthography.h"
+#include "disp.h"
 
 static history_t history[HIST_SIZE];
 
 extern char last_trans[128];
 extern uint8_t last_trans_size;
 
-static void dict_edit_puts(const char *str) {
-    while (*str && entry_buf_len < 255) {
-        page_buffer[entry_buf_len ++] = *str;
-        lcd_putc(*str, 2);
-        str ++;
+static void dict_edit_puts(const char *const str) {
+    const uint16_t len = strlen(str);
+    if (len + (uint16_t) entry_buf_len > 255) {
+        return;
     }
+    memcpy(entry_buf + entry_buf_len, str, len);
+    entry_buf_len += len;
+    disp_edit_trans_handle_str(str);
 }
 
-static void steno_back(void) {
+static void steno_back(const uint8_t len) {
     if (editing_state != ED_IDLE) {
-        if (entry_buf_len > 0) {
-            entry_buf_len --;
-            select_lcd();
-            lcd_back(2);
-            unselect_lcd();
+        if (entry_buf_len > len) {
+            disp_edit_trans_back(len);
+            entry_buf_len -= len;
+        } else {
+            disp_edit_trans_back(entry_buf_len);
+            entry_buf_len = 0;
         }
     } else {
-        tap_code(KC_BSPC);
+        for (uint8_t i = 0; i < len; i ++) {
+            tap_code(KC_BSPC);
+        }
     }
 }
 
 static void steno_send_char(const char c) {
     if (editing_state != ED_IDLE) {
         if (entry_buf_len < 255) {
-            page_buffer[entry_buf_len ++] = c;
-            lcd_putc(c, 2);
+            entry_buf[entry_buf_len ++] = c;
+            disp_edit_trans_handle_char(c);
         }
     } else {
         if (last_trans_size < 128) {
@@ -98,7 +103,7 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
     }
     for (uint8_t i = 0; i < len; i++) {
         if ((keycodes[i] & 0xFC) == 0xE0) {
-            uint8_t mod = keycodes[i] & 0x03;
+            const uint8_t mod = keycodes[i] & 0x03;
             uint8_t mod_char;
             switch (mod) {
             case 0: mod_char = 'c'; break;
@@ -164,20 +169,18 @@ void hist_undo(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("hist_undo(%u)", h_ind);
 #endif
-    history_t *hist = hist_get(h_ind);
+    history_t *const hist = hist_get(h_ind);
     const uint8_t len = hist->len;
     if (!len) {
         steno_error_ln("bad cur hist entry");
-        steno_back();
+        steno_back(1);
         return;
     }
 
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  back: %u", len);
 #endif
-    for (uint8_t i = 0; i < len; i++) {
-        steno_back();
-    }
+    steno_back(len);
     const uint8_t strokes_len = hist->ortho_len;
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  strokes: %u", strokes_len);
@@ -185,7 +188,7 @@ void hist_undo(const uint8_t h_ind) {
     const uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
     for (uint8_t i = 0; i < repl_len; i++) {
         const uint8_t old_hist_ind = HIST_LIMIT(h_ind + i - repl_len);
-        const history_t *old_hist = hist_get(old_hist_ind);
+        const history_t *const old_hist = hist_get(old_hist_ind);
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("  old_hist_ind: %u", old_hist_ind);
 #endif
@@ -207,7 +210,7 @@ state_t process_output(const uint8_t h_ind) {
     steno_debug_ln("process_output()");
 #endif
     // TODO optimization: compare beginning of current and string to replace
-    history_t *hist = hist_get(h_ind);
+    history_t *const hist = hist_get(h_ind);
     const state_t old_state = hist->state;
     state_t new_state = old_state;
 #ifdef STENO_DEBUG_HIST
@@ -223,7 +226,7 @@ state_t process_output(const uint8_t h_ind) {
             new_state.glue = 1;
         }
 #ifdef STENO_DEBUG_HIST
-        steno_debug("  output: '");
+        steno_debug("  out: '");
 #endif
         if (old_state.space && !(old_state.glue && new_state.glue)) {
             steno_send_char(' ');
@@ -233,22 +236,21 @@ state_t process_output(const uint8_t h_ind) {
             steno_send_char(*str);
         }
 #ifdef STENO_DEBUG_HIST
-        steno_debug_ln("%s'", buf);
-        steno_debug_ln("  -> %u", hist->len);
+        steno_debug_ln("'\n  -> %u", hist->len);
 #endif
         return new_state;
     }
 
     const uint32_t bucket = hist->bucket;
-    memset(entry_buf, 0, 128);      // TODO optimize
-    read_entry(bucket, entry_buf);
+    memset(kvpair_buf, 0, 128);      // TODO optimize
+    read_entry(bucket, kvpair_buf);
     const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(bucket);
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  entry_len: %u", entry_len);
 #endif
 
     const uint8_t strokes_len = BUCKET_GET_STROKES_LEN(hist->bucket);
-    const attr_t attr = *((attr_t *) &entry_buf[strokes_len * STROKE_SIZE]);
+    const attr_t attr = *((attr_t *) &kvpair_buf[strokes_len * STROKE_SIZE]);
     new_state.space = attr.space_after;
     new_state.glue = attr.glue;
     uint8_t space = old_state.space && attr.space_prev && entry_len && !(old_state.glue && attr.glue);
@@ -256,13 +258,13 @@ state_t process_output(const uint8_t h_ind) {
     steno_debug_ln("  attr: prev, glue, after: %u%u%u", attr.space_prev, attr.glue, attr.space_after);
     steno_debug("  output: '");
 #endif
-    const uint8_t *entry = entry_buf + STROKE_SIZE * strokes_len + 1;
+    const uint8_t *entry = kvpair_buf + STROKE_SIZE * strokes_len + 1;
 
     // Possible suffix
     // TODO include simple rules checking
     if (!attr.space_prev) {
         const uint8_t last_hist_ind = HIST_LIMIT(h_ind - strokes_len);
-        const history_t *last_hist = hist_get(last_hist_ind);
+        const history_t *const last_hist = hist_get(last_hist_ind);
         char word_end[32];
         memcpy(word_end, last_hist->end_buf, 8);
         char output[16] = {0};
@@ -287,9 +289,7 @@ state_t process_output(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
             steno_debug_ln("  ortho_len: %u", hist->ortho_len);
 #endif
-            for (int8_t i = 0; i < ret; i ++) {
-                steno_back();
-            }
+            steno_back(ret);
             for (uint8_t i = 0; i < 32 && output[i]; i ++) {
                 steno_send_char(output[i]);
             }
@@ -305,7 +305,7 @@ state_t process_output(const uint8_t h_ind) {
         const uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
         for (int8_t counter = repl_len; counter > 0; ) {
             const uint8_t old_hist_ind = HIST_LIMIT(h_ind + counter - repl_len - 1);
-            const history_t *old_hist = hist_get(old_hist_ind);
+            const history_t *const old_hist = hist_get(old_hist_ind);
 #ifdef STENO_DEBUG_HIST
             steno_debug_ln("  old_hist_ind: %u, bspc len: %u", old_hist_ind, old_hist->len);
 #endif
@@ -314,9 +314,7 @@ state_t process_output(const uint8_t h_ind) {
                 steno_error_ln("bad prev hist entry");
                 break;
             }
-            for (uint8_t j = 0; j < old_hist->len; j++) {
-                steno_back();
-            }
+            steno_back(old_hist->len);
             const uint8_t old_strokes_len = BUCKET_GET_STROKES_LEN(old_hist->bucket);
             const uint8_t old_repl_len = old_strokes_len > 1 ? old_strokes_len - 1 : 0;
             counter -= old_repl_len + 1;
@@ -335,8 +333,8 @@ state_t process_output(const uint8_t h_ind) {
             switch (entry[i]) {
             case 0: // raw bytes of "length"
                 space = 0;
-                uint8_t len = entry[i + 1];
-                uint8_t keycode_len = steno_send_keycodes(entry + i + 2, len);
+                const uint8_t len = entry[i + 1];
+                const uint8_t keycode_len = steno_send_keycodes(entry + i + 2, len);
                 if (keycode_len > 0) {
                     str_len += keycode_len;
                 } else {

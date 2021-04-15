@@ -26,7 +26,7 @@
 
 #include "compile_date.h"
 #include "scsi.h"
-#include "flash.h"
+#include "store.h"
 #include "steno.h"
 
 #include <string.h>
@@ -94,7 +94,7 @@ void fat_read_block(uint32_t block_no, uint8_t packet_num, uint8_t *data) {
             //            and requires it be the last element of the array
         }
         for (uint32_t i = 0; i < FAT_ENTRIES_PER_PACKET; ++i) { // Generate the FAT chain for the firmware "file"
-            uint32_t v = (sectionIdx * FAT_ENTRIES_PER_BLOCK) + packet_num * FAT_ENTRIES_PER_PACKET + i;
+            const uint32_t v = (sectionIdx * FAT_ENTRIES_PER_BLOCK) + packet_num * FAT_ENTRIES_PER_PACKET + i;
             if (FLASH_FIRST_BLOCK <= v && v <= FLASH_LAST_BLOCK) {
                 ((uint16_t *)(void *)data)[i] = v == FLASH_LAST_BLOCK ? 0xffff : v + 1;
             }
@@ -124,6 +124,6 @@ void fat_read_block(uint32_t block_no, uint8_t packet_num, uint8_t *data) {
         }
     } else if (block_no < FS_BLOCKS) {
         sectionIdx -= FS_DATA_BLOCKS;
-        flash_read((sectionIdx * 8 + packet_num) * EPSIZE, data, EPSIZE);
+        store_read((sectionIdx * 8 + packet_num) * EPSIZE, data, EPSIZE);
     }
 }

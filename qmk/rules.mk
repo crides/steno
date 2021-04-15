@@ -5,7 +5,8 @@ F_USB = $(F_CPU)
 BOOTLOADER = atmel-dfu
 EXTRAKEY_ENABLE = no
 
-SRC += spi.c lcd.c lcd_font.c flash.c hist.c stroke.c dict_editing.c scsi.c ghostfat.c freemap.c orthography.c
+SRC += hist.c stroke.c dict_editing.c scsi.c ghostfat.c freemap.c orthography.c
+SRC += impl/qmk/hooks.c impl/qmk/disp.c impl/qmk/lcd.c impl/qmk/lcd_font.c impl/qmk/spi.c impl/qmk/flash.c
 
 MOUSEKEY_ENABLE = no
 VIRTSER_ENABLE = no

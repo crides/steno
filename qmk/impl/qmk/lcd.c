@@ -1,6 +1,6 @@
 #include "lcd.h"
 #include "spi.h"
-#include "steno.h"
+#include <util/delay.h>
 #include <avr/pgmspace.h>
 
 extern const unsigned char font[] PROGMEM;
@@ -34,9 +34,13 @@ static const uint8_t PROGMEM initcmd[] = {
 };
 
 static int16_t cursor_x = 0, cursor_y = 0;
+// NOTE assuming size == 2
+static uint16_t dirty_lines = 0;
 
 // SPI assume inited
 void lcd_init(void) {
+    configure_lcd_cs();
+    unselect_lcd();
     uint8_t cmd, x, numArgs;
     const uint8_t *addr = initcmd;
     configure_lcd_cd();
@@ -68,8 +72,8 @@ void lcd_init(void) {
     unselect_lcd();
 }
 
-void set_addr_window(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h) {
-    uint16_t x2 = (x1 + w - 1), y2 = (y1 + h - 1);
+void set_addr_window(const uint16_t x1, const uint16_t y1, const uint16_t w, const uint16_t h) {
+    const uint16_t x2 = (x1 + w - 1), y2 = (y1 + h - 1);
     lcd_command();
     spi_send_byte(ILI9341_CASET); // Column address set
     lcd_data();
@@ -85,33 +89,33 @@ void set_addr_window(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h) {
     lcd_data();
 }
 
-void lcd_pos(uint16_t x, uint16_t y) {
+void lcd_pos(const uint16_t x, const uint16_t y) {
     cursor_x = x;
     cursor_y = y;
 }
 
-void lcd_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
+static void lcd_draw_pixel(const uint16_t x, const uint16_t y, const uint16_t color) {
     if (x < LCD_WIDTH && y < LCD_HEIGHT) {
         set_addr_window(x, y, 1, 1);
         spi_send_word(color);
     }
 }
 
-void lcd_draw_hline(int16_t x, int16_t y, int16_t w, int16_t color) {
-    set_addr_window(x, y, w, 1);
-    for (int16_t i = 0; i < w; i++) {
-        spi_send_word(color);
-    }
-}
+// static void lcd_draw_hline(const int16_t x, const int16_t y, const int16_t w, const int16_t color) {
+//     set_addr_window(x, y, w, 1);
+//     for (int16_t i = 0; i < w; i++) {
+//         spi_send_word(color);
+//     }
+// }
 
-void lcd_draw_vline(int16_t x, int16_t y, int16_t h, int16_t color) {
+static void lcd_draw_vline(const int16_t x, const int16_t y, const int16_t h, const int16_t color) {
     set_addr_window(x, y, 1, h);
     for (int16_t i = 0; i < h; i++) {
         spi_send_word(color);
     }
 }
 
-void lcd_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+void lcd_fill_rect(const int16_t x, const int16_t y, const int16_t w, const int16_t h, const uint16_t color) {
     set_addr_window(x, y, w, h);
     for (int16_t i = 0; i < h; i++) {
         for (int16_t j = 0; j < w; j++) {
@@ -120,8 +124,8 @@ void lcd_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     }
 }
 
-void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint16_t bg) {
-    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || (x + LCD_FONT_WIDTH - 1) < 0 || (y + LCD_FONT_HEIGHT - 1) < 0) {
+static void lcd_draw_char(const int16_t x, const int16_t y, char c, uint8_t size, const uint16_t fg, const uint16_t bg) {
+    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || (x + LCD_FONT_WIDTH - 1) < 0 || (y + LCD_FONT_HEIGHT - 1) < 0 || c < ' ') {
         return;
     }
 
@@ -163,6 +167,7 @@ void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint
 }
 
 void lcd_putc(char c, uint8_t size) {
+    dirty_lines |= (uint16_t) 1 << (cursor_y / 16);
     if (c == '\n') {                             // Newline?
         cursor_x = 0;                            // Reset x to zero,
         cursor_y += size * LCD_FONT_HEIGHT;      // advance y one line
@@ -176,7 +181,7 @@ void lcd_putc(char c, uint8_t size) {
     }
 }
 
-void lcd_puts_at(int16_t x, int16_t y, char *str, uint8_t size) {
+void lcd_puts_at(const int16_t x, const int16_t y, const char *str, uint8_t size) {
     cursor_x = x;
     cursor_y = y;
     while (*str) {
@@ -185,14 +190,14 @@ void lcd_puts_at(int16_t x, int16_t y, char *str, uint8_t size) {
     }
 }
 
-void lcd_puts(char *str, uint8_t size) {
+void lcd_puts(const char *str, const uint8_t size) {
     while (*str) {
         lcd_putc(*str, size);
         str++;
     }
 }
 
-void lcd_back(uint8_t size) {
+void lcd_back(const uint8_t size) {
     if (cursor_x == 0) {
         if (cursor_y != 0) {
             cursor_x = LCD_WIDTH - LCD_FONT_WIDTH * size;
@@ -204,6 +209,15 @@ void lcd_back(uint8_t size) {
         cursor_x = cursor_x - LCD_FONT_WIDTH * size;
     }
     lcd_fill_rect(cursor_x, cursor_y, size * LCD_FONT_WIDTH, size * LCD_FONT_HEIGHT, LCD_WHITE);
+}
+
+void lcd_clear_dirty(void) {
+    for (uint8_t i = 0; i < 20; i ++) {
+        if (dirty_lines & ((uint16_t) 1 << i)) {
+            lcd_fill_rect(0, i * 16, LCD_WIDTH, i * 16 + 16, LCD_WHITE);
+        }
+    }
+    dirty_lines = 0;
 }
 
 void lcd_clear(void) {

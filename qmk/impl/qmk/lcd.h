@@ -39,21 +39,21 @@
 #include "spi.h"
 
 void lcd_init(void);
-void lcd_puts_at(int16_t x, int16_t y, char *str, uint8_t size);
-void lcd_puts(char *str, uint8_t size);
-void lcd_pos(uint16_t x, uint16_t y);
-void lcd_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
-void lcd_draw_hline(int16_t x, int16_t y, int16_t w, int16_t color);
-void lcd_draw_vline(int16_t x, int16_t y, int16_t h, int16_t color);
-void lcd_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-void lcd_draw_char(int16_t x, int16_t y, char c, uint8_t size, uint16_t fg, uint16_t bg);
-void lcd_putc(char c, uint8_t size);
-void lcd_back(uint8_t size);
+void lcd_puts_at(const int16_t x, const int16_t y, const char *const str, const uint8_t size);
+void lcd_puts(const char *const str, const uint8_t size);
+void lcd_pos(const uint16_t x, const uint16_t y);
+void lcd_putc(const char c, const uint8_t size);
+void lcd_back(const uint8_t size);
 void lcd_clear(void);
+void lcd_clear_dirty(void);
 
 #define configure_lcd_cd() DDRD |= _BV(DDD4)
 #define lcd_command() PORTD &= ~_BV(PORTD4)
 #define lcd_data() PORTD |= _BV(PORTD4)
+
+#define configure_lcd_cs() DDRD |= _BV(DDD6)
+#define select_lcd() PORTD &= ~_BV(PORTD6)
+#define unselect_lcd() PORTD |= _BV(PORTD6)
 
 #define LCD_WIDTH 240
 #define LCD_HEIGHT 320

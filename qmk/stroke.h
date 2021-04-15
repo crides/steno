@@ -10,6 +10,7 @@
 
 #define STROKE_SIZE 3
 #define BUCKET_SIZE 4
+#define MAX_STROKE_NUM 14
 #define U24_FROM_PTR_LE(p) (((uint32_t)(p)[2] << 16) | ((uint32_t)(p)[1] << 8) | ((uint32_t)(p)[0]))
 #define STROKE_FROM_PTR(p) U24_FROM_PTR_LE(p)
 
@@ -66,15 +67,13 @@ typedef struct __attribute__((packed)) {
     char extra_text[8];
 } orthography_entry_t;
 
-extern uint32_t last_bucket;
-extern uint8_t entry_buf[128];
+extern uint8_t kvpair_buf[128];
 
 bool stroke_to_string(const uint32_t stroke, char *buf, uint8_t *len);
 uint32_t qmk_chord_to_stroke(const uint8_t chord[6]);
 uint8_t last_entry_len(void);
-// Both returns implicitly in `last_bucket`
-void find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);
-void search_entry(const uint8_t h_ind);
+uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);
+uint32_t search_entry(const uint8_t h_ind);
 uint32_t freemap_req(const uint8_t block);
 void print_strokes(const uint8_t *strokes, const uint8_t len);
 void read_entry(const uint32_t bucket, uint8_t *buf);

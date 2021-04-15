@@ -8,7 +8,6 @@ static bool strneq(const char *a, const char *b, const uint8_t n) {
 }
 
 static bool chrin(const char *s, const char c) {
-    // strchr("", 0) != NULL
     return c != 0 && strchr(s, c);
 }
 
@@ -18,15 +17,11 @@ int8_t ortho_transform(const char *word, const char *suffix, char *output) {
     const uint8_t word_len = strlen(word);
     char rev[WORD_ENDING_SIZE];
     // Invert `word` so that indexing is anchored to the end
-    /* steno_debug("rev: "); */
     for (uint8_t i = 0; i < WORD_ENDING_SIZE; i ++) {
         if (word_len >= i) {
             rev[i] = word[word_len - i - 1];
-            /* steno_debug("%c", rev[i]); */
         }
     }
-    /* steno_debug_ln(""); */
-    /* steno_debug_ln("suffix: %02X%02X%02X%02X", suffix[0], suffix[1], suffix[2], suffix[3]); */
 
     // { ([aeiou]c)$ or (ion)$ or (.*ur)e } + ly -> \1ally
     if (strneq(suffix, "ly", 2)) {
@@ -166,7 +161,7 @@ int8_t ortho_transform(const char *word, const char *suffix, char *output) {
         if ((rev[1] == 'a' && chrin("gbmptv", rev[0])) || (rev[1] == 'e' && chrin("gbpv", rev[0]))
                 || (rev[1] == 'i' && chrin("gbmpv", rev[0])) || (rev[1] == 'o' && chrin("gbdlv", rev[0]))
                 || (rev[1] == 'u' && chrin("gbdlmntv", rev[0]))) {
-            bool junk = chrin("bcdfghjklmnprstvwxyz", rev[2]);
+            const bool junk = chrin("bcdfghjklmnprstvwxyz", rev[2]);
             if (junk || (rev[1] != 'u' && strneq("uq", rev + 2, 2))) {
                 output[0] = rev[0];
                 strcat(output, suffix);
