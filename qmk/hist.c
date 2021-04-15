@@ -8,15 +8,20 @@
 #include "steno.h"
 #include "store.h"
 #include "process_keycode/process_unicode_common.h"
+#ifndef STENO_READONLY
 #include "dict_editing.h"
+#endif
 #include "orthography.h"
+#ifndef STENO_NOUI
 #include "disp.h"
+#endif
 
 static history_t history[HIST_SIZE];
 
 extern char last_trans[128];
 extern uint8_t last_trans_size;
 
+#ifndef STENO_READONLY
 static void dict_edit_puts(const char *const str) {
     const uint16_t len = strlen(str);
     if (len + (uint16_t) entry_buf_len > 255) {
@@ -26,8 +31,10 @@ static void dict_edit_puts(const char *const str) {
     entry_buf_len += len;
     disp_edit_trans_handle_str(str);
 }
+#endif
 
 static void steno_back(const uint8_t len) {
+#ifndef STENO_READONLY
     if (editing_state != ED_IDLE) {
         if (entry_buf_len > len) {
             disp_edit_trans_back(len);
@@ -36,7 +43,9 @@ static void steno_back(const uint8_t len) {
             disp_edit_trans_back(entry_buf_len);
             entry_buf_len = 0;
         }
-    } else {
+    } else
+#endif
+    {
         for (uint8_t i = 0; i < len; i ++) {
             tap_code(KC_BSPC);
         }
@@ -44,12 +53,15 @@ static void steno_back(const uint8_t len) {
 }
 
 static void steno_send_char(const char c) {
+#ifndef STENO_READONLY
     if (editing_state != ED_IDLE) {
         if (entry_buf_len < 255) {
             entry_buf[entry_buf_len ++] = c;
             disp_edit_trans_handle_char(c);
         }
-    } else {
+    } else
+#endif
+    {
         if (last_trans_size < 128) {
             last_trans[last_trans_size++] = c;
         }
@@ -77,10 +89,13 @@ static uint8_t steno_send_unicode(const uint32_t u) {
         snprintf(buf, 16, "\\U%06lX", u);
         len = 8;
     }
+#ifndef STENO_READONLY
     if (editing_state != ED_IDLE) {
         dict_edit_puts(buf);
         return len;
-    } else {
+    } else
+#endif
+    {
         if (last_trans_size + len < 128) {
             for (uint8_t i = 0; i < len; i ++) {
                 last_trans[last_trans_size++] = buf[i];
@@ -95,12 +110,14 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
 #ifdef STENO_DEBUG_HIST
     steno_debug("keys(%u):", len);
 #endif
+    uint8_t mods = 0;
+#ifndef STENO_READONLY
     char buf[16];
     uint8_t output_len = 3;
-    uint8_t mods = 0;
     if (editing_state != ED_IDLE) {
         dict_edit_puts("\\k[");
     }
+#endif
     for (uint8_t i = 0; i < len; i++) {
         if ((keycodes[i] & 0xFC) == 0xE0) {
             const uint8_t mod = keycodes[i] & 0x03;
@@ -113,21 +130,27 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
             }
             const uint8_t mod_mask = 1 << mod;
             if (mods & mod_mask) {
+#ifndef STENO_READONLY
                 if (editing_state != ED_IDLE) {
                     dict_edit_puts(")");
                     output_len += 1;
-                } else {
+                } else
+#endif
+                {
                     unregister_code(keycodes[i]);
                 }
 #ifdef STENO_DEBUG_HIST
                 steno_debug(" %c", mod_char);
 #endif
             } else {
+#ifndef STENO_READONLY
                 if (editing_state != ED_IDLE) {
                     snprintf(buf, 16, "\\%c(", mod_char);
                     dict_edit_puts(buf);
                     output_len += 3;
-                } else {
+                } else
+#endif
+                {
                     register_code(keycodes[i]);
                 }
 #ifdef STENO_DEBUG_HIST
@@ -139,11 +162,14 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
 #ifdef STENO_DEBUG_HIST
             steno_debug(" %02X", keycodes[i]);
 #endif
+#ifndef STENO_READONLY
             if (editing_state != ED_IDLE) {
                 snprintf(buf, 16, " %02X", keycodes[i]);
                 dict_edit_puts(buf);
                 output_len += 3;
-            } else {
+            } else
+#endif
+            {
                 tap_code(keycodes[i]);
             }
         }
@@ -151,10 +177,13 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
 #ifdef STENO_DEBUG_HIST
     steno_debug("\n");
 #endif
+#ifndef STENO_READONLY
     if (editing_state != ED_IDLE) {
         dict_edit_puts("]");
         return output_len + 1;
-    } else {
+    } else
+#endif
+    {
         return 0;
     }
 }
@@ -399,6 +428,7 @@ state_t process_output(const uint8_t h_ind) {
                 new_state.cap = CAPS_LOWER;
                 break;
 
+#ifndef STENO_READONLY
             case 16: // add translation
                 if (editing_state != ED_IDLE) {
                     dict_edit_puts("{add_trans}");
@@ -425,6 +455,7 @@ state_t process_output(const uint8_t h_ind) {
                     dicted_remove_prompt_strokes();
                 }
                 break;
+#endif
 
             default:
                 steno_error_ln("\nInvalid cmd: %X", entry[i]);

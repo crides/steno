@@ -3,11 +3,13 @@
 #include "steno.h"
 #include "keymap_steno.h"
 #include "store.h"
-#include "disp.h"
 #include "hist.h"
+#ifndef STENO_READONLY
 #include "dict_editing.h"
-#include <LUFA/Drivers/USB/USB.h>
-#include "scsi.h"
+#endif
+#ifndef STENO_NOUI
+#include "disp.h"
+#endif
 
 bool flashing = false;
 char last_stroke[24];
@@ -46,16 +48,22 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     stroke_to_string(stroke, last_stroke, NULL);
     /* #endif */
 
+#ifndef STENO_READONLY
     if (handle_dict_editing(stroke)) {
         return;
     }
+#endif
 
     if (stroke == 0x1000) { // Asterisk
         hist_ind = HIST_LIMIT(hist_ind - 1);
         hist_undo(hist_ind);
+#ifndef STENO_READONLY
         if (editing_state == ED_IDLE) {
+#ifndef STENO_NOUI
             disp_tape_show_star();
+#endif
         }
+#endif
         return;
     }
 
@@ -78,7 +86,9 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("next %u: scg: %u%u%u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
 #endif
+#ifndef STENO_READONLY
     if (editing_state == ED_IDLE) {
+#ifndef STENO_NOUI
         if (strokes_len > 0) {
             const uint32_t first_stroke = *((uint32_t *) kvpair_buf);
             disp_tape_show_strokes_start();
@@ -94,7 +104,9 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
         } else {
             disp_tape_show_raw_stroke(hist->stroke);
         }
+#endif
     }
+#endif
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist %u:", hist_ind);
@@ -125,5 +137,7 @@ void ebd_steno_init(void) {     // to avoid clashing with `steno_init` in QMK
     steno_set_mode(STENO_MODE_GEMINI);
     hist_get(0)->state.cap = CAPS_CAP;
     store_init();
+#ifndef STENO_NOUI
     disp_init();
+#endif
 }

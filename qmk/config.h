@@ -3,7 +3,6 @@
 
 #include "config_common.h"
 
-#define CUSTOM_STENO
 #define USE_SPI_FLASH
 
 #define STENO_DEBUG
@@ -21,9 +20,7 @@
 #define SERIAL_NUMBER   v2
 #define DESCRIPTION     28 key steno board
 
-#ifdef CUSTOM_STENO
 #undef VIRTSER_ENABLE
-#endif
 
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 6

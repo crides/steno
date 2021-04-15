@@ -6,7 +6,9 @@
 #include "hist.h"
 #include "dict_editing.h"
 #include "stroke.h"
+#ifndef STENO_NOUI
 #include "disp.h"
+#endif
 
 editing_state_t editing_state = ED_IDLE;
 // Buffer for a page; used for unparsed/formatted entry and copying between pages
