@@ -32,12 +32,14 @@
 
 // Caps for the current entry
 typedef enum {
-    // all lower case
-    CAPS_LOWER = 0,
+    // No change
+    CAPS_NORMAL = 0,
     // Capitalized; only first charater is upper
     CAPS_CAP = 1,
     // ALL CAPS
     CAPS_UPPER = 2,
+    // all lower case
+    CAPS_LOWER = 3,
 } caps_t;
 
 typedef struct __attribute__((packed)) {

@@ -54,7 +54,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     }
 #endif
 
-    if (stroke == 0x1000) { // Asterisk
+    if (stroke == STENO_STAR) {
         hist_ind = HIST_LIMIT(hist_ind - 1);
         hist_undo(hist_ind);
 #ifndef STENO_READONLY

@@ -377,6 +377,7 @@ state_t process_output(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
                 steno_debug_ln("LOWER");
 #endif
+                set_case = 1;
                 break;
 
             case 2: // Uppercase next entry
@@ -425,7 +426,7 @@ state_t process_output(const uint8_t h_ind) {
                 break;
 
             case 5: // reset formatting
-                new_state.cap = CAPS_LOWER;
+                new_state.cap = CAPS_NORMAL;
                 break;
 
 #ifndef STENO_READONLY
@@ -471,17 +472,23 @@ state_t process_output(const uint8_t h_ind) {
                 space = 0;
             }
             switch (new_state.cap) {
-            case CAPS_LOWER:
+            case CAPS_NORMAL:
                 steno_send_char(entry[i]);
+                break;
+            case CAPS_LOWER:
+                steno_send_char(tolower(entry[i]));
+                if (entry[i] == ' ') {
+                    new_state.cap = CAPS_NORMAL;
+                }
                 break;
             case CAPS_CAP:
                 steno_send_char(toupper(entry[i]));
-                new_state.cap = CAPS_LOWER;
+                new_state.cap = CAPS_NORMAL;
                 break;
             case CAPS_UPPER:
                 steno_send_char(toupper(entry[i]));
                 if (entry[i] == ' ') {
-                    new_state.cap = CAPS_LOWER;
+                    new_state.cap = CAPS_NORMAL;
                 }
                 break;
             }
@@ -498,7 +505,7 @@ state_t process_output(const uint8_t h_ind) {
         }
     }
     if (!set_case) {
-        new_state.cap = CAPS_LOWER;
+        new_state.cap = CAPS_NORMAL;
     }
 
 #ifdef STENO_DEBUG_HIST

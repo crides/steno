@@ -75,7 +75,7 @@ uint32_t qmk_chord_to_stroke(const uint8_t chord[6]) {
 
     uint32_t stroke = keys & 0xFFF;
     if (keys & 0xF000) {    // Asterisk
-        stroke |= 0x1000;
+        stroke |= STENO_STAR;
     }
     stroke |= (keys >> 3) & 0x1FE000; // Left side of asterisk
     if (keys & 0x3000000) { // S-
@@ -111,7 +111,6 @@ uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t f
 #endif
         if (free) {
             if (bucket == 0xFFFFFFFF) {
-                // FIXME Special usage
                 return bucket_ind;
             } else {
                 continue;

@@ -36,6 +36,7 @@
 #endif
 
 #define STENO_R_R 0x008100
+#define STENO_STAR 0x1000
 
 extern uint8_t stroke_start_ind;
 
