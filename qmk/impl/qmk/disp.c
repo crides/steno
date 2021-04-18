@@ -58,11 +58,6 @@ void disp_stroke_edit_remove(const uint32_t last, const uint8_t num_strokes) {
     disp_back(len);
 }
 
-void disp_tape_show_star(void) {
-    disp_clear();
-    disp_puts_at(0, 0, "*");
-}
-
 void disp_prompt_add_stroke(void) {
     disp_clear();
     disp_puts_at(0, 0, "Stroke to add:\n");
@@ -114,25 +109,60 @@ void disp_edit_done(void) {
     disp_clear();
 }
 
-void disp_tape_show_strokes_start(void) {
+static void disp_tape_show_stroke(const uint32_t stroke) {
+    char buf[24];
+    stroke_to_string(stroke, buf, NULL);
+    disp_puts(buf);
+}
+
+#ifdef STENO_STROKE_DISPLAY
+static void disp_stenotype_show_stroke(const uint32_t stroke) {
+    select_lcd();
+    lcd_stenotype_update(stroke);
+    unselect_lcd();
+}
+#endif
+
+void disp_tape_show_star(void) {
     disp_clear();
+    disp_puts_at(0, 0, "*");
+#ifdef STENO_STROKE_DISPLAY
+    disp_stenotype_show_stroke(STENO_STAR);
+#endif
 }
 
 void disp_tape_show_raw_stroke(const uint32_t stroke) {
-    char buf[24];
-    stroke_to_string(stroke, buf, NULL);
-    disp_puts_at(0, 0, buf);
+    select_lcd();
+    lcd_pos(0, 0);
+    unselect_lcd();
+    disp_tape_show_stroke(stroke);
+#ifdef STENO_STROKE_DISPLAY
+    disp_stenotype_show_stroke(stroke);
+#endif
 }
 
-void disp_tape_show_stroke(const uint32_t stroke) {
-    disp_tape_show_raw_stroke(stroke);
-}
-
-void disp_tape_show_stroke_sep(void) {
-    disp_putc('/');
-}
-
-void disp_tape_show_strokes_done(void) {
+void disp_tape_show_strokes(const uint8_t *strokes, const uint8_t len) {
+    disp_clear();
+    const uint32_t first_stroke = *((uint32_t *) kvpair_buf);
+    select_lcd();
+    lcd_pos(0, 0);
+    unselect_lcd();
+    disp_tape_show_stroke(first_stroke);
+    for (uint8_t i = 1; i < len; i ++) {
+        disp_putc('/');
+        const uint32_t stroke = *((uint32_t *) (kvpair_buf + STROKE_SIZE * i));
+        disp_tape_show_stroke(stroke);
+#ifdef STENO_STROKE_DISPLAY
+        if (i == len - 1) {
+            disp_stenotype_show_stroke(stroke);
+        }
+#endif
+    }
+#ifdef STENO_STROKE_DISPLAY
+    if (len == 1) {
+        disp_stenotype_show_stroke(first_stroke);
+    }
+#endif
     disp_putc('\n');
 }
 

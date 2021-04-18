@@ -4,6 +4,8 @@ STENO_READONLY = no
 STENO_NOUI = no
 # No mass storage device enabled
 STENO_NOMSD = no
+# Graphical stroke display for demos
+STENO_STROKE_DISPLAY = no
 
 MCU = atmega32u4
 F_CPU = 16000000
@@ -35,10 +37,14 @@ else
 	MSC_ENABLE = yes
 endif
 
+ifeq ($(STENO_STROKE_DISPLAY),yes)
+	CFLAGS += -DSTENO_STROKE_DISPLAY
+endif
+
 MOUSEKEY_ENABLE = no
 VIRTSER_ENABLE = no
 RAW_ENABLE = no
-CONSOLE_ENABLE = yes
+CONSOLE_ENABLE = no
 STENO_ENABLE = yes
 COMBO_ENABLE = no
 OLED_DRIVER_ENABLE = no

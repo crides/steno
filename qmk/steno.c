@@ -90,15 +90,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     if (editing_state == ED_IDLE) {
 #ifndef STENO_NOUI
         if (strokes_len > 0) {
-            const uint32_t first_stroke = *((uint32_t *) kvpair_buf);
-            disp_tape_show_strokes_start();
-            disp_tape_show_stroke(first_stroke);
-            for (uint8_t i = 1; i < strokes_len; i ++) {
-                disp_tape_show_stroke_sep();
-                const uint32_t stroke = *((uint32_t *) (kvpair_buf + STROKE_SIZE * i));
-                disp_tape_show_stroke(stroke);
-            }
-            disp_tape_show_strokes_done();
+            disp_tape_show_strokes(kvpair_buf, strokes_len);
             last_trans[last_trans_size] = 0;
             disp_tape_show_trans(last_trans);
         } else {

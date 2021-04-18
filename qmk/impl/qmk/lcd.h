@@ -47,6 +47,8 @@ void lcd_back(const uint8_t size);
 void lcd_clear(void);
 void lcd_clear_dirty(void);
 
+void lcd_stenotype_update(const uint32_t stroke);
+
 #define configure_lcd_cd() DDRD |= _BV(DDD4)
 #define lcd_command() PORTD &= ~_BV(PORTD4)
 #define lcd_data() PORTD |= _BV(PORTD4)

@@ -2,10 +2,7 @@ void disp_init(void);
 
 void disp_tape_show_raw_stroke(const uint32_t stroke);
 void disp_tape_show_star(void);
-void disp_tape_show_stroke(const uint32_t stroke);
-void disp_tape_show_stroke_sep(void);
-void disp_tape_show_strokes_done(void);
-void disp_tape_show_strokes_start(void);
+void disp_tape_show_strokes(const uint8_t *strokes, const uint8_t len);
 void disp_tape_show_trans(const char *const trans);
 
 #ifndef STENO_READONLY

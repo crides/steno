@@ -2,6 +2,7 @@
 #include "spi.h"
 #include <util/delay.h>
 #include <avr/pgmspace.h>
+#include <stdbool.h>
 
 extern const unsigned char font[] PROGMEM;
 
@@ -37,41 +38,6 @@ static int16_t cursor_x = 0, cursor_y = 0;
 // NOTE assuming size == 2
 static uint16_t dirty_lines = 0;
 
-// SPI assume inited
-void lcd_init(void) {
-    configure_lcd_cs();
-    unselect_lcd();
-    uint8_t cmd, x, numArgs;
-    const uint8_t *addr = initcmd;
-    configure_lcd_cd();
-    select_lcd();
-    lcd_command();
-    spi_send_byte(ILI9341_SWRESET);
-    lcd_data();
-    unselect_lcd();
-    _delay_ms(150);
-
-    while ((cmd = pgm_read_byte(addr++)) > 0) {
-        x = pgm_read_byte(addr++);
-        numArgs = x & 0x7F;
-        select_lcd();
-        lcd_command();
-        spi_send_byte(cmd);
-        lcd_data();
-        for (uint8_t i = 0; i < numArgs; i++) {
-            spi_send_byte(pgm_read_byte(addr + i));
-        }
-        unselect_lcd();
-        addr += numArgs;
-        if (x & 0x80) {
-            _delay_ms(150);
-        }
-    }
-    select_lcd();
-    lcd_clear();
-    unselect_lcd();
-}
-
 void set_addr_window(const uint16_t x1, const uint16_t y1, const uint16_t w, const uint16_t h) {
     const uint16_t x2 = (x1 + w - 1), y2 = (y1 + h - 1);
     lcd_command();
@@ -101,12 +67,14 @@ static void lcd_draw_pixel(const uint16_t x, const uint16_t y, const uint16_t co
     }
 }
 
-// static void lcd_draw_hline(const int16_t x, const int16_t y, const int16_t w, const int16_t color) {
-//     set_addr_window(x, y, w, 1);
-//     for (int16_t i = 0; i < w; i++) {
-//         spi_send_word(color);
-//     }
-// }
+#ifdef STENO_STROKE_DISPLAY
+static void lcd_draw_hline(const int16_t x, const int16_t y, const int16_t w, const int16_t color) {
+    set_addr_window(x, y, w, 1);
+    for (int16_t i = 0; i < w; i++) {
+        spi_send_word(color);
+    }
+}
+#endif
 
 static void lcd_draw_vline(const int16_t x, const int16_t y, const int16_t h, const int16_t color) {
     set_addr_window(x, y, 1, h);
@@ -124,7 +92,7 @@ void lcd_fill_rect(const int16_t x, const int16_t y, const int16_t w, const int1
     }
 }
 
-static void lcd_draw_char(const int16_t x, const int16_t y, char c, uint8_t size, const uint16_t fg, const uint16_t bg) {
+static void lcd_draw_char(const int16_t x, const int16_t y, char c, const uint8_t size, const uint16_t fg, const uint16_t bg) {
     if (x >= LCD_WIDTH || y >= LCD_HEIGHT || (x + LCD_FONT_WIDTH - 1) < 0 || (y + LCD_FONT_HEIGHT - 1) < 0 || c < ' ') {
         return;
     }
@@ -222,4 +190,182 @@ void lcd_clear_dirty(void) {
 
 void lcd_clear(void) {
     lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, LCD_WHITE);
+}
+
+#ifdef STENO_STROKE_DISPLAY
+#define FRAME_WIDTH 20
+#define FRAME_HEIGHT 24
+#define FRAME_OFFSET 3
+
+// FIXME Fix the math
+static void lcd_stenotype_frame_single(const int16_t x, const int16_t y) {
+    lcd_draw_hline(x + 1, y, FRAME_WIDTH - 2, LCD_BLACK);
+    lcd_draw_vline(x, y, FRAME_HEIGHT, LCD_BLACK);
+    lcd_draw_vline(x + FRAME_WIDTH - 1, y, FRAME_HEIGHT, LCD_BLACK);
+    lcd_draw_hline(x + 1, y + FRAME_HEIGHT - 1, FRAME_WIDTH - 2, LCD_BLACK);
+}
+
+static void lcd_stenotype_frame_left_s(const int16_t x, const int16_t y) {
+    lcd_draw_hline(x + 1, y, FRAME_WIDTH - 2, LCD_BLACK);
+    lcd_draw_vline(x, y, FRAME_HEIGHT * 2, LCD_BLACK);
+    lcd_draw_vline(x + FRAME_WIDTH - 1, y, FRAME_HEIGHT * 2, LCD_BLACK);
+    lcd_draw_hline(x + 1, y + FRAME_HEIGHT * 2 - 1, FRAME_WIDTH - 2, LCD_BLACK);
+}
+
+static void lcd_stenotype_frame_star(const int16_t x, const int16_t y) {
+    lcd_draw_hline(x + 1, y, 2 * FRAME_WIDTH - 2, LCD_BLACK);
+    lcd_draw_vline(x, y, FRAME_HEIGHT * 2, LCD_BLACK);
+    lcd_draw_vline(x + 2 * FRAME_WIDTH - 1, y, FRAME_HEIGHT * 2, LCD_BLACK);
+    lcd_draw_hline(x + 1, y + FRAME_HEIGHT * 2 - 1, 2 * FRAME_WIDTH - 2, LCD_BLACK);
+}
+
+static void lcd_stenotype_frame(void) {
+    const int16_t first_y = LCD_HEIGHT - 3 * FRAME_HEIGHT;
+    const int16_t second_y = LCD_HEIGHT - 2 * FRAME_HEIGHT;
+    const int16_t thumb_y = LCD_HEIGHT - FRAME_HEIGHT;
+    lcd_stenotype_frame_left_s(FRAME_WIDTH, first_y);
+    for (uint8_t i = 2; i < 5; i ++) {
+        lcd_stenotype_frame_single(i * FRAME_WIDTH, first_y);
+        lcd_stenotype_frame_single(i * FRAME_WIDTH, second_y);
+    }
+    lcd_stenotype_frame_star(5 * FRAME_WIDTH, first_y);
+    for (uint8_t i = 7; i < 12; i ++) {
+        lcd_stenotype_frame_single(i * FRAME_WIDTH, first_y);
+        lcd_stenotype_frame_single(i * FRAME_WIDTH, second_y);
+    }
+    for (uint8_t i = 0; i < 6; i ++) {
+        lcd_stenotype_frame_single((i + 3) * FRAME_WIDTH, thumb_y);
+    }
+}
+
+static void lcd_stenotype_update_draw_key(const int16_t x, const int16_t y, const char c, const bool on) {
+    const uint16_t fg = on ? LCD_WHITE : LCD_BLACK;
+    const uint16_t bg = on ? LCD_BLACK : LCD_WHITE;
+    lcd_draw_char(x + 1 + FRAME_OFFSET, y + 1 + FRAME_OFFSET, c, 2, fg, bg);
+    select_lcd();
+    lcd_fill_rect(x + 1, y + 1, FRAME_WIDTH - 2, FRAME_OFFSET, bg);
+    lcd_fill_rect(x + 1, y + FRAME_HEIGHT - FRAME_OFFSET - 1, FRAME_WIDTH - 2, FRAME_OFFSET, bg);
+    lcd_fill_rect(x + 1, y + FRAME_OFFSET + 1, FRAME_OFFSET, FRAME_HEIGHT - 2 - 2 * FRAME_OFFSET, bg);
+    lcd_fill_rect(x + FRAME_WIDTH - FRAME_OFFSET - 1, y + FRAME_OFFSET + 1, FRAME_OFFSET, FRAME_HEIGHT - 2 - 2 * FRAME_OFFSET, bg);
+    unselect_lcd();
+}
+
+static void lcd_stenotype_update_draw_left_s(const int16_t x, const int16_t y, const bool on) {
+    const uint16_t fg = on ? LCD_WHITE : LCD_BLACK;
+    const uint16_t bg = on ? LCD_BLACK : LCD_WHITE;
+    lcd_draw_char(x + 1 + FRAME_OFFSET, y + 1 + FRAME_OFFSET + FRAME_HEIGHT / 2, 'S', 2, fg, bg);
+    select_lcd();
+    lcd_fill_rect(x + 1, y + 1, FRAME_WIDTH - 2, FRAME_OFFSET + FRAME_HEIGHT / 2, bg);
+    lcd_fill_rect(x + 1, y + 2 * FRAME_HEIGHT - FRAME_OFFSET - 1 - FRAME_HEIGHT / 2, FRAME_WIDTH - 2, FRAME_OFFSET + FRAME_HEIGHT / 2, bg);
+    lcd_fill_rect(x + 1, y + FRAME_OFFSET + 1, FRAME_OFFSET, 2 * FRAME_HEIGHT - 2 - 2 * FRAME_OFFSET, bg);
+    lcd_fill_rect(x + FRAME_WIDTH - FRAME_OFFSET - 1, y + FRAME_OFFSET + 1, FRAME_OFFSET, 2 * FRAME_HEIGHT - 2 - 2 * FRAME_OFFSET, bg);
+    unselect_lcd();
+}
+
+static void lcd_stenotype_update_draw_star(const int16_t x, const int16_t y, const bool on) {
+    const uint16_t fg = on ? LCD_WHITE : LCD_BLACK;
+    const uint16_t bg = on ? LCD_BLACK : LCD_WHITE;
+    lcd_draw_char(x + 1 + FRAME_OFFSET + FRAME_WIDTH / 2, y + 1 + FRAME_OFFSET + FRAME_HEIGHT / 2, '*', 2, fg, bg);
+    select_lcd();
+    lcd_fill_rect(x + 1, y + 1, 2 * FRAME_WIDTH - 2, FRAME_OFFSET + FRAME_HEIGHT / 2, bg);
+    lcd_fill_rect(x + 1, y + 2 * FRAME_HEIGHT - FRAME_OFFSET - 1 - FRAME_HEIGHT / 2, 2 * FRAME_WIDTH - 2, FRAME_OFFSET + FRAME_HEIGHT / 2, bg);
+    lcd_fill_rect(x + 1, y + FRAME_OFFSET, FRAME_OFFSET + FRAME_WIDTH / 2, 2 * FRAME_HEIGHT - 2 - 2 * FRAME_OFFSET, bg);
+    lcd_fill_rect(x + 2 * FRAME_WIDTH - FRAME_OFFSET - FRAME_WIDTH / 2 - 1, y + FRAME_OFFSET, FRAME_OFFSET + FRAME_WIDTH / 2, 2 * FRAME_HEIGHT - 2 - 2 * FRAME_OFFSET, bg);
+    unselect_lcd();
+}
+
+static void lcd_stenotype_update_handle_key(const uint8_t num, const bool on) {
+    switch (num) {
+    case 22:    // #
+        lcd_stenotype_update_draw_key(3 * FRAME_WIDTH, LCD_HEIGHT - FRAME_HEIGHT, '#', on);
+        lcd_stenotype_update_draw_key(8 * FRAME_WIDTH, LCD_HEIGHT - FRAME_HEIGHT, '#', on);
+        return;
+    case 21:    // S
+        lcd_stenotype_update_draw_left_s(FRAME_WIDTH, LCD_HEIGHT - 3 * FRAME_HEIGHT, on);
+        return;
+    case 12:    // *
+        lcd_stenotype_update_draw_star(5 * FRAME_WIDTH, LCD_HEIGHT - 3 * FRAME_HEIGHT, on);
+        return;
+    }
+    uint8_t x, y;
+    // ST|KPWH|RAO*|EUFR|PBLG|TSDZ
+    switch (num) {
+    case 20: x = 2; y = 0; break;
+    case 19: x = 2; y = 1; break;
+    case 18: x = 3; y = 0; break;
+    case 17: x = 3; y = 1; break;
+    case 16: x = 4; y = 0; break;
+    case 15: x = 4; y = 1; break;
+    case 14: x = 4; y = 2; break;
+    case 13: x = 5; y = 2; break;
+    case 11: x = 6; y = 2; break;
+    case 10: x = 7; y = 2; break;
+    case 9: x = 7; y = 0; break;
+    case 8: x = 7; y = 1; break;
+    case 7: x = 8; y = 0; break;
+    case 6: x = 8; y = 1; break;
+    case 5: x = 9; y = 0; break;
+    case 4: x = 9; y = 1; break;
+    case 3: x = 10; y = 0; break;
+    case 2: x = 10; y = 1; break;
+    case 1: x = 11; y = 0; break;
+    case 0: x = 11; y = 1; break;
+    }
+    const char *KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
+    lcd_stenotype_update_draw_key(x * FRAME_WIDTH, y * FRAME_HEIGHT + LCD_HEIGHT - 3 * FRAME_HEIGHT, KEYS[23 - num - 1], on);
+}
+
+void lcd_stenotype_update(const uint32_t stroke) {
+    static uint32_t last_stroke = 0xFFFFFF;
+    const uint32_t diff = last_stroke ^ stroke;
+    for (uint8_t i = 0; i < 23; i ++) {
+        const uint32_t mask = (uint32_t) 1 << i;
+        if (diff & mask) {
+            lcd_stenotype_update_handle_key(i, (stroke & mask) > 0);
+        }
+    }
+    last_stroke = stroke;
+}
+#endif
+
+// SPI assume inited
+void lcd_init(void) {
+    configure_lcd_cs();
+    unselect_lcd();
+    uint8_t cmd, x, numArgs;
+    const uint8_t *addr = initcmd;
+    configure_lcd_cd();
+    select_lcd();
+    lcd_command();
+    spi_send_byte(ILI9341_SWRESET);
+    lcd_data();
+    unselect_lcd();
+    _delay_ms(150);
+
+    while ((cmd = pgm_read_byte(addr++)) > 0) {
+        x = pgm_read_byte(addr++);
+        numArgs = x & 0x7F;
+        select_lcd();
+        lcd_command();
+        spi_send_byte(cmd);
+        lcd_data();
+        for (uint8_t i = 0; i < numArgs; i++) {
+            spi_send_byte(pgm_read_byte(addr + i));
+        }
+        unselect_lcd();
+        addr += numArgs;
+        if (x & 0x80) {
+            _delay_ms(150);
+        }
+    }
+    select_lcd();
+    lcd_clear();
+    unselect_lcd();
+
+#ifdef STENO_STROKE_DISPLAY
+    select_lcd();
+    lcd_stenotype_frame();
+    lcd_stenotype_update(0);
+    unselect_lcd();
+#endif
 }
