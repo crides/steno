@@ -37,78 +37,6 @@ static void disp_clear(void) {
     unselect_lcd();
 }
 
-// NOTE: Though some displays may use SPI, we only assume that it's initialized in the flash init section, cuz that always uses SPI
-void disp_init(void) {
-    lcd_init();
-}
-
-void disp_stroke_edit_add(const uint32_t stroke, const uint8_t num_strokes) {
-    char buf[24];
-    stroke_to_string(stroke, buf, NULL);
-    if (num_strokes > 0) {
-        disp_putc('/');
-    }
-    disp_puts(buf);
-}
-
-void disp_stroke_edit_remove(const uint32_t last, const uint8_t num_strokes) {
-    char buf[24];
-    uint8_t len;
-    stroke_to_string(last, buf, &len);
-    disp_back(len);
-}
-
-void disp_prompt_add_stroke(void) {
-    disp_clear();
-    disp_puts_at(0, 0, "Stroke to add:\n");
-}
-
-void disp_remove_prompt_strokes(void) {
-    disp_clear();
-    disp_puts_at(0, 0, "Remove stroke:\n");
-}
-
-void disp_edit_prompt_strokes(void) {
-    disp_clear();
-    disp_puts_at(0, 0, "Edit stroke:\n");
-}
-
-void disp_edit_prompt_trans(void) {
-    disp_puts("\nEnter New translation:\n");
-}
-
-void disp_show_abort(void) {
-    disp_puts("\nAborted");
-}
-
-void disp_show_noentry(void) {
-    disp_puts("\nNo Entry");
-}
-
-void disp_edit_conf_entry(const char *const s) {
-    disp_puts("\nEntry to edit:\n");
-    disp_puts(s);
-    disp_puts("\nTo edit, press enter (R-R)");
-}
-
-void disp_remove_conf_entry(const char *const s) {
-    disp_puts("\nEntry to remove:\n");
-    disp_puts(s);
-    disp_puts("\nTo remove, press enter (R-R)");
-}
-
-void disp_add_done(void) {
-    disp_clear();
-}
-
-void disp_remove_done(void) {
-    disp_clear();
-}
-
-void disp_edit_done(void) {
-    disp_clear();
-}
-
 static void disp_tape_show_stroke(const uint32_t stroke) {
     char buf[24];
     stroke_to_string(stroke, buf, NULL);
@@ -122,6 +50,11 @@ static void disp_stenotype_show_stroke(const uint32_t stroke) {
     unselect_lcd();
 }
 #endif
+
+// NOTE: Though some displays may use SPI, we only assume that it's initialized in the flash init section, cuz that always uses SPI
+void disp_init(void) {
+    lcd_init();
+}
 
 void disp_tape_show_star(void) {
     disp_clear();
@@ -171,6 +104,49 @@ void disp_tape_show_trans(const char *const trans) {
     disp_puts(trans);
 }
 
+void disp_trans_edit_handle_str(const char *const s) {
+    disp_puts(s);
+}
+
+void disp_trans_edit_handle_char(const char c) {
+    disp_putc(c);
+}
+
+void disp_trans_edit_back(const uint8_t len) {
+    disp_back(len);
+}
+
+void disp_prompt_strokes(void) {
+    disp_clear();
+    disp_puts_at(0, 0, "Strokes:\n");
+}
+
+void disp_prompt_trans(void) {
+    disp_puts("\nEnter translation:\n");
+}
+
+void disp_dicted_done(void) {
+    disp_clear();
+}
+
+void disp_conf_entry(const char *const s) {
+    disp_puts("\nEntry to edit:\n");
+    disp_puts(s);
+    disp_puts("\nTo edit, press enter (R-R)");
+}
+
+void disp_show_abort(void) {
+    disp_puts("\nAborted");
+}
+
+void disp_show_noentry(void) {
+    disp_puts("\nNo Entry");
+}
+
+void disp_show_removed(void) {
+    disp_puts("\nRemoved");
+}
+
 void disp_unshow_error(void) {
     disp_clear();
 }
@@ -183,18 +159,18 @@ void disp_show_nostorage(void) {
     disp_puts("\nNo storage");
 }
 
-void disp_prompt_trans(void) {
-    disp_puts("\nEnter translation:\n");
+void disp_stroke_edit_add(const uint32_t stroke, const uint8_t num_strokes) {
+    char buf[24];
+    stroke_to_string(stroke, buf, NULL);
+    if (num_strokes > 0) {
+        disp_putc('/');
+    }
+    disp_puts(buf);
 }
 
-void disp_edit_trans_handle_str(const char *const s) {
-    disp_puts(s);
-}
-
-void disp_edit_trans_handle_char(const char c) {
-    disp_putc(c);
-}
-
-void disp_edit_trans_back(const uint8_t len) {
+void disp_stroke_edit_remove(const uint32_t last, const uint8_t num_strokes) {
+    char buf[24];
+    uint8_t len;
+    stroke_to_string(last, buf, &len);
     disp_back(len);
 }

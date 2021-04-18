@@ -29,7 +29,7 @@ static void dict_edit_puts(const char *const str) {
     }
     memcpy(entry_buf + entry_buf_len, str, len);
     entry_buf_len += len;
-    disp_edit_trans_handle_str(str);
+    disp_trans_edit_handle_str(str);
 }
 #endif
 
@@ -37,10 +37,10 @@ static void steno_back(const uint8_t len) {
 #ifndef STENO_READONLY
     if (editing_state != ED_IDLE) {
         if (entry_buf_len > len) {
-            disp_edit_trans_back(len);
+            disp_trans_edit_back(len);
             entry_buf_len -= len;
         } else {
-            disp_edit_trans_back(entry_buf_len);
+            disp_trans_edit_back(entry_buf_len);
             entry_buf_len = 0;
         }
     } else
@@ -57,7 +57,7 @@ static void steno_send_char(const char c) {
     if (editing_state != ED_IDLE) {
         if (entry_buf_len < 255) {
             entry_buf[entry_buf_len ++] = c;
-            disp_edit_trans_handle_char(c);
+            disp_trans_edit_handle_char(c);
         }
     } else
 #endif
@@ -432,30 +432,12 @@ state_t process_output(const uint8_t h_ind) {
                 break;
 
 #ifndef STENO_READONLY
-            case 16: // add translation
+            case 16: // Dictionary editing
                 if (editing_state != ED_IDLE) {
-                    dict_edit_puts("{add_trans}");
-                    str_len += 11;
+                    dict_edit_puts("{dicted}");
+                    str_len += 8;
                 } else {
-                    dicted_add_prompt_strokes();
-                }
-                break;
-
-            case 17: //edit translation
-                if (editing_state == ED_ACTIVE_EDIT_TRANS) {
-                    dict_edit_puts("{edit_trans}");
-                    str_len += 10;
-                } else {
-                    dicted_edit_prompt_strokes();
-                }
-                break;
-
-            case 18: //remove translation
-                if (editing_state != ED_IDLE) {
-                    dict_edit_puts("{rm_trans}");
-                    str_len += 10;
-                } else {
-                    dicted_remove_prompt_strokes();
+                    dicted_update();
                 }
                 break;
 #endif
