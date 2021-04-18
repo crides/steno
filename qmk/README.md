@@ -1,21 +1,51 @@
 # Firmware
 
-## Background
+This is (as I know of) the first open source attempt of putting a stenography engine into a keyboard. Heavily inspired by Plover and Dotterel, this is **not** an attempt at a full featured engine, rather an engine that include the very basic features. The system is originally designed for a ATMega32u4 + a 16MB SPI NOR flash, based on the [QMK firmware](https://qmk.fm), however it's possible to port it to other hardware. Currently, the available features are:
+- Strokes to text translation
+- Some support for Plover-style commands. These are compiled into the dictionary as internal commands, and all but the retroactive commands are supported, with slightly different semantics.
+- Optional screen UI displaying paper tapes and last translation.
+- Optional on-board dictionary editing through the screen. Possible to add, remove or edit (remove & add) entries, but the translation is currently text only.
+- Optional dictionary import possible through a Mass Storage Device (i.e. the keyboard can show up as a USB drive, allowing the new dictionary to be "copied" in without additional software)
+- English orthography, i.e. automatically correcting the spelling using the word and suffix without additional entries.
 
-Shortly after I built the [first version](../pcb/README.md#Version-1) of the steno board, I got the idea of building a plug-and-playable steno keyboard. The idea was that I can compile the dictionary into a special format that's easier for the MCU to process, and load it on to a SD card. When I type on the keyboard, the MCU then doesn't send the strokes to the PC for Plover to process, but rather process the translation by itself, and send the actual key codes to the PC. Note that I originally planned to do this on a 3.3V ATMega32u4, which runs on only 8MHz, 2.5kB of RAM, and 28kB of available application program space (the other 4k devoted to bootloader). The currently implementation runs on the [32u4 Bluefruit feather](https://www.adafruit.com/product/2829) fine, with most of the Plover dictionary formats compatible (including all the commands that don't include retro- functions). Currently, only text input is possible, and one would need to load a new dictionary from a PC in order to change the dictionary.
+Conversion of on-board dictionary back to Plover JSON and on-board entry lookup (and maybe suggestions) are planned for the future but not implemented.
 
 ## Usage
 
-### Requirements
+### Dictionary Loading
 
-- A compatible chip or controller board that uses a ATMega32u4 (typically promicro but also the Elite-C)
-- Some storage: A SDCard connector or a QSPI external flash with at least 8MB (I'm using MT25QL128ABA1ESE (16MB SPI NOR flash))
-- A keyboard
-- QMK toolchain
+To load your personal dictionary onto the board, you need to grab the [compiler](../compiler). After compiling your dictionary into a binary file, you need to get the keyboard into dictionary loading mode (if your hardware supports it). On the public testing Bat board, this is done by plugging in while holding the button to the left of the USB port. The keyboard will then show up as a Mass Storage Device (i.e. a USB drive-like thing). Just drag the compiled dictionary into the drive, and waiting for the transfer to complete will complete the process. Note that this is a fake USB drive, and any files shown doesn't work like normal files, i.e. deleting and renaming won't work. It's just a standard workaround to flash embedded devices with binaries so that no additional software is needed.
 
-Configure the firmware. One of them is for AVR, and the other is for the nRF. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed.
+With your personal dictionary loaded, just use the keyboard to steno like you would with Plover!
 
-Put/Link this directory in/from `qmk_firmware/keyboards`. Compile and load the firmware, and you will need a compiled dictionary. You can either get one from the repo as `steno.bin` (which is my current compiled dictionary), or grab the [compiler](../compiler) and compile your own. Load the dictionary by either copying to the SDCard, or use the `download` command in the compiler if using a QSPI flash.
+### Dictionary Editing
+
+Use `TKUPT` (Plover default) or whatever you have `{PLOVER:ADD_TRANSLATION}` mapped to to start editing the dictionary. The compilier substitutes this commands to editing the dictionary because this would make it easier for Plover users, even though the behavior is very different. After entering the dictionary editing mode, you'll be asked to enter the strokes, as you would in the Plover interface. After pressing `R-R` (enter; key is hardcoded), the entry would be searched for, and if the entry doesn't exist, as is the case in adding a new entry, the user would be asked to enter the translation. Again, note that only pure text is supported currently. If an entry is found, a prompt would show up asking if the user want to edit the corresponding entry. If `R-R` is pressed, then the old entry is removed, and the interface would proceed to translation entering stage. If `*` (also hardcoded) is pressed, then the operation would be aborted. During the translation entering stage, if `R-R` is pressed, then the translation would be checked. If there's no text entered, then nothing would be done at this stage. Otherwise, the text would be added as a translation to the strokes entered before.
+
+The flowchart below should help explaining things better (red boxes are actual states in the firmware, dashed arrows are automatic transitions, and solid lines are transitions that correspond to user actions).
+
+![dict editing flowchart](dicted.png)
+
+### Compiling the Firmware
+
+Make sure you have the requirements for compiling and flashing firmware. This should be GNU `make`, `avr-gcc`, `avr-binutils`, and `dfu-programmer`. Then you need to use [my QMK fork](https://github.com/crides/qmk_firmware), and put/link this directory in/from `qmk_firmware/keyboards`. Configure the matrix in `config.h`, and modify keymaps in `keymaps/default/keymap.c` if needed.
+
+Go to `qmk_firmware`, and do `make steno:default:dfu` to flash the firmware (I'm assuming that `qmk_firmware/keyboards/steno` is/links to this directory). You'll need to press the reset button on the keyboard to enter bootloader.
+
+## Porting
+
+You are likely to be using hardware already supporting the firmware. If not, the system relies on several things:
+- Key holding/releasing using HID scan codes. This should be a thin (or none) wrapper around the firmware you are basing on.
+- Storage handling interface. This is defined in `store.h`, and although the system is originally built on a single 16MB SPI NOR flash, you can theoretically use any storage backend or any region of one.
+- Display/UI handling interface. This is defined in `disp.h`, and handles the UI at each stage when the interface need to change.
+
+### Building Compatible Hardware
+
+Although the system is designed for a MCU that has limited RAM and computing power, the code should be standard (but with lots of `const`) C99, and should be easily portable to any platform, as long as the requirements above are satisfied. A storage device is also needed, and I used the [W25Q128JVSIQ](https://lcsc.com/product-detail/FLASH_Winbond-Elec-W25Q128JVSIQ_C113767.html/). You can also optionally include a screen for paper tape display and dictionary editing.
+
+## Background
+
+Shortly after I built the [first version](../pcb/README.md#Version-1) of the steno board, I got the idea of building a plug-and-playable steno keyboard. The idea was that I can compile the dictionary into a special format that's easier for the MCU to process, and load it on to a SD card. When I type on the keyboard, the MCU then doesn't send the strokes to the PC for Plover to process, but rather process the translation by itself, and send the actual key codes to the PC. Note that I originally planned to do this on a 3.3V ATMega32u4, which runs on only 8MHz, 2.5kB of RAM, and 28kB of available application program space (the other 4k devoted to bootloader).
 
 ## Implementation
 
