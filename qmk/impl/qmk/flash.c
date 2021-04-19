@@ -160,5 +160,5 @@ void store_rewrite_start(void) {
 }
 
 void store_rewrite_write(const uint32_t offset, const uint8_t *const buf) {
-    flash_write(offset, buf, STORE_REWRITE_PACKET_SIZE);
+    flash_write_page(offset, buf);
 }

@@ -144,23 +144,24 @@ void scsi_write(USB_ClassInfo_MS_Device_t *const msc_interface_info, const uint3
     }
     for ( ; blocks > 0; blocks --) {
         uint8_t _header[32];
+        uint8_t data_buf[256];
         Endpoint_Read_Stream_LE(_header, 32, NULL);
         const uint32_t *const header = (uint32_t *) _header;
-        const bool valid_header = (header[0] == UF2_MAGIC0 && header[1] == UF2_MAGIC1 && ((uint32_t *) packet_buf)[15] == UF2_MAGIC_END
+        Endpoint_Read_Stream_LE(data_buf, sizeof(data_buf), NULL);
+        Endpoint_Discard_Stream(512 - 256 - 32 - sizeof(uint32_t), NULL);
+        uint32_t last_word;
+        Endpoint_Read_Stream_LE(&last_word, sizeof(uint32_t), NULL);
+        const bool valid_header = (header[0] == UF2_MAGIC0 && header[1] == UF2_MAGIC1 && last_word == UF2_MAGIC_END
                 && (header[2] & UF2_FLAG_FAMILYID) && (!(header[2] & UF2_FLAG_NOFLASH))
                 && ((header[3] & 0xFF) == 0) && header[4] == 256 && header[7] == UF2_FAMILY_ID);
-        for (uint8_t i = 0; i < 4; i++) {
-            Endpoint_Read_Stream_LE(packet_buf, EPSIZE, NULL);
-            if (valid_header) {
-                if (header[5] == 0 && i == 0) {
-                    steno_error_ln("erase");
-                    store_rewrite_start();
-                    steno_error_ln("flash");
-                }
-                store_rewrite_write(header[3], packet_buf);
+        if (valid_header) {
+            if (header[5] == 0) {
+                steno_error_ln("erase");
+                store_rewrite_start();
+                steno_error_ln("flash");
             }
+            store_rewrite_write(header[3], data_buf);
         }
-        Endpoint_Discard_Stream(512 - 256 - 32, NULL);
         if (msc_interface_info->State.IsMassStoreReset) {
             steno_error_ln("reset");
             return;
