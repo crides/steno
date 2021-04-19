@@ -29,7 +29,7 @@ fn main() {
         .subcommand(SubCommand::with_name("hash").arg(Arg::with_name("strokes").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
-                .arg(Arg::with_name("input").required(true))
+                .arg(Arg::with_name("input").required(true).multiple(true).min_values(1))
                 .arg(Arg::with_name("output").required(true)),
         )
         .subcommand(
@@ -41,12 +41,15 @@ fn main() {
         .get_matches();
     match matches.subcommand() {
         ("compile", Some(m)) => {
-            let input_file = m.value_of("input").unwrap();
+            let input_files = m.values_of("input").unwrap();
             let output_file = m.value_of("output").unwrap();
 
-            let input_file = File::open(input_file).expect("input file");
-            let input = serde_json::from_reader(input_file).expect("read json");
-            let dict = Dict::parse_from_json(&input).unwrap();
+            let inputs: Vec<_> = input_files
+                .map(|f| {
+                    (f, serde_json::from_reader(File::open(f).expect("input file")).expect("parse json"))
+                })
+                .collect();
+            let dict = Dict::parse_from_json(inputs).unwrap();
             let mut output_file = File::create(output_file).expect("output file");
             compile::to_writer(dict, &mut output_file).expect("write output");
             println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());

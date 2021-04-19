@@ -1,8 +1,8 @@
 //! Handles everything related to converting Rust dictionary related values to bytes. Provides raw
 //! counterparts for types in `dict`.
+use std::collections::BTreeMap;
 use std::io::{self, prelude::*};
 use std::iter;
-use std::collections::BTreeMap;
 
 use crate::dict::{Attr, Dict, Entry, Input};
 use crate::freemap::FreeMap;
@@ -45,9 +45,7 @@ impl From<Entry> for RawEntry {
                 Input::ToggleStar => vec![12],
                 Input::AddSpace => vec![13],
                 Input::RemoveSpace => vec![14],
-                Input::AddTranslation => vec![16],
-                Input::EditTranslation => vec![17],
-                Input::RemoveTranslation => vec![18],
+                Input::EditDictionary => vec![16],
             }))
             .collect();
         RawEntry(bytes)
@@ -83,13 +81,13 @@ impl From<Attr> for RawAttr {
 }
 
 #[allow(dead_code)]
-const KVPAIR_START: usize = 0x400000;
+pub const KVPAIR_START: usize = 0x400000;
 #[allow(dead_code)]
-const FREEMAP_START: usize = 0xF00000;
+pub const FREEMAP_START: usize = 0xF00000;
 #[allow(dead_code)]
-const SCRATCH_START: usize = 0xF22000;
+pub const SCRATCH_START: usize = 0xF22000;
 #[allow(dead_code)]
-const ORTHOGRAPHY_START: usize = 0xFC0000;
+pub const ORTHOGRAPHY_START: usize = 0xFC0000;
 
 pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
     let mut file = Uf2File::new();
@@ -116,6 +114,8 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
             map.req(1)
         } else if pair_size <= 64 {
             map.req(2)
+        } else if pair_size <= 128 {
+            map.req(3)
         } else {
             panic!("Entry too big!");
         };
@@ -169,7 +169,7 @@ impl Uf2File {
     const MAGIC_END: u32 = 0x0AB16F30;
     // Family ID present
     const FLAGS: u32 = 0x00002000;
-    const FAMILY_ID: u32 = 0x00302cc0;  // STOEUPB
+    const FAMILY_ID: u32 = 0x00302cc0; // STOEUPB
     const UF2_DATA_SIZE: usize = 476;
     const DATA_SIZE: usize = 256;
 
@@ -208,10 +208,13 @@ impl Uf2File {
     }
 
     pub fn write_to(self, w: &mut dyn Write) -> io::Result<()> {
-        let filtered: Vec<_> = self.map.into_iter().filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8)).collect();
+        let filtered: Vec<_> = self
+            .map
+            .into_iter()
+            .filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8))
+            .collect();
         let num_blocks = filtered.len() as u32;
-        let data_padding_pre = [0u8; 32];
-        let data_padding_post = [0u8; Uf2File::UF2_DATA_SIZE - Uf2File::DATA_SIZE - 32];
+        let data_padding_post = [0u8; Uf2File::UF2_DATA_SIZE - Uf2File::DATA_SIZE];
         for (block_no, (block_addr, data)) in filtered.iter().enumerate() {
             w.write_all(&Uf2File::MAGIC0.to_le_bytes())?;
             w.write_all(&Uf2File::MAGIC1.to_le_bytes())?;
@@ -222,10 +225,9 @@ impl Uf2File {
             w.write_all(&num_blocks.to_le_bytes())?;
             w.write_all(&Uf2File::FAMILY_ID.to_le_bytes())?;
             assert_eq!(data.len(), Uf2File::DATA_SIZE);
-            assert_eq!(data.len() + data_padding_pre.len() + data_padding_post.len(), Uf2File::UF2_DATA_SIZE);
+            assert_eq!(data.len() + data_padding_post.len(), Uf2File::UF2_DATA_SIZE);
             // NOTE: Custom UF2 format: Moving the data back by 32 bytes so that it's packet (64 byte)
             // aligned, and that it'll be easier to process
-            w.write_all(&data_padding_pre)?;
             w.write_all(&data)?;
             w.write_all(&data_padding_post)?;
             w.write_all(&Uf2File::MAGIC_END.to_le_bytes())?;

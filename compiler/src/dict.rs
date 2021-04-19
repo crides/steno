@@ -50,12 +50,8 @@ pub enum Input {
     AddSpace,
     /// Remove space between last and last last stroke
     RemoveSpace,
-    /// Add a new translation
-    AddTranslation,
-    /// Edit a new translation
-    EditTranslation,
-    /// Remove a new translation
-    RemoveTranslation,
+    /// Dictionary editing
+    EditDictionary,
 }
 
 impl Input {
@@ -167,9 +163,7 @@ impl Entry {
                         attr.space_prev = false;
                         vec![Input::String(s.into())]
                     }
-                    "BAT_STENO:ADD_TRANSLATION" => vec![Input::AddTranslation],
-                    "BAT_STENO:EDIT_TRANSLATION" => vec![Input::EditTranslation],
-                    "BAT_STENO:REMOVE_TRANSLATION" => vec![Input::RemoveTranslation],
+                    "PLOVER:ADD_TRANSLATION" => vec![Input::EditDictionary],
                     "-|" => vec![Input::Capitalized],
                     ">" => vec![Input::Lower],
                     "<" => vec![Input::Upper],
@@ -307,10 +301,58 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
 pub struct Dict(pub BTreeMap<Vec<Stroke>, Entry>);
 
 impl Dict {
-    pub fn parse_from_json(m: &JsonDict) -> Result<Dict, ParseDictError> {
-        let pbar = progress_bar(m.len(), "Parsing dictionary");
-        pbar.set_draw_delta(m.len() as u64 / 100);
-        let dict = m
+    pub fn parse_from_json(mut dicts: Vec<(&str, JsonDict)>) -> Result<Dict, ParseDictError> {
+        let total_len = dicts.iter().map(|(_f, d)| d.len()).sum();
+        let pbar = progress_bar(total_len, "Parsing dictionary");
+        pbar.set_draw_delta(total_len as u64 / 100);
+
+        let merged = if dicts.len() == 1 {
+            dicts.remove(0).1
+        } else {
+            enum Multiple<'a> {
+                Single((&'a str, String)),
+                Multiple(Vec<(&'a str, String)>),
+            }
+
+            impl<'a> Multiple<'a> {
+                fn push(&mut self, other: (&'a str, String)) {
+                    match self {
+                        Multiple::Single(val) => {
+                            *self = Multiple::Multiple(vec![val.clone(), other]);
+                        }
+                        Multiple::Multiple(ref mut v) => v.push(other),
+                    }
+                }
+            }
+
+            let (first_name, first) = dicts.remove(0);
+            let first = first.into_iter().map(|(k, v)| (k, Multiple::Single((first_name, v)))).collect::<BTreeMap<_, _>>();
+            let merged = dicts.into_iter().fold(first, |mut merged, (new_name, new)| {
+                for (key, val) in new.into_iter() {
+                    if let Some(ref mut v) = merged.get_mut(&key) {
+                        v.push((new_name, val));
+                    } else {
+                        merged.insert(key, Multiple::Single((new_name, val)));
+                    }
+                }
+                merged
+            });
+            merged.into_iter().map(|(k, m)| {
+                match m {
+                    Multiple::Single((_name, val)) => (k, val),
+                    Multiple::Multiple(mut v) => {
+                        pbar.println(format!("Conflict on key '{}'", k));
+                        for (file, val) in &v[..(v.len() - 1)] {
+                            pbar.println(format!("    in file {}, mapped to '{}'", file, val));
+                        }
+                        let last = v.pop().unwrap();
+                        pbar.println(format!("  using '{}' from {}", last.1, last.0));
+                        (k, last.1)
+                    }
+                }
+            }).collect()
+        };
+        let parsed = merged
             .iter()
             .map(|(strokes, entry)| {
                 let strokes = strokes
@@ -327,7 +369,7 @@ impl Dict {
             })
             .collect::<Result<BTreeMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");
-        Ok(Dict(dict))
+        Ok(Dict(parsed))
     }
 }
 
