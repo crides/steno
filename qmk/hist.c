@@ -121,6 +121,7 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
     for (uint8_t i = 0; i < len; i++) {
         if ((keycodes[i] & 0xFC) == 0xE0) {
             const uint8_t mod = keycodes[i] & 0x03;
+#if defined(STENO_DEBUG_HIST) || !defined(STENO_READONLY)
             uint8_t mod_char;
             switch (mod) {
             case 0: mod_char = 'c'; break;
@@ -128,6 +129,7 @@ static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
             case 2: mod_char = 'a'; break;
             case 3: mod_char = 'g'; break;
             }
+#endif
             const uint8_t mod_mask = 1 << mod;
             if (mods & mod_mask) {
 #ifndef STENO_READONLY

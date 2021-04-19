@@ -57,11 +57,12 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     if (stroke == STENO_STAR) {
         hist_ind = HIST_LIMIT(hist_ind - 1);
         hist_undo(hist_ind);
-#ifndef STENO_READONLY
-        if (editing_state == ED_IDLE) {
 #ifndef STENO_NOUI
-            disp_tape_show_star();
+#ifndef STENO_READONLY
+        if (editing_state == ED_IDLE)
 #endif
+        {
+            disp_tape_show_star();
         }
 #endif
         return;
@@ -86,9 +87,11 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("next %u: scg: %u%u%u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
 #endif
-#ifndef STENO_READONLY
-    if (editing_state == ED_IDLE) {
 #ifndef STENO_NOUI
+#ifndef STENO_READONLY
+    if (editing_state == ED_IDLE)
+#endif
+    {
         if (strokes_len > 0) {
             disp_tape_show_strokes(kvpair_buf, strokes_len);
             last_trans[last_trans_size] = 0;
@@ -96,7 +99,6 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
         } else {
             disp_tape_show_raw_stroke(hist->stroke);
         }
-#endif
     }
 #endif
     if (hist->len) {

@@ -132,6 +132,7 @@ void disp_tape_show_star(void) {
 }
 
 void disp_tape_show_raw_stroke(const uint32_t stroke) {
+    disp_clear();
     select_lcd();
     lcd_pos(0, 0);
     unselect_lcd();
