@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "steno.h"
-#include "keymap_steno.h"
 #include "store.h"
 #include "hist.h"
 #ifndef STENO_READONLY
@@ -128,7 +127,6 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
 
 // Setup the necessary stuff, init SPI flash
 void ebd_steno_init(void) {     // to avoid clashing with `steno_init` in QMK
-    steno_set_mode(STENO_MODE_GEMINI);
     hist_get(0)->state.cap = CAPS_CAP;
     store_init();
 #ifndef STENO_NOUI

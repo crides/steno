@@ -1,6 +1,5 @@
 #include <string.h>
 #include "steno.h"
-#include "keymap_steno.h"
 #include "store.h"
 #include <stdio.h>
 #include "hist.h"

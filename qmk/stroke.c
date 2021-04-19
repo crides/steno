@@ -65,28 +65,6 @@ bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
     return false;
 }
 
-uint32_t qmk_chord_to_stroke(const uint8_t chord[6]) {
-    const uint32_t keys = ((uint32_t) chord[5] & 1)
-        | ((uint32_t) chord[4] & 0x7F) << 1
-        | ((uint32_t) chord[3] & 0x3F) << 8
-        | ((uint32_t) chord[2] & 0x7F) << (14 - 2)
-        | ((uint32_t) chord[1] & 0x7F) << 19
-        | ((uint32_t) chord[0] & 0x30) << (26 - 4);
-
-    uint32_t stroke = keys & 0xFFF;
-    if (keys & 0xF000) {    // Asterisk
-        stroke |= STENO_STAR;
-    }
-    stroke |= (keys >> 3) & 0x1FE000; // Left side of asterisk
-    if (keys & 0x3000000) { // S-
-        stroke |= 0x200000;
-    }
-    if (keys & 0xC000000) { // #
-        stroke |= 0x400000;
-    }
-    return stroke;
-}
-
 uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug("  find_strokes(%u):\n    ", free);
