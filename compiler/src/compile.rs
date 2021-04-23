@@ -7,6 +7,7 @@ use std::iter;
 use crate::dict::{Attr, Dict, Entry, Input};
 use crate::freemap::FreeMap;
 use crate::stroke::hash_strokes;
+use crate::orthography;
 
 /// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
 /// keyboard storage.
@@ -87,7 +88,7 @@ pub const FREEMAP_START: usize = 0xF00000;
 #[allow(dead_code)]
 pub const SCRATCH_START: usize = 0xF22000;
 #[allow(dead_code)]
-pub const ORTHOGRAPHY_START: usize = 0xFC0000;
+pub const ORTHOGRAPHY_START: usize = 0xF30000;
 
 pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
     let mut file = Uf2File::new();
@@ -139,6 +140,8 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
     for word in map.map {
         file.write_all(&word.to_le_bytes());
     }
+    file.seek(ORTHOGRAPHY_START);
+    file.write_all(&orthography::generate());
     file.write_to(w)
 }
 
@@ -233,5 +236,16 @@ impl Uf2File {
             w.write_all(&Uf2File::MAGIC_END.to_le_bytes())?;
         }
         Ok(())
+    }
+}
+
+impl From<RawAttr> for Attr {
+    fn from(r: RawAttr) -> Attr {
+        Attr {
+            space_after: r.space_after() != 0,
+            space_prev: r.space_prev() != 0,
+            present: r.present() != 0,
+            glue: r.glue() != 0,
+        }
     }
 }

@@ -1,0 +1,10243 @@
+[
+  {
+    "word": "abate",
+    "suffix": "er",
+    "full": "abator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "abbreviate",
+    "suffix": "er",
+    "full": "abbreviator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "abet",
+    "suffix": "al",
+    "full": "abettal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "abet",
+    "suffix": "er",
+    "full": "abettor",
+    "back": 0,
+    "extra": "tor"
+  },
+  {
+    "word": "ablate",
+    "suffix": "er",
+    "full": "ablator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "abut",
+    "suffix": "al",
+    "full": "abuttal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "accent",
+    "suffix": "er",
+    "full": "accentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "accept",
+    "suffix": "er",
+    "full": "acceptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "access",
+    "suffix": "able",
+    "full": "accessible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "actuate",
+    "suffix": "er",
+    "full": "actuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "address",
+    "suffix": "er",
+    "full": "addressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "admit",
+    "suffix": "ance",
+    "full": "admittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "admit",
+    "suffix": "ee",
+    "full": "admittee",
+    "back": 0,
+    "extra": "tee"
+  },
+  {
+    "word": "aggress",
+    "suffix": "er",
+    "full": "aggressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "agist",
+    "suffix": "er",
+    "full": "agistor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "aigret",
+    "suffix": "e",
+    "full": "aigrette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "al",
+    "suffix": "able",
+    "full": "alible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "alg",
+    "suffix": "er",
+    "full": "algor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "alien",
+    "suffix": "er",
+    "full": "alienor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "allegre",
+    "suffix": "i",
+    "full": "allegri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "alleviate",
+    "suffix": "er",
+    "full": "alleviator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "allot",
+    "suffix": "ee",
+    "full": "allottee",
+    "back": 0,
+    "extra": "tee"
+  },
+  {
+    "word": "alpine",
+    "suffix": "i",
+    "full": "alpini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "alveole",
+    "suffix": "i",
+    "full": "alveoli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "amice",
+    "suffix": "i",
+    "full": "amici",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "amiss",
+    "suffix": "able",
+    "full": "amissible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "amoret",
+    "suffix": "i",
+    "full": "amoretti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "amoret",
+    "suffix": "o",
+    "full": "amoretto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "anagram",
+    "suffix": "atize",
+    "full": "anagrammatize",
+    "back": 0,
+    "extra": "matize"
+  },
+  {
+    "word": "ane",
+    "suffix": "u",
+    "full": "anu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "anime",
+    "suffix": "i",
+    "full": "animi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "annat",
+    "suffix": "a",
+    "full": "annatta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "annat",
+    "suffix": "o",
+    "full": "annatto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "annunciate",
+    "suffix": "er",
+    "full": "annunciator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "ante",
+    "suffix": "i",
+    "full": "anti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "apostil",
+    "suffix": "e",
+    "full": "apostille",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "appel",
+    "suffix": "ant",
+    "full": "appellant",
+    "back": 0,
+    "extra": "lant"
+  },
+  {
+    "word": "appel",
+    "suffix": "ate",
+    "full": "appellate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "appel",
+    "suffix": "ation",
+    "full": "appellation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "appel",
+    "suffix": "ative",
+    "full": "appellative",
+    "back": 0,
+    "extra": "lative"
+  },
+  {
+    "word": "appel",
+    "suffix": "ee",
+    "full": "appellee",
+    "back": 0,
+    "extra": "lee"
+  },
+  {
+    "word": "appel",
+    "suffix": "er",
+    "full": "appellor",
+    "back": 0,
+    "extra": "lor"
+  },
+  {
+    "word": "appel",
+    "suffix": "or",
+    "full": "appellor",
+    "back": 0,
+    "extra": "lor"
+  },
+  {
+    "word": "appoint",
+    "suffix": "er",
+    "full": "appointor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "appreciate",
+    "suffix": "er",
+    "full": "appreciator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "appropriate",
+    "suffix": "er",
+    "full": "appropriator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "arden",
+    "suffix": "es",
+    "full": "ardennes",
+    "back": 0,
+    "extra": "nes"
+  },
+  {
+    "word": "argil",
+    "suffix": "aceous",
+    "full": "argillaceous",
+    "back": 0,
+    "extra": "laceous"
+  },
+  {
+    "word": "argil",
+    "suffix": "ite",
+    "full": "argillite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "aril",
+    "suffix": "ary",
+    "full": "arillary",
+    "back": 0,
+    "extra": "lary"
+  },
+  {
+    "word": "aril",
+    "suffix": "ate",
+    "full": "arillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "aril",
+    "suffix": "i",
+    "full": "arilli",
+    "back": 0,
+    "extra": "li"
+  },
+  {
+    "word": "aril",
+    "suffix": "oid",
+    "full": "arilloid",
+    "back": 0,
+    "extra": "loid"
+  },
+  {
+    "word": "aril",
+    "suffix": "us",
+    "full": "arillus",
+    "back": 0,
+    "extra": "lus"
+  },
+  {
+    "word": "ariose",
+    "suffix": "i",
+    "full": "ariosi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "armil",
+    "suffix": "a",
+    "full": "armilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "arrest",
+    "suffix": "er",
+    "full": "arrestor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "ascend",
+    "suffix": "able",
+    "full": "ascendible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "aspers",
+    "suffix": "er",
+    "full": "aspersor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "asperse",
+    "suffix": "er",
+    "full": "aspersor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "asphyxiate",
+    "suffix": "er",
+    "full": "asphyxiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "assent",
+    "suffix": "er",
+    "full": "assentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "assert",
+    "suffix": "able",
+    "full": "assertible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "assess",
+    "suffix": "er",
+    "full": "assessor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "assign",
+    "suffix": "er",
+    "full": "assignor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "assist",
+    "suffix": "er",
+    "full": "assistor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "attenuate",
+    "suffix": "er",
+    "full": "attenuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "attest",
+    "suffix": "er",
+    "full": "attestor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "attribute",
+    "suffix": "er",
+    "full": "attributor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "aud",
+    "suffix": "able",
+    "full": "audible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "aude",
+    "suffix": "i",
+    "full": "audi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "auth",
+    "suffix": "er",
+    "full": "author",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "aver",
+    "suffix": "al",
+    "full": "averral",
+    "back": 0,
+    "extra": "ral"
+  },
+  {
+    "word": "aviate",
+    "suffix": "er",
+    "full": "aviator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "axil",
+    "suffix": "a",
+    "full": "axilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "bab",
+    "suffix": "age",
+    "full": "babbage",
+    "back": 0,
+    "extra": "bage"
+  },
+  {
+    "word": "babe",
+    "suffix": "i",
+    "full": "babi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bag",
+    "suffix": "age",
+    "full": "baggage",
+    "back": 0,
+    "extra": "gage"
+  },
+  {
+    "word": "bail",
+    "suffix": "er",
+    "full": "bailor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "balconet",
+    "suffix": "e",
+    "full": "balconette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "bale",
+    "suffix": "i",
+    "full": "bali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bale",
+    "suffix": "u",
+    "full": "balu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "ballabile",
+    "suffix": "i",
+    "full": "ballabili",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "ballon",
+    "suffix": "e",
+    "full": "ballonne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "ban",
+    "suffix": "et",
+    "full": "bannet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "bane",
+    "suffix": "i",
+    "full": "bani",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "banneret",
+    "suffix": "e",
+    "full": "bannerette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "banquet",
+    "suffix": "e",
+    "full": "banquette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "bar",
+    "suffix": "a",
+    "full": "barra",
+    "back": 0,
+    "extra": "ra"
+  },
+  {
+    "word": "bar",
+    "suffix": "et",
+    "full": "barret",
+    "back": 0,
+    "extra": "ret"
+  },
+  {
+    "word": "bar",
+    "suffix": "io",
+    "full": "barrio",
+    "back": 0,
+    "extra": "rio"
+  },
+  {
+    "word": "barbastel",
+    "suffix": "e",
+    "full": "barbastelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "barbel",
+    "suffix": "ate",
+    "full": "barbellate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "barbet",
+    "suffix": "e",
+    "full": "barbette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "baron",
+    "suffix": "e",
+    "full": "baronne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "barrat",
+    "suffix": "er",
+    "full": "barrator",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "barret",
+    "suffix": "e",
+    "full": "barrette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "bat",
+    "suffix": "a",
+    "full": "batta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "bat",
+    "suffix": "ology",
+    "full": "battology",
+    "back": 0,
+    "extra": "tology"
+  },
+  {
+    "word": "bat",
+    "suffix": "u",
+    "full": "battu",
+    "back": 0,
+    "extra": "tu"
+  },
+  {
+    "word": "bate",
+    "suffix": "en",
+    "full": "batten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "becket",
+    "suffix": "ian",
+    "full": "beckettian",
+    "back": 0,
+    "extra": "tian"
+  },
+  {
+    "word": "beg",
+    "suffix": "ar",
+    "full": "beggar",
+    "back": 0,
+    "extra": "gar"
+  },
+  {
+    "word": "bel",
+    "suffix": "ay",
+    "full": "bellay",
+    "back": 0,
+    "extra": "lay"
+  },
+  {
+    "word": "bel",
+    "suffix": "e",
+    "full": "belle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "bel",
+    "suffix": "ini",
+    "full": "bellini",
+    "back": 0,
+    "extra": "lini"
+  },
+  {
+    "word": "ben",
+    "suffix": "e",
+    "full": "benne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "bene",
+    "suffix": "i",
+    "full": "beni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "benet",
+    "suffix": "on",
+    "full": "benetton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "benne",
+    "suffix": "i",
+    "full": "benni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "beret",
+    "suffix": "a",
+    "full": "beretta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "berret",
+    "suffix": "a",
+    "full": "berretta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "bersagliere",
+    "suffix": "i",
+    "full": "bersaglieri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bestad",
+    "suffix": "e",
+    "full": "bestadde",
+    "back": 0,
+    "extra": "de"
+  },
+  {
+    "word": "bet",
+    "suffix": "or",
+    "full": "bettor",
+    "back": 0,
+    "extra": "tor"
+  },
+  {
+    "word": "bette",
+    "suffix": "i",
+    "full": "betti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bide",
+    "suffix": "i",
+    "full": "bidi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "big",
+    "suffix": "in",
+    "full": "biggin",
+    "back": 0,
+    "extra": "gin"
+  },
+  {
+    "word": "big",
+    "suffix": "ity",
+    "full": "biggity",
+    "back": 0,
+    "extra": "gity"
+  },
+  {
+    "word": "bimetal",
+    "suffix": "ism",
+    "full": "bimetallism",
+    "back": 0,
+    "extra": "lism"
+  },
+  {
+    "word": "bite",
+    "suffix": "en",
+    "full": "bitten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "blam",
+    "suffix": "o",
+    "full": "blammo",
+    "back": 0,
+    "extra": "mo"
+  },
+  {
+    "word": "blanquet",
+    "suffix": "e",
+    "full": "blanquette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "ble",
+    "suffix": "ties",
+    "full": "bilities",
+    "back": 2,
+    "extra": "ilities"
+  },
+  {
+    "word": "ble",
+    "suffix": "ty",
+    "full": "bility",
+    "back": 2,
+    "extra": "ility"
+  },
+  {
+    "word": "blot",
+    "suffix": "esque",
+    "full": "blottesque",
+    "back": 0,
+    "extra": "tesque"
+  },
+  {
+    "word": "bob",
+    "suffix": "i",
+    "full": "bobbi",
+    "back": 0,
+    "extra": "bi"
+  },
+  {
+    "word": "bolete",
+    "suffix": "i",
+    "full": "boleti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bordel",
+    "suffix": "o",
+    "full": "bordello",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "bot",
+    "suffix": "e",
+    "full": "botte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "bot",
+    "suffix": "ine",
+    "full": "bottine",
+    "back": 0,
+    "extra": "tine"
+  },
+  {
+    "word": "bourguignon",
+    "suffix": "e",
+    "full": "bourguignonne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "brachiate",
+    "suffix": "er",
+    "full": "brachiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "brat",
+    "suffix": "ice",
+    "full": "brattice",
+    "back": 0,
+    "extra": "tice"
+  },
+  {
+    "word": "brave",
+    "suffix": "i",
+    "full": "bravi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bren",
+    "suffix": "an",
+    "full": "brennan",
+    "back": 0,
+    "extra": "nan"
+  },
+  {
+    "word": "bridget",
+    "suffix": "e",
+    "full": "bridgette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "brigit",
+    "suffix": "e",
+    "full": "brigitte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "brit",
+    "suffix": "onic",
+    "full": "brittonic",
+    "back": 0,
+    "extra": "tonic"
+  },
+  {
+    "word": "brocatel",
+    "suffix": "e",
+    "full": "brocatelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "brunel",
+    "suffix": "a",
+    "full": "brunella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "brunet",
+    "suffix": "e",
+    "full": "brunette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "bub",
+    "suffix": "a",
+    "full": "bubba",
+    "back": 0,
+    "extra": "ba"
+  },
+  {
+    "word": "buffe",
+    "suffix": "i",
+    "full": "buffi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "bul",
+    "suffix": "a",
+    "full": "bulla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "bul",
+    "suffix": "et",
+    "full": "bullet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "bul",
+    "suffix": "ion",
+    "full": "bullion",
+    "back": 0,
+    "extra": "lion"
+  },
+  {
+    "word": "bul",
+    "suffix": "ous",
+    "full": "bullous",
+    "back": 0,
+    "extra": "lous"
+  },
+  {
+    "word": "bur",
+    "suffix": "is",
+    "full": "burris",
+    "back": 0,
+    "extra": "ris"
+  },
+  {
+    "word": "bur",
+    "suffix": "ito",
+    "full": "burrito",
+    "back": 0,
+    "extra": "rito"
+  },
+  {
+    "word": "bur",
+    "suffix": "o",
+    "full": "burro",
+    "back": 0,
+    "extra": "ro"
+  },
+  {
+    "word": "buret",
+    "suffix": "e",
+    "full": "burette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "burnet",
+    "suffix": "ize",
+    "full": "burnettize",
+    "back": 0,
+    "extra": "tize"
+  },
+  {
+    "word": "burnet",
+    "suffix": "izing",
+    "full": "burnettizing",
+    "back": 0,
+    "extra": "tizing"
+  },
+  {
+    "word": "bust",
+    "suffix": "abilit",
+    "full": "bustibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "bust",
+    "suffix": "abl",
+    "full": "bustibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "but",
+    "suffix": "e",
+    "full": "butte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "but",
+    "suffix": "on",
+    "full": "button",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "c",
+    "suffix": "ed",
+    "full": "cked",
+    "back": 0,
+    "extra": "ked"
+  },
+  {
+    "word": "c",
+    "suffix": "er",
+    "full": "cker",
+    "back": 0,
+    "extra": "ker"
+  },
+  {
+    "word": "c",
+    "suffix": "ing",
+    "full": "cking",
+    "back": 0,
+    "extra": "king"
+  },
+  {
+    "word": "cab",
+    "suffix": "age",
+    "full": "cabbage",
+    "back": 0,
+    "extra": "bage"
+  },
+  {
+    "word": "cabal",
+    "suffix": "ine",
+    "full": "caballine",
+    "back": 0,
+    "extra": "line"
+  },
+  {
+    "word": "cad",
+    "suffix": "ice",
+    "full": "caddice",
+    "back": 0,
+    "extra": "dice"
+  },
+  {
+    "word": "cad",
+    "suffix": "is",
+    "full": "caddis",
+    "back": 0,
+    "extra": "dis"
+  },
+  {
+    "word": "cade",
+    "suffix": "i",
+    "full": "cadi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "cal",
+    "suffix": "a",
+    "full": "calla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "cal",
+    "suffix": "et",
+    "full": "callet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "cal",
+    "suffix": "ose",
+    "full": "callose",
+    "back": 0,
+    "extra": "lose"
+  },
+  {
+    "word": "cal",
+    "suffix": "ous",
+    "full": "callous",
+    "back": 0,
+    "extra": "lous"
+  },
+  {
+    "word": "cal",
+    "suffix": "out",
+    "full": "callout",
+    "back": 0,
+    "extra": "lout"
+  },
+  {
+    "word": "cal",
+    "suffix": "um",
+    "full": "callum",
+    "back": 0,
+    "extra": "lum"
+  },
+  {
+    "word": "cal",
+    "suffix": "us",
+    "full": "callus",
+    "back": 0,
+    "extra": "lus"
+  },
+  {
+    "word": "calligram",
+    "suffix": "e",
+    "full": "calligramme",
+    "back": 0,
+    "extra": "me"
+  },
+  {
+    "word": "calumniate",
+    "suffix": "er",
+    "full": "calumniator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "calycule",
+    "suffix": "i",
+    "full": "calyculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "calzone",
+    "suffix": "i",
+    "full": "calzoni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "cam",
+    "suffix": "al",
+    "full": "cammal",
+    "back": 0,
+    "extra": "mal"
+  },
+  {
+    "word": "came",
+    "suffix": "i",
+    "full": "cami",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "camel",
+    "suffix": "ia",
+    "full": "camellia",
+    "back": 0,
+    "extra": "lia"
+  },
+  {
+    "word": "can",
+    "suffix": "ae",
+    "full": "cannae",
+    "back": 0,
+    "extra": "nae"
+  },
+  {
+    "word": "can",
+    "suffix": "es",
+    "full": "cannes",
+    "back": 0,
+    "extra": "nes"
+  },
+  {
+    "word": "can",
+    "suffix": "ular",
+    "full": "cannular",
+    "back": 0,
+    "extra": "nular"
+  },
+  {
+    "word": "can",
+    "suffix": "ulation",
+    "full": "cannulation",
+    "back": 0,
+    "extra": "nulation"
+  },
+  {
+    "word": "cancel",
+    "suffix": "i",
+    "full": "cancelli",
+    "back": 0,
+    "extra": "li"
+  },
+  {
+    "word": "cannel",
+    "suffix": "ini",
+    "full": "cannellini",
+    "back": 0,
+    "extra": "lini"
+  },
+  {
+    "word": "cantatrice",
+    "suffix": "i",
+    "full": "cantatrici",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "canzone",
+    "suffix": "i",
+    "full": "canzoni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "canzonet",
+    "suffix": "a",
+    "full": "canzonetta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "canzonet",
+    "suffix": "e",
+    "full": "canzonette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "cape",
+    "suffix": "i",
+    "full": "capi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "capelline",
+    "suffix": "i",
+    "full": "capellini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "capric",
+    "suffix": "i",
+    "full": "capricci",
+    "back": 0,
+    "extra": "ci"
+  },
+  {
+    "word": "capt",
+    "suffix": "er",
+    "full": "captor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "car",
+    "suffix": "ion",
+    "full": "carrion",
+    "back": 0,
+    "extra": "rion"
+  },
+  {
+    "word": "carabiniere",
+    "suffix": "i",
+    "full": "carabinieri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "caravel",
+    "suffix": "e",
+    "full": "caravelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "carburet",
+    "suffix": "er",
+    "full": "carburetor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "carib",
+    "suffix": "ean",
+    "full": "caribbean",
+    "back": 0,
+    "extra": "bean"
+  },
+  {
+    "word": "carnal",
+    "suffix": "ite",
+    "full": "carnallite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "carpel",
+    "suffix": "ary",
+    "full": "carpellary",
+    "back": 0,
+    "extra": "lary"
+  },
+  {
+    "word": "carpel",
+    "suffix": "ate",
+    "full": "carpellate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "castrate",
+    "suffix": "i",
+    "full": "castrati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "caveat",
+    "suffix": "er",
+    "full": "caveator",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "cede",
+    "suffix": "i",
+    "full": "cedi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "cel",
+    "suffix": "a",
+    "full": "cella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "cel",
+    "suffix": "ist",
+    "full": "cellist",
+    "back": 0,
+    "extra": "list"
+  },
+  {
+    "word": "cel",
+    "suffix": "o",
+    "full": "cello",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "cel",
+    "suffix": "ular",
+    "full": "cellular",
+    "back": 0,
+    "extra": "lular"
+  },
+  {
+    "word": "cel",
+    "suffix": "ulated",
+    "full": "cellulated",
+    "back": 0,
+    "extra": "lulated"
+  },
+  {
+    "word": "cel",
+    "suffix": "ule",
+    "full": "cellule",
+    "back": 0,
+    "extra": "lule"
+  },
+  {
+    "word": "cens",
+    "suffix": "er",
+    "full": "censor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "cense",
+    "suffix": "er",
+    "full": "censor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "chad",
+    "suffix": "er",
+    "full": "chador",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "chal",
+    "suffix": "is",
+    "full": "challis",
+    "back": 0,
+    "extra": "lis"
+  },
+  {
+    "word": "chancel",
+    "suffix": "er",
+    "full": "chancellor",
+    "back": 0,
+    "extra": "lor"
+  },
+  {
+    "word": "chap",
+    "suffix": "al",
+    "full": "chappal",
+    "back": 0,
+    "extra": "pal"
+  },
+  {
+    "word": "char",
+    "suffix": "o",
+    "full": "charro",
+    "back": 0,
+    "extra": "ro"
+  },
+  {
+    "word": "chardon",
+    "suffix": "ay",
+    "full": "chardonnay",
+    "back": 0,
+    "extra": "nay"
+  },
+  {
+    "word": "chat",
+    "suffix": "a",
+    "full": "chatta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "chat",
+    "suffix": "i",
+    "full": "chatti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "chere",
+    "suffix": "i",
+    "full": "cheri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "chevret",
+    "suffix": "e",
+    "full": "chevrette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "chik",
+    "suffix": "er",
+    "full": "chikor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "chitarrone",
+    "suffix": "i",
+    "full": "chitarroni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "choc",
+    "suffix": "y",
+    "full": "choccy",
+    "back": 0,
+    "extra": "cy"
+  },
+  {
+    "word": "chondre",
+    "suffix": "i",
+    "full": "chondri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "chum",
+    "suffix": "age",
+    "full": "chummage",
+    "back": 0,
+    "extra": "mage"
+  },
+  {
+    "word": "cicerone",
+    "suffix": "i",
+    "full": "ciceroni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "cir",
+    "suffix": "ate",
+    "full": "cirrate",
+    "back": 0,
+    "extra": "rate"
+  },
+  {
+    "word": "cir",
+    "suffix": "i",
+    "full": "cirri",
+    "back": 0,
+    "extra": "ri"
+  },
+  {
+    "word": "cir",
+    "suffix": "ose",
+    "full": "cirrose",
+    "back": 0,
+    "extra": "rose"
+  },
+  {
+    "word": "cir",
+    "suffix": "ous",
+    "full": "cirrous",
+    "back": 0,
+    "extra": "rous"
+  },
+  {
+    "word": "cir",
+    "suffix": "us",
+    "full": "cirrus",
+    "back": 0,
+    "extra": "rus"
+  },
+  {
+    "word": "clam",
+    "suffix": "er",
+    "full": "clamor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "clame",
+    "suffix": "er",
+    "full": "clamor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "clang",
+    "suffix": "er",
+    "full": "clangor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "class",
+    "suffix": "able",
+    "full": "classible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "clave",
+    "suffix": "i",
+    "full": "clavi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "clog",
+    "suffix": "i",
+    "full": "cloggi",
+    "back": 0,
+    "extra": "gi"
+  },
+  {
+    "word": "cloison",
+    "suffix": "age",
+    "full": "cloisonnage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "cloison",
+    "suffix": "es",
+    "full": "cloisonnes",
+    "back": 0,
+    "extra": "nes"
+  },
+  {
+    "word": "club",
+    "suffix": "ism",
+    "full": "clubbism",
+    "back": 0,
+    "extra": "bism"
+  },
+  {
+    "word": "club",
+    "suffix": "ist",
+    "full": "clubbist",
+    "back": 0,
+    "extra": "bist"
+  },
+  {
+    "word": "codicil",
+    "suffix": "ary",
+    "full": "codicillary",
+    "back": 0,
+    "extra": "lary"
+  },
+  {
+    "word": "coenure",
+    "suffix": "i",
+    "full": "coenuri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "coerce",
+    "suffix": "able",
+    "full": "coercible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "cognoscente",
+    "suffix": "i",
+    "full": "cognoscenti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "col",
+    "suffix": "age",
+    "full": "collage",
+    "back": 0,
+    "extra": "lage"
+  },
+  {
+    "word": "col",
+    "suffix": "ar",
+    "full": "collar",
+    "back": 0,
+    "extra": "lar"
+  },
+  {
+    "word": "col",
+    "suffix": "ate",
+    "full": "collate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "col",
+    "suffix": "ating",
+    "full": "collating",
+    "back": 0,
+    "extra": "lating"
+  },
+  {
+    "word": "col",
+    "suffix": "ation",
+    "full": "collation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "col",
+    "suffix": "ative",
+    "full": "collative",
+    "back": 0,
+    "extra": "lative"
+  },
+  {
+    "word": "col",
+    "suffix": "ator",
+    "full": "collator",
+    "back": 0,
+    "extra": "lator"
+  },
+  {
+    "word": "col",
+    "suffix": "er",
+    "full": "color",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "col",
+    "suffix": "et",
+    "full": "collet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "col",
+    "suffix": "ins",
+    "full": "collins",
+    "back": 0,
+    "extra": "lins"
+  },
+  {
+    "word": "col",
+    "suffix": "oid",
+    "full": "colloid",
+    "back": 0,
+    "extra": "loid"
+  },
+  {
+    "word": "cole",
+    "suffix": "er",
+    "full": "color",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "colet",
+    "suffix": "e",
+    "full": "colette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "collaret",
+    "suffix": "e",
+    "full": "collarette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "collect",
+    "suffix": "able",
+    "full": "collectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "colone",
+    "suffix": "i",
+    "full": "coloni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "columel",
+    "suffix": "a",
+    "full": "columella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "com",
+    "suffix": "ata",
+    "full": "commata",
+    "back": 0,
+    "extra": "mata"
+  },
+  {
+    "word": "com",
+    "suffix": "inate",
+    "full": "comminate",
+    "back": 0,
+    "extra": "minate"
+  },
+  {
+    "word": "com",
+    "suffix": "ination",
+    "full": "commination",
+    "back": 0,
+    "extra": "mination"
+  },
+  {
+    "word": "com",
+    "suffix": "is",
+    "full": "commis",
+    "back": 0,
+    "extra": "mis"
+  },
+  {
+    "word": "com",
+    "suffix": "ix",
+    "full": "commix",
+    "back": 0,
+    "extra": "mix"
+  },
+  {
+    "word": "com",
+    "suffix": "o",
+    "full": "commo",
+    "back": 0,
+    "extra": "mo"
+  },
+  {
+    "word": "combust",
+    "suffix": "er",
+    "full": "combustor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "commit",
+    "suffix": "al",
+    "full": "committal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "commit",
+    "suffix": "ee",
+    "full": "committee",
+    "back": 0,
+    "extra": "tee"
+  },
+  {
+    "word": "compact",
+    "suffix": "able",
+    "full": "compactible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "compel",
+    "suffix": "ation",
+    "full": "compellation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "compel",
+    "suffix": "ative",
+    "full": "compellative",
+    "back": 0,
+    "extra": "lative"
+  },
+  {
+    "word": "composite",
+    "suffix": "er",
+    "full": "compositor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "comprehend",
+    "suffix": "able",
+    "full": "comprehendible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "compress",
+    "suffix": "er",
+    "full": "compressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "con",
+    "suffix": "ive",
+    "full": "connive",
+    "back": 0,
+    "extra": "nive"
+  },
+  {
+    "word": "conciliate",
+    "suffix": "er",
+    "full": "conciliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "condense",
+    "suffix": "able",
+    "full": "condensible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "condottiere",
+    "suffix": "i",
+    "full": "condottieri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "cone",
+    "suffix": "i",
+    "full": "coni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "confer",
+    "suffix": "al",
+    "full": "conferral",
+    "back": 0,
+    "extra": "ral"
+  },
+  {
+    "word": "confess",
+    "suffix": "er",
+    "full": "confessor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "confirm",
+    "suffix": "er",
+    "full": "confirmor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "conquer",
+    "suffix": "er",
+    "full": "conqueror",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "consigliere",
+    "suffix": "i",
+    "full": "consiglieri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "consign",
+    "suffix": "er",
+    "full": "consignor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "consult",
+    "suffix": "er",
+    "full": "consultor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "contadine",
+    "suffix": "i",
+    "full": "contadini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "contemn",
+    "suffix": "able",
+    "full": "contemnible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "contemn",
+    "suffix": "er",
+    "full": "contemnor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "contempt",
+    "suffix": "able",
+    "full": "contemptible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "continuate",
+    "suffix": "er",
+    "full": "continuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "contract",
+    "suffix": "able",
+    "full": "contractible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "contribute",
+    "suffix": "er",
+    "full": "contributor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "conversazione",
+    "suffix": "i",
+    "full": "conversazioni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "convey",
+    "suffix": "er",
+    "full": "conveyor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "convulse",
+    "suffix": "able",
+    "full": "convulsible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "cop",
+    "suffix": "in",
+    "full": "coppin",
+    "back": 0,
+    "extra": "pin"
+  },
+  {
+    "word": "coquet",
+    "suffix": "e",
+    "full": "coquette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "coral",
+    "suffix": "a",
+    "full": "coralla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "coral",
+    "suffix": "ian",
+    "full": "corallian",
+    "back": 0,
+    "extra": "lian"
+  },
+  {
+    "word": "coral",
+    "suffix": "ine",
+    "full": "coralline",
+    "back": 0,
+    "extra": "line"
+  },
+  {
+    "word": "coral",
+    "suffix": "ite",
+    "full": "corallite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "coral",
+    "suffix": "oid",
+    "full": "coralloid",
+    "back": 0,
+    "extra": "loid"
+  },
+  {
+    "word": "coral",
+    "suffix": "um",
+    "full": "corallum",
+    "back": 0,
+    "extra": "lum"
+  },
+  {
+    "word": "cornet",
+    "suffix": "i",
+    "full": "cornetti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "cornet",
+    "suffix": "o",
+    "full": "cornetto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "corselet",
+    "suffix": "e",
+    "full": "corselette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "cortile",
+    "suffix": "i",
+    "full": "cortili",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "corvet",
+    "suffix": "e",
+    "full": "corvette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "cot",
+    "suffix": "a",
+    "full": "cotta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "cot",
+    "suffix": "oid",
+    "full": "cottoid",
+    "back": 0,
+    "extra": "toid"
+  },
+  {
+    "word": "cot",
+    "suffix": "on",
+    "full": "cotton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "council",
+    "suffix": "er",
+    "full": "councilor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "counsel",
+    "suffix": "er",
+    "full": "counselor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "counter",
+    "suffix": "ally",
+    "full": "counterrally",
+    "back": 0,
+    "extra": "rally"
+  },
+  {
+    "word": "coutil",
+    "suffix": "e",
+    "full": "coutille",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "covenant",
+    "suffix": "er",
+    "full": "covenantor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "create",
+    "suffix": "er",
+    "full": "creator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "creme",
+    "suffix": "er",
+    "full": "cremor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "crenel",
+    "suffix": "e",
+    "full": "crenelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "crib",
+    "suffix": "age",
+    "full": "cribbage",
+    "back": 0,
+    "extra": "bage"
+  },
+  {
+    "word": "cru",
+    "suffix": "er",
+    "full": "cruor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "cryptogram",
+    "suffix": "ic",
+    "full": "cryptogrammic",
+    "back": 0,
+    "extra": "mic"
+  },
+  {
+    "word": "crystal",
+    "suffix": "ine",
+    "full": "crystalline",
+    "back": 0,
+    "extra": "line"
+  },
+  {
+    "word": "crystal",
+    "suffix": "ite",
+    "full": "crystallite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "crystal",
+    "suffix": "itis",
+    "full": "crystallitis",
+    "back": 0,
+    "extra": "litis"
+  },
+  {
+    "word": "crystal",
+    "suffix": "izable",
+    "full": "crystallizable",
+    "back": 0,
+    "extra": "lizable"
+  },
+  {
+    "word": "crystal",
+    "suffix": "ization",
+    "full": "crystallization",
+    "back": 0,
+    "extra": "lization"
+  },
+  {
+    "word": "crystal",
+    "suffix": "ize",
+    "full": "crystallize",
+    "back": 0,
+    "extra": "lize"
+  },
+  {
+    "word": "crystal",
+    "suffix": "izing",
+    "full": "crystallizing",
+    "back": 0,
+    "extra": "lizing"
+  },
+  {
+    "word": "crystal",
+    "suffix": "ography",
+    "full": "crystallography",
+    "back": 0,
+    "extra": "lography"
+  },
+  {
+    "word": "crystal",
+    "suffix": "oid",
+    "full": "crystalloid",
+    "back": 0,
+    "extra": "loid"
+  },
+  {
+    "word": "cup",
+    "suffix": "a",
+    "full": "cuppa",
+    "back": 0,
+    "extra": "pa"
+  },
+  {
+    "word": "curet",
+    "suffix": "age",
+    "full": "curettage",
+    "back": 0,
+    "extra": "tage"
+  },
+  {
+    "word": "curet",
+    "suffix": "e",
+    "full": "curette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "curse",
+    "suffix": "i",
+    "full": "cursi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "cuspid",
+    "suffix": "er",
+    "full": "cuspidor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "cut",
+    "suffix": "age",
+    "full": "cuttage",
+    "back": 0,
+    "extra": "tage"
+  },
+  {
+    "word": "cut",
+    "suffix": "o",
+    "full": "cutto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "cyril",
+    "suffix": "ic",
+    "full": "cyrillic",
+    "back": 0,
+    "extra": "lic"
+  },
+  {
+    "word": "dag",
+    "suffix": "a",
+    "full": "dagga",
+    "back": 0,
+    "extra": "ga"
+  },
+  {
+    "word": "dale",
+    "suffix": "i",
+    "full": "dali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "damoisel",
+    "suffix": "e",
+    "full": "damoiselle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "dare",
+    "suffix": "i",
+    "full": "dari",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "debt",
+    "suffix": "er",
+    "full": "debtor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "dec",
+    "suffix": "a",
+    "full": "decca",
+    "back": 0,
+    "extra": "ca"
+  },
+  {
+    "word": "dec",
+    "suffix": "er",
+    "full": "decor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "dec",
+    "suffix": "ie",
+    "full": "deccie",
+    "back": 0,
+    "extra": "cie"
+  },
+  {
+    "word": "decagram",
+    "suffix": "e",
+    "full": "decagramme",
+    "back": 0,
+    "extra": "me"
+  },
+  {
+    "word": "decane",
+    "suffix": "i",
+    "full": "decani",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "decoct",
+    "suffix": "able",
+    "full": "decoctible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "defect",
+    "suffix": "able",
+    "full": "defectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "defer",
+    "suffix": "al",
+    "full": "deferral",
+    "back": 0,
+    "extra": "ral"
+  },
+  {
+    "word": "defoliate",
+    "suffix": "er",
+    "full": "defoliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "degame",
+    "suffix": "i",
+    "full": "degami",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "del",
+    "suffix": "a",
+    "full": "della",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "dele",
+    "suffix": "able",
+    "full": "delible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "delineate",
+    "suffix": "er",
+    "full": "delineator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "demean",
+    "suffix": "er",
+    "full": "demeanor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "demur",
+    "suffix": "age",
+    "full": "demurrage",
+    "back": 0,
+    "extra": "rage"
+  },
+  {
+    "word": "demur",
+    "suffix": "al",
+    "full": "demurral",
+    "back": 0,
+    "extra": "ral"
+  },
+  {
+    "word": "den",
+    "suffix": "et",
+    "full": "dennet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "dene",
+    "suffix": "i",
+    "full": "deni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "dentel",
+    "suffix": "e",
+    "full": "dentelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "depreciate",
+    "suffix": "er",
+    "full": "depreciator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "depress",
+    "suffix": "er",
+    "full": "depressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "deprogram",
+    "suffix": "e",
+    "full": "deprogramme",
+    "back": 0,
+    "extra": "me"
+  },
+  {
+    "word": "der",
+    "suffix": "is",
+    "full": "derris",
+    "back": 0,
+    "extra": "ris"
+  },
+  {
+    "word": "descend",
+    "suffix": "able",
+    "full": "descendible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "deviate",
+    "suffix": "er",
+    "full": "deviator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "differentiate",
+    "suffix": "er",
+    "full": "differentiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "dirige",
+    "suffix": "able",
+    "full": "dirigible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "discern",
+    "suffix": "able",
+    "full": "discernible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "discerp",
+    "suffix": "able",
+    "full": "discerpible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "dismiss",
+    "suffix": "able",
+    "full": "dismissible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "disperse",
+    "suffix": "able",
+    "full": "dispersible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "disrupt",
+    "suffix": "er",
+    "full": "disruptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "dissect",
+    "suffix": "able",
+    "full": "dissectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "disseize",
+    "suffix": "er",
+    "full": "disseizor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "distract",
+    "suffix": "able",
+    "full": "distractible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "distribute",
+    "suffix": "er",
+    "full": "distributor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "dit",
+    "suffix": "ay",
+    "full": "dittay",
+    "back": 0,
+    "extra": "tay"
+  },
+  {
+    "word": "dit",
+    "suffix": "o",
+    "full": "ditto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "dive",
+    "suffix": "i",
+    "full": "divi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "divest",
+    "suffix": "able",
+    "full": "divestible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "dob",
+    "suffix": "in",
+    "full": "dobbin",
+    "back": 0,
+    "extra": "bin"
+  },
+  {
+    "word": "doc",
+    "suffix": "able",
+    "full": "docible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "dog",
+    "suffix": "ess",
+    "full": "doggess",
+    "back": 0,
+    "extra": "gess"
+  },
+  {
+    "word": "dog",
+    "suffix": "o",
+    "full": "doggo",
+    "back": 0,
+    "extra": "go"
+  },
+  {
+    "word": "dol",
+    "suffix": "ar",
+    "full": "dollar",
+    "back": 0,
+    "extra": "lar"
+  },
+  {
+    "word": "dol",
+    "suffix": "er",
+    "full": "dolor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "dolce",
+    "suffix": "i",
+    "full": "dolci",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "dole",
+    "suffix": "er",
+    "full": "dolor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "don",
+    "suffix": "e",
+    "full": "donne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "don",
+    "suffix": "ian",
+    "full": "donnian",
+    "back": 0,
+    "extra": "nian"
+  },
+  {
+    "word": "don",
+    "suffix": "ism",
+    "full": "donnism",
+    "back": 0,
+    "extra": "nism"
+  },
+  {
+    "word": "done",
+    "suffix": "er",
+    "full": "donor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "doyen",
+    "suffix": "e",
+    "full": "doyenne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "drab",
+    "suffix": "et",
+    "full": "drabbet",
+    "back": 0,
+    "extra": "bet"
+  },
+  {
+    "word": "drip",
+    "suffix": "age",
+    "full": "drippage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "drug",
+    "suffix": "et",
+    "full": "drugget",
+    "back": 0,
+    "extra": "get"
+  },
+  {
+    "word": "drug",
+    "suffix": "ist",
+    "full": "druggist",
+    "back": 0,
+    "extra": "gist"
+  },
+  {
+    "word": "dub",
+    "suffix": "in",
+    "full": "dubbin",
+    "back": 0,
+    "extra": "bin"
+  },
+  {
+    "word": "duce",
+    "suffix": "i",
+    "full": "duci",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "due",
+    "suffix": "i",
+    "full": "dui",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "dun",
+    "suffix": "age",
+    "full": "dunnage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "dun",
+    "suffix": "ess",
+    "full": "dunness",
+    "back": 0,
+    "extra": "ness"
+  },
+  {
+    "word": "dun",
+    "suffix": "o",
+    "full": "dunno",
+    "back": 0,
+    "extra": "no"
+  },
+  {
+    "word": "duncan",
+    "suffix": "on",
+    "full": "duncannon",
+    "back": 0,
+    "extra": "non"
+  },
+  {
+    "word": "ed",
+    "suffix": "able",
+    "full": "edible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "ee",
+    "suffix": "e",
+    "full": "ee",
+    "back": 0,
+    "extra": ""
+  },
+  {
+    "word": "effect",
+    "suffix": "able",
+    "full": "effectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "effervesce",
+    "suffix": "able",
+    "full": "effervescible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "elide",
+    "suffix": "able",
+    "full": "elidible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "elude",
+    "suffix": "able",
+    "full": "eludible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "elute",
+    "suffix": "er",
+    "full": "elutor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "elutriate",
+    "suffix": "er",
+    "full": "elutriator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "embassade",
+    "suffix": "er",
+    "full": "embassador",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "embrace",
+    "suffix": "er",
+    "full": "embraceor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "eme",
+    "suffix": "u",
+    "full": "emu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "emit",
+    "suffix": "ance",
+    "full": "emittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "engram",
+    "suffix": "a",
+    "full": "engramma",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "engram",
+    "suffix": "e",
+    "full": "engramme",
+    "back": 0,
+    "extra": "me"
+  },
+  {
+    "word": "engram",
+    "suffix": "ic",
+    "full": "engrammic",
+    "back": 0,
+    "extra": "mic"
+  },
+  {
+    "word": "enunciate",
+    "suffix": "er",
+    "full": "enunciator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "ephebe",
+    "suffix": "i",
+    "full": "ephebi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "epigone",
+    "suffix": "i",
+    "full": "epigoni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "epigram",
+    "suffix": "atize",
+    "full": "epigrammatize",
+    "back": 0,
+    "extra": "matize"
+  },
+  {
+    "word": "ept",
+    "suffix": "abilit",
+    "full": "eptibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "ept",
+    "suffix": "abl",
+    "full": "eptibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "equate",
+    "suffix": "er",
+    "full": "equator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "eros",
+    "suffix": "able",
+    "full": "erosible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "erose",
+    "suffix": "able",
+    "full": "erosible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "err",
+    "suffix": "er",
+    "full": "error",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "erwin",
+    "suffix": "a",
+    "full": "erwinna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "escheat",
+    "suffix": "er",
+    "full": "escheator",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "evacuate",
+    "suffix": "er",
+    "full": "evacuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "evert",
+    "suffix": "er",
+    "full": "evertor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "except",
+    "suffix": "er",
+    "full": "exceptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "excerpt",
+    "suffix": "able",
+    "full": "excerptible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "excerpt",
+    "suffix": "er",
+    "full": "excerptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "exclude",
+    "suffix": "able",
+    "full": "excludible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "excoriate",
+    "suffix": "er",
+    "full": "excoriator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "execute",
+    "suffix": "er",
+    "full": "executor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "exempt",
+    "suffix": "able",
+    "full": "exemptible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "exfoliate",
+    "suffix": "er",
+    "full": "exfoliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "exhaust",
+    "suffix": "able",
+    "full": "exhaustible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "expatiate",
+    "suffix": "er",
+    "full": "expatiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "expel",
+    "suffix": "ant",
+    "full": "expellant",
+    "back": 0,
+    "extra": "lant"
+  },
+  {
+    "word": "expel",
+    "suffix": "ee",
+    "full": "expellee",
+    "back": 0,
+    "extra": "lee"
+  },
+  {
+    "word": "expiate",
+    "suffix": "er",
+    "full": "expiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "expropriate",
+    "suffix": "er",
+    "full": "expropriator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "extense",
+    "suffix": "er",
+    "full": "extensor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "extenuate",
+    "suffix": "er",
+    "full": "extenuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "extract",
+    "suffix": "able",
+    "full": "extractible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "fad",
+    "suffix": "ism",
+    "full": "faddism",
+    "back": 0,
+    "extra": "dism"
+  },
+  {
+    "word": "fad",
+    "suffix": "ist",
+    "full": "faddist",
+    "back": 0,
+    "extra": "dist"
+  },
+  {
+    "word": "fagot",
+    "suffix": "i",
+    "full": "fagotti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "fagot",
+    "suffix": "o",
+    "full": "fagotto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "fall",
+    "suffix": "able",
+    "full": "fallible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "fan",
+    "suffix": "in",
+    "full": "fannin",
+    "back": 0,
+    "extra": "nin"
+  },
+  {
+    "word": "farce",
+    "suffix": "i",
+    "full": "farci",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "farfal",
+    "suffix": "e",
+    "full": "farfalle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "fascicule",
+    "suffix": "i",
+    "full": "fasciculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "fave",
+    "suffix": "er",
+    "full": "favor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "fease",
+    "suffix": "able",
+    "full": "feasible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "fense",
+    "suffix": "abilit",
+    "full": "fensibilit",
+    "back": 1,
+    "extra": "ibilit"
+  },
+  {
+    "word": "fense",
+    "suffix": "abl",
+    "full": "fensibl",
+    "back": 1,
+    "extra": "ibl"
+  },
+  {
+    "word": "feoff",
+    "suffix": "er",
+    "full": "feoffor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "fer",
+    "suffix": "ate",
+    "full": "ferrate",
+    "back": 0,
+    "extra": "rate"
+  },
+  {
+    "word": "fer",
+    "suffix": "eous",
+    "full": "ferreous",
+    "back": 0,
+    "extra": "reous"
+  },
+  {
+    "word": "fer",
+    "suffix": "et",
+    "full": "ferret",
+    "back": 0,
+    "extra": "ret"
+  },
+  {
+    "word": "fer",
+    "suffix": "ic",
+    "full": "ferric",
+    "back": 0,
+    "extra": "ric"
+  },
+  {
+    "word": "fer",
+    "suffix": "ite",
+    "full": "ferrite",
+    "back": 0,
+    "extra": "rite"
+  },
+  {
+    "word": "fer",
+    "suffix": "ography",
+    "full": "ferrography",
+    "back": 0,
+    "extra": "rography"
+  },
+  {
+    "word": "fer",
+    "suffix": "ous",
+    "full": "ferrous",
+    "back": 0,
+    "extra": "rous"
+  },
+  {
+    "word": "fer",
+    "suffix": "ule",
+    "full": "ferrule",
+    "back": 0,
+    "extra": "rule"
+  },
+  {
+    "word": "fer",
+    "suffix": "um",
+    "full": "ferrum",
+    "back": 0,
+    "extra": "rum"
+  },
+  {
+    "word": "ferment",
+    "suffix": "er",
+    "full": "fermentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "fervid",
+    "suffix": "er",
+    "full": "fervidor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "fettucine",
+    "suffix": "i",
+    "full": "fettucini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "fez",
+    "suffix": "an",
+    "full": "fezzan",
+    "back": 0,
+    "extra": "zan"
+  },
+  {
+    "word": "fez",
+    "suffix": "es",
+    "full": "fezzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "fibril",
+    "suffix": "a",
+    "full": "fibrilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "fibril",
+    "suffix": "in",
+    "full": "fibrillin",
+    "back": 0,
+    "extra": "lin"
+  },
+  {
+    "word": "fibril",
+    "suffix": "ose",
+    "full": "fibrillose",
+    "back": 0,
+    "extra": "lose"
+  },
+  {
+    "word": "fibril",
+    "suffix": "ous",
+    "full": "fibrillous",
+    "back": 0,
+    "extra": "lous"
+  },
+  {
+    "word": "fiche",
+    "suffix": "u",
+    "full": "fichu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "fin",
+    "suffix": "an",
+    "full": "finnan",
+    "back": 0,
+    "extra": "nan"
+  },
+  {
+    "word": "fin",
+    "suffix": "ey",
+    "full": "finney",
+    "back": 0,
+    "extra": "ney"
+  },
+  {
+    "word": "fin",
+    "suffix": "ic",
+    "full": "finnic",
+    "back": 0,
+    "extra": "nic"
+  },
+  {
+    "word": "fine",
+    "suffix": "i",
+    "full": "fini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "flam",
+    "suffix": "ulated",
+    "full": "flammulated",
+    "back": 0,
+    "extra": "mulated"
+  },
+  {
+    "word": "flam",
+    "suffix": "ulation",
+    "full": "flammulation",
+    "back": 0,
+    "extra": "mulation"
+  },
+  {
+    "word": "flam",
+    "suffix": "ule",
+    "full": "flammule",
+    "back": 0,
+    "extra": "mule"
+  },
+  {
+    "word": "fleuret",
+    "suffix": "e",
+    "full": "fleurette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "flex",
+    "suffix": "abilit",
+    "full": "flexibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "flex",
+    "suffix": "abl",
+    "full": "flexibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "flex",
+    "suffix": "er",
+    "full": "flexor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "flip",
+    "suffix": "ant",
+    "full": "flippant",
+    "back": 0,
+    "extra": "pant"
+  },
+  {
+    "word": "floc",
+    "suffix": "ed",
+    "full": "flocced",
+    "back": 0,
+    "extra": "ced"
+  },
+  {
+    "word": "floc",
+    "suffix": "i",
+    "full": "flocci",
+    "back": 0,
+    "extra": "ci"
+  },
+  {
+    "word": "floc",
+    "suffix": "ose",
+    "full": "floccose",
+    "back": 0,
+    "extra": "cose"
+  },
+  {
+    "word": "floc",
+    "suffix": "ular",
+    "full": "floccular",
+    "back": 0,
+    "extra": "cular"
+  },
+  {
+    "word": "floc",
+    "suffix": "ulate",
+    "full": "flocculate",
+    "back": 0,
+    "extra": "culate"
+  },
+  {
+    "word": "floc",
+    "suffix": "ulating",
+    "full": "flocculating",
+    "back": 0,
+    "extra": "culating"
+  },
+  {
+    "word": "floc",
+    "suffix": "ulation",
+    "full": "flocculation",
+    "back": 0,
+    "extra": "culation"
+  },
+  {
+    "word": "floc",
+    "suffix": "ule",
+    "full": "floccule",
+    "back": 0,
+    "extra": "cule"
+  },
+  {
+    "word": "floc",
+    "suffix": "ulus",
+    "full": "flocculus",
+    "back": 0,
+    "extra": "culus"
+  },
+  {
+    "word": "floc",
+    "suffix": "us",
+    "full": "floccus",
+    "back": 0,
+    "extra": "cus"
+  },
+  {
+    "word": "floccule",
+    "suffix": "i",
+    "full": "flocculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "floweret",
+    "suffix": "e",
+    "full": "flowerette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "flu",
+    "suffix": "er",
+    "full": "fluor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "flue",
+    "suffix": "er",
+    "full": "fluor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "fog",
+    "suffix": "age",
+    "full": "foggage",
+    "back": 0,
+    "extra": "gage"
+  },
+  {
+    "word": "fol",
+    "suffix": "es",
+    "full": "folles",
+    "back": 0,
+    "extra": "les"
+  },
+  {
+    "word": "fol",
+    "suffix": "iculate",
+    "full": "folliculate",
+    "back": 0,
+    "extra": "liculate"
+  },
+  {
+    "word": "fol",
+    "suffix": "is",
+    "full": "follis",
+    "back": 0,
+    "extra": "lis"
+  },
+  {
+    "word": "forbid",
+    "suffix": "ance",
+    "full": "forbiddance",
+    "back": 0,
+    "extra": "dance"
+  },
+  {
+    "word": "force",
+    "suffix": "able",
+    "full": "forcible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "foss",
+    "suffix": "er",
+    "full": "fossor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "fosse",
+    "suffix": "er",
+    "full": "fossor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "frag",
+    "suffix": "er",
+    "full": "fragor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "frangipane",
+    "suffix": "i",
+    "full": "frangipani",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "frap",
+    "suffix": "ant",
+    "full": "frappant",
+    "back": 0,
+    "extra": "pant"
+  },
+  {
+    "word": "frap",
+    "suffix": "es",
+    "full": "frappes",
+    "back": 0,
+    "extra": "pes"
+  },
+  {
+    "word": "frate",
+    "suffix": "i",
+    "full": "frati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "frit",
+    "suffix": "ata",
+    "full": "frittata",
+    "back": 0,
+    "extra": "tata"
+  },
+  {
+    "word": "fumet",
+    "suffix": "e",
+    "full": "fumette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "fumet",
+    "suffix": "i",
+    "full": "fumetti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "fumet",
+    "suffix": "o",
+    "full": "fumetto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "fumette",
+    "suffix": "i",
+    "full": "fumetti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "fung",
+    "suffix": "able",
+    "full": "fungible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "fuse",
+    "suffix": "able",
+    "full": "fusible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "fusil",
+    "suffix": "i",
+    "full": "fusilli",
+    "back": 0,
+    "extra": "li"
+  },
+  {
+    "word": "gade",
+    "suffix": "i",
+    "full": "gadi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "gal",
+    "suffix": "on",
+    "full": "gallon",
+    "back": 0,
+    "extra": "lon"
+  },
+  {
+    "word": "gam",
+    "suffix": "a",
+    "full": "gamma",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "gam",
+    "suffix": "on",
+    "full": "gammon",
+    "back": 0,
+    "extra": "mon"
+  },
+  {
+    "word": "gambet",
+    "suffix": "a",
+    "full": "gambetta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "gan",
+    "suffix": "et",
+    "full": "gannet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "gar",
+    "suffix": "an",
+    "full": "garran",
+    "back": 0,
+    "extra": "ran"
+  },
+  {
+    "word": "gar",
+    "suffix": "et",
+    "full": "garret",
+    "back": 0,
+    "extra": "ret"
+  },
+  {
+    "word": "gar",
+    "suffix": "on",
+    "full": "garron",
+    "back": 0,
+    "extra": "ron"
+  },
+  {
+    "word": "gavot",
+    "suffix": "e",
+    "full": "gavotte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "gazel",
+    "suffix": "e",
+    "full": "gazelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "gem",
+    "suffix": "a",
+    "full": "gemma",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "gem",
+    "suffix": "eous",
+    "full": "gemmeous",
+    "back": 0,
+    "extra": "meous"
+  },
+  {
+    "word": "gem",
+    "suffix": "ulation",
+    "full": "gemmulation",
+    "back": 0,
+    "extra": "mulation"
+  },
+  {
+    "word": "gem",
+    "suffix": "ule",
+    "full": "gemmule",
+    "back": 0,
+    "extra": "mule"
+  },
+  {
+    "word": "gene",
+    "suffix": "u",
+    "full": "genu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "genet",
+    "suffix": "e",
+    "full": "genette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "gest",
+    "suffix": "abilit",
+    "full": "gestibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "gest",
+    "suffix": "abl",
+    "full": "gestibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "gib",
+    "suffix": "et",
+    "full": "gibbet",
+    "back": 0,
+    "extra": "bet"
+  },
+  {
+    "word": "gib",
+    "suffix": "on",
+    "full": "gibbon",
+    "back": 0,
+    "extra": "bon"
+  },
+  {
+    "word": "gib",
+    "suffix": "ose",
+    "full": "gibbose",
+    "back": 0,
+    "extra": "bose"
+  },
+  {
+    "word": "gib",
+    "suffix": "ous",
+    "full": "gibbous",
+    "back": 0,
+    "extra": "bous"
+  },
+  {
+    "word": "gid",
+    "suffix": "ay",
+    "full": "gidday",
+    "back": 0,
+    "extra": "day"
+  },
+  {
+    "word": "gid",
+    "suffix": "up",
+    "full": "giddup",
+    "back": 0,
+    "extra": "dup"
+  },
+  {
+    "word": "gil",
+    "suffix": "ette",
+    "full": "gillette",
+    "back": 0,
+    "extra": "lette"
+  },
+  {
+    "word": "gil",
+    "suffix": "ey",
+    "full": "gilley",
+    "back": 0,
+    "extra": "ley"
+  },
+  {
+    "word": "gil",
+    "suffix": "ian",
+    "full": "gillian",
+    "back": 0,
+    "extra": "lian"
+  },
+  {
+    "word": "git",
+    "suffix": "in",
+    "full": "gittin",
+    "back": 0,
+    "extra": "tin"
+  },
+  {
+    "word": "glad",
+    "suffix": "on",
+    "full": "gladdon",
+    "back": 0,
+    "extra": "don"
+  },
+  {
+    "word": "gladiate",
+    "suffix": "er",
+    "full": "gladiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "gladiole",
+    "suffix": "i",
+    "full": "gladioli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "glen",
+    "suffix": "a",
+    "full": "glenna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "glenvil",
+    "suffix": "e",
+    "full": "glenville",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "glomerule",
+    "suffix": "i",
+    "full": "glomeruli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "glut",
+    "suffix": "on",
+    "full": "glutton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "gob",
+    "suffix": "et",
+    "full": "gobbet",
+    "back": 0,
+    "extra": "bet"
+  },
+  {
+    "word": "god",
+    "suffix": "ess",
+    "full": "goddess",
+    "back": 0,
+    "extra": "dess"
+  },
+  {
+    "word": "got",
+    "suffix": "a",
+    "full": "gotta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "govern",
+    "suffix": "er",
+    "full": "governor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "gradine",
+    "suffix": "i",
+    "full": "gradini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "graduate",
+    "suffix": "er",
+    "full": "graduator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "graf",
+    "suffix": "ias",
+    "full": "graffias",
+    "back": 0,
+    "extra": "fias"
+  },
+  {
+    "word": "gram",
+    "suffix": "ar",
+    "full": "grammar",
+    "back": 0,
+    "extra": "mar"
+  },
+  {
+    "word": "gram",
+    "suffix": "atic",
+    "full": "grammatic",
+    "back": 0,
+    "extra": "matic"
+  },
+  {
+    "word": "grot",
+    "suffix": "o",
+    "full": "grotto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "grum",
+    "suffix": "et",
+    "full": "grummet",
+    "back": 0,
+    "extra": "met"
+  },
+  {
+    "word": "gub",
+    "suffix": "ins",
+    "full": "gubbins",
+    "back": 0,
+    "extra": "bins"
+  },
+  {
+    "word": "gul",
+    "suffix": "able",
+    "full": "gullible",
+    "back": 0,
+    "extra": "lible"
+  },
+  {
+    "word": "gul",
+    "suffix": "et",
+    "full": "gullet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "gul",
+    "suffix": "ibility",
+    "full": "gullibility",
+    "back": 0,
+    "extra": "libility"
+  },
+  {
+    "word": "gul",
+    "suffix": "ible",
+    "full": "gullible",
+    "back": 0,
+    "extra": "lible"
+  },
+  {
+    "word": "gull",
+    "suffix": "able",
+    "full": "gullible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "gum",
+    "suffix": "a",
+    "full": "gumma",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "gum",
+    "suffix": "ite",
+    "full": "gummite",
+    "back": 0,
+    "extra": "mite"
+  },
+  {
+    "word": "gum",
+    "suffix": "ose",
+    "full": "gummose",
+    "back": 0,
+    "extra": "mose"
+  },
+  {
+    "word": "gum",
+    "suffix": "osis",
+    "full": "gummosis",
+    "back": 0,
+    "extra": "mosis"
+  },
+  {
+    "word": "gum",
+    "suffix": "ous",
+    "full": "gummous",
+    "back": 0,
+    "extra": "mous"
+  },
+  {
+    "word": "gun",
+    "suffix": "age",
+    "full": "gunnage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "gusle",
+    "suffix": "i",
+    "full": "gusli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "gut",
+    "suffix": "a",
+    "full": "gutta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "gut",
+    "suffix": "e",
+    "full": "gutte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "gut",
+    "suffix": "ural",
+    "full": "guttural",
+    "back": 0,
+    "extra": "tural"
+  },
+  {
+    "word": "gyrate",
+    "suffix": "er",
+    "full": "gyrator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "gyre",
+    "suffix": "i",
+    "full": "gyri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "hag",
+    "suffix": "is",
+    "full": "haggis",
+    "back": 0,
+    "extra": "gis"
+  },
+  {
+    "word": "hake",
+    "suffix": "u",
+    "full": "haku",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "ham",
+    "suffix": "on",
+    "full": "hammon",
+    "back": 0,
+    "extra": "mon"
+  },
+  {
+    "word": "han",
+    "suffix": "ay",
+    "full": "hannay",
+    "back": 0,
+    "extra": "nay"
+  },
+  {
+    "word": "hartsel",
+    "suffix": "e",
+    "full": "hartselle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "hatchet",
+    "suffix": "ite",
+    "full": "hatchettite",
+    "back": 0,
+    "extra": "tite"
+  },
+  {
+    "word": "heide",
+    "suffix": "i",
+    "full": "heidi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "hel",
+    "suffix": "e",
+    "full": "helle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "hense",
+    "suffix": "abilit",
+    "full": "hensibilit",
+    "back": 1,
+    "extra": "ibilit"
+  },
+  {
+    "word": "hense",
+    "suffix": "abl",
+    "full": "hensibl",
+    "back": 1,
+    "extra": "ibl"
+  },
+  {
+    "word": "hic",
+    "suffix": "up",
+    "full": "hiccup",
+    "back": 0,
+    "extra": "cup"
+  },
+  {
+    "word": "hierogram",
+    "suffix": "ate",
+    "full": "hierogrammate",
+    "back": 0,
+    "extra": "mate"
+  },
+  {
+    "word": "hip",
+    "suffix": "ic",
+    "full": "hippic",
+    "back": 0,
+    "extra": "pic"
+  },
+  {
+    "word": "hip",
+    "suffix": "o",
+    "full": "hippo",
+    "back": 0,
+    "extra": "po"
+  },
+  {
+    "word": "hip",
+    "suffix": "us",
+    "full": "hippus",
+    "back": 0,
+    "extra": "pus"
+  },
+  {
+    "word": "hod",
+    "suffix": "in",
+    "full": "hoddin",
+    "back": 0,
+    "extra": "din"
+  },
+  {
+    "word": "hog",
+    "suffix": "et",
+    "full": "hogget",
+    "back": 0,
+    "extra": "get"
+  },
+  {
+    "word": "hog",
+    "suffix": "in",
+    "full": "hoggin",
+    "back": 0,
+    "extra": "gin"
+  },
+  {
+    "word": "hoke",
+    "suffix": "i",
+    "full": "hoki",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "homuncule",
+    "suffix": "i",
+    "full": "homunculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "hope",
+    "suffix": "i",
+    "full": "hopi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "hue",
+    "suffix": "i",
+    "full": "hui",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "hum",
+    "suffix": "er",
+    "full": "humor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "hum",
+    "suffix": "um",
+    "full": "hummum",
+    "back": 0,
+    "extra": "mum"
+  },
+  {
+    "word": "humid",
+    "suffix": "er",
+    "full": "humidor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "humiliate",
+    "suffix": "er",
+    "full": "humiliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "hun",
+    "suffix": "ic",
+    "full": "hunnic",
+    "back": 0,
+    "extra": "nic"
+  },
+  {
+    "word": "hydrate",
+    "suffix": "er",
+    "full": "hydrator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "illuminate",
+    "suffix": "i",
+    "full": "illuminati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "immerse",
+    "suffix": "able",
+    "full": "immersible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "immit",
+    "suffix": "ance",
+    "full": "immittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "impost",
+    "suffix": "er",
+    "full": "impostor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "impropriate",
+    "suffix": "er",
+    "full": "impropriator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "incave",
+    "suffix": "i",
+    "full": "incavi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "ince",
+    "suffix": "abilit",
+    "full": "ncibilit",
+    "back": 4,
+    "extra": "ncibilit"
+  },
+  {
+    "word": "ince",
+    "suffix": "abl",
+    "full": "ncibl",
+    "back": 4,
+    "extra": "ncibl"
+  },
+  {
+    "word": "incept",
+    "suffix": "er",
+    "full": "inceptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "include",
+    "suffix": "able",
+    "full": "includible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "indent",
+    "suffix": "er",
+    "full": "indentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "individuate",
+    "suffix": "er",
+    "full": "individuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "induc",
+    "suffix": "able",
+    "full": "inducible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "infer",
+    "suffix": "ible",
+    "full": "inferrible",
+    "back": 0,
+    "extra": "rible"
+  },
+  {
+    "word": "inflate",
+    "suffix": "er",
+    "full": "inflator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "initiate",
+    "suffix": "er",
+    "full": "initiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "insinuate",
+    "suffix": "er",
+    "full": "insinuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "intercept",
+    "suffix": "er",
+    "full": "interceptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "interconnect",
+    "suffix": "able",
+    "full": "interconnectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "interval",
+    "suffix": "ic",
+    "full": "intervallic",
+    "back": 0,
+    "extra": "lic"
+  },
+  {
+    "word": "intervene",
+    "suffix": "er",
+    "full": "intervenor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "invent",
+    "suffix": "able",
+    "full": "inventible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "invent",
+    "suffix": "er",
+    "full": "inventor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "invest",
+    "suffix": "er",
+    "full": "investor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "invite",
+    "suffix": "er",
+    "full": "invitor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "isabel",
+    "suffix": "a",
+    "full": "isabella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "isabel",
+    "suffix": "ine",
+    "full": "isabelline",
+    "back": 0,
+    "extra": "line"
+  },
+  {
+    "word": "jag",
+    "suffix": "aries",
+    "full": "jaggaries",
+    "back": 0,
+    "extra": "garies"
+  },
+  {
+    "word": "jag",
+    "suffix": "ary",
+    "full": "jaggary",
+    "back": 0,
+    "extra": "gary"
+  },
+  {
+    "word": "jambe",
+    "suffix": "u",
+    "full": "jambu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "jame",
+    "suffix": "i",
+    "full": "jami",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "janet",
+    "suffix": "e",
+    "full": "janette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "jargonel",
+    "suffix": "e",
+    "full": "jargonelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "jed",
+    "suffix": "o",
+    "full": "jeddo",
+    "back": 0,
+    "extra": "do"
+  },
+  {
+    "word": "jere",
+    "suffix": "i",
+    "full": "jeri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "jet",
+    "suffix": "on",
+    "full": "jetton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "jin",
+    "suffix": "i",
+    "full": "jinni",
+    "back": 0,
+    "extra": "ni"
+  },
+  {
+    "word": "jude",
+    "suffix": "i",
+    "full": "judi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "jug",
+    "suffix": "ins",
+    "full": "juggins",
+    "back": 0,
+    "extra": "gins"
+  },
+  {
+    "word": "juke",
+    "suffix": "u",
+    "full": "juku",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "jungle",
+    "suffix": "i",
+    "full": "jungli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "jure",
+    "suffix": "er",
+    "full": "juror",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "kab",
+    "suffix": "alism",
+    "full": "kabbalism",
+    "back": 0,
+    "extra": "balism"
+  },
+  {
+    "word": "kade",
+    "suffix": "i",
+    "full": "kadi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "kale",
+    "suffix": "i",
+    "full": "kali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "kame",
+    "suffix": "i",
+    "full": "kami",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "karen",
+    "suffix": "i",
+    "full": "karenni",
+    "back": 0,
+    "extra": "ni"
+  },
+  {
+    "word": "kazatske",
+    "suffix": "i",
+    "full": "kazatski",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "ken",
+    "suffix": "a",
+    "full": "kenna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "ken",
+    "suffix": "et",
+    "full": "kennet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "kibbe",
+    "suffix": "i",
+    "full": "kibbi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "kid",
+    "suffix": "o",
+    "full": "kiddo",
+    "back": 0,
+    "extra": "do"
+  },
+  {
+    "word": "kidnap",
+    "suffix": "ee",
+    "full": "kidnappee",
+    "back": 0,
+    "extra": "pee"
+  },
+  {
+    "word": "kip",
+    "suffix": "a",
+    "full": "kippa",
+    "back": 0,
+    "extra": "pa"
+  },
+  {
+    "word": "kop",
+    "suffix": "a",
+    "full": "koppa",
+    "back": 0,
+    "extra": "pa"
+  },
+  {
+    "word": "krone",
+    "suffix": "er",
+    "full": "kronor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "kurvey",
+    "suffix": "er",
+    "full": "kurveyor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "label",
+    "suffix": "a",
+    "full": "labella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "label",
+    "suffix": "oid",
+    "full": "labelloid",
+    "back": 0,
+    "extra": "loid"
+  },
+  {
+    "word": "label",
+    "suffix": "um",
+    "full": "labellum",
+    "back": 0,
+    "extra": "lum"
+  },
+  {
+    "word": "ladon",
+    "suffix": "a",
+    "full": "ladonna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "lag",
+    "suffix": "in",
+    "full": "laggin",
+    "back": 0,
+    "extra": "gin"
+  },
+  {
+    "word": "landaulet",
+    "suffix": "e",
+    "full": "landaulette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "langue",
+    "suffix": "er",
+    "full": "languor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "lap",
+    "suffix": "age",
+    "full": "lappage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "lap",
+    "suffix": "et",
+    "full": "lappet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "laps",
+    "suffix": "able",
+    "full": "lapsible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "lapse",
+    "suffix": "able",
+    "full": "lapsible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "lar",
+    "suffix": "up",
+    "full": "larrup",
+    "back": 0,
+    "extra": "rup"
+  },
+  {
+    "word": "lare",
+    "suffix": "i",
+    "full": "lari",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lasal",
+    "suffix": "e",
+    "full": "lasalle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "lat",
+    "suffix": "a",
+    "full": "latta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "lat",
+    "suffix": "es",
+    "full": "lattes",
+    "back": 0,
+    "extra": "tes"
+  },
+  {
+    "word": "lat",
+    "suffix": "ice",
+    "full": "lattice",
+    "back": 0,
+    "extra": "tice"
+  },
+  {
+    "word": "late",
+    "suffix": "i",
+    "full": "lati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lathe",
+    "suffix": "i",
+    "full": "lathi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "laval",
+    "suffix": "e",
+    "full": "lavalle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "lavon",
+    "suffix": "e",
+    "full": "lavonne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "lazaret",
+    "suffix": "e",
+    "full": "lazarette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "lazaret",
+    "suffix": "o",
+    "full": "lazaretto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "lazzarone",
+    "suffix": "i",
+    "full": "lazzaroni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "leg",
+    "suffix": "able",
+    "full": "legible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "leg",
+    "suffix": "e",
+    "full": "legge",
+    "back": 0,
+    "extra": "ge"
+  },
+  {
+    "word": "leke",
+    "suffix": "u",
+    "full": "leku",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "lem",
+    "suffix": "a",
+    "full": "lemma",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "lem",
+    "suffix": "e",
+    "full": "lemme",
+    "back": 0,
+    "extra": "me"
+  },
+  {
+    "word": "len",
+    "suffix": "on",
+    "full": "lennon",
+    "back": 0,
+    "extra": "non"
+  },
+  {
+    "word": "lin",
+    "suffix": "eus",
+    "full": "linneus",
+    "back": 0,
+    "extra": "neus"
+  },
+  {
+    "word": "lioncel",
+    "suffix": "e",
+    "full": "lioncelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "lip",
+    "suffix": "itude",
+    "full": "lippitude",
+    "back": 0,
+    "extra": "pitude"
+  },
+  {
+    "word": "lippe",
+    "suffix": "i",
+    "full": "lippi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lire",
+    "suffix": "i",
+    "full": "liri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lit",
+    "suffix": "on",
+    "full": "litton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "lite",
+    "suffix": "en",
+    "full": "litten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "lite",
+    "suffix": "u",
+    "full": "litu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "literate",
+    "suffix": "i",
+    "full": "literati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lithotrite",
+    "suffix": "er",
+    "full": "lithotritor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "lobe",
+    "suffix": "i",
+    "full": "lobi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lobule",
+    "suffix": "i",
+    "full": "lobuli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "locomote",
+    "suffix": "er",
+    "full": "locomotor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "locule",
+    "suffix": "i",
+    "full": "loculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "loewe",
+    "suffix": "i",
+    "full": "loewi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "loge",
+    "suffix": "ia",
+    "full": "loggia",
+    "back": 1,
+    "extra": "gia"
+  },
+  {
+    "word": "lome",
+    "suffix": "u",
+    "full": "lomu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "lon",
+    "suffix": "a",
+    "full": "lonna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "lot",
+    "suffix": "a",
+    "full": "lotta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "lot",
+    "suffix": "o",
+    "full": "lotto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "lote",
+    "suffix": "i",
+    "full": "loti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "lug",
+    "suffix": "age",
+    "full": "luggage",
+    "back": 0,
+    "extra": "gage"
+  },
+  {
+    "word": "lunet",
+    "suffix": "e",
+    "full": "lunette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "lunge",
+    "suffix": "i",
+    "full": "lungi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "luz",
+    "suffix": "es",
+    "full": "luzzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "mage",
+    "suffix": "i",
+    "full": "magi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "main",
+    "suffix": "er",
+    "full": "mainor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "mal",
+    "suffix": "ee",
+    "full": "mallee",
+    "back": 0,
+    "extra": "lee"
+  },
+  {
+    "word": "mal",
+    "suffix": "et",
+    "full": "mallet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "mal",
+    "suffix": "eus",
+    "full": "malleus",
+    "back": 0,
+    "extra": "leus"
+  },
+  {
+    "word": "mam",
+    "suffix": "ae",
+    "full": "mammae",
+    "back": 0,
+    "extra": "mae"
+  },
+  {
+    "word": "mam",
+    "suffix": "al",
+    "full": "mammal",
+    "back": 0,
+    "extra": "mal"
+  },
+  {
+    "word": "mam",
+    "suffix": "ary",
+    "full": "mammary",
+    "back": 0,
+    "extra": "mary"
+  },
+  {
+    "word": "mam",
+    "suffix": "ate",
+    "full": "mammate",
+    "back": 0,
+    "extra": "mate"
+  },
+  {
+    "word": "mam",
+    "suffix": "et",
+    "full": "mammet",
+    "back": 0,
+    "extra": "met"
+  },
+  {
+    "word": "mam",
+    "suffix": "itis",
+    "full": "mammitis",
+    "back": 0,
+    "extra": "mitis"
+  },
+  {
+    "word": "mam",
+    "suffix": "ography",
+    "full": "mammography",
+    "back": 0,
+    "extra": "mography"
+  },
+  {
+    "word": "mam",
+    "suffix": "on",
+    "full": "mammon",
+    "back": 0,
+    "extra": "mon"
+  },
+  {
+    "word": "mam",
+    "suffix": "oplasty",
+    "full": "mammoplasty",
+    "back": 0,
+    "extra": "moplasty"
+  },
+  {
+    "word": "mammate",
+    "suffix": "i",
+    "full": "mammati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "man",
+    "suffix": "an",
+    "full": "mannan",
+    "back": 0,
+    "extra": "nan"
+  },
+  {
+    "word": "man",
+    "suffix": "ite",
+    "full": "mannite",
+    "back": 0,
+    "extra": "nite"
+  },
+  {
+    "word": "man",
+    "suffix": "ose",
+    "full": "mannose",
+    "back": 0,
+    "extra": "nose"
+  },
+  {
+    "word": "manche",
+    "suffix": "u",
+    "full": "manchu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "mane",
+    "suffix": "i",
+    "full": "mani",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "manifest",
+    "suffix": "able",
+    "full": "manifestible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "mantel",
+    "suffix": "one",
+    "full": "mantellone",
+    "back": 0,
+    "extra": "lone"
+  },
+  {
+    "word": "map",
+    "suffix": "ist",
+    "full": "mappist",
+    "back": 0,
+    "extra": "pist"
+  },
+  {
+    "word": "mar",
+    "suffix": "on",
+    "full": "marron",
+    "back": 0,
+    "extra": "ron"
+  },
+  {
+    "word": "mar",
+    "suffix": "um",
+    "full": "marrum",
+    "back": 0,
+    "extra": "rum"
+  },
+  {
+    "word": "marat",
+    "suffix": "a",
+    "full": "maratta",
+    "back": 0,
+    "extra": "ta"
+  },
+  {
+    "word": "marat",
+    "suffix": "ia",
+    "full": "marattia",
+    "back": 0,
+    "extra": "tia"
+  },
+  {
+    "word": "marcel",
+    "suffix": "us",
+    "full": "marcellus",
+    "back": 0,
+    "extra": "lus"
+  },
+  {
+    "word": "marchese",
+    "suffix": "i",
+    "full": "marchesi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "mare",
+    "suffix": "i",
+    "full": "mari",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "marinette",
+    "suffix": "i",
+    "full": "marinetti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "marshal",
+    "suffix": "ese",
+    "full": "marshallese",
+    "back": 0,
+    "extra": "lese"
+  },
+  {
+    "word": "martel",
+    "suffix": "e",
+    "full": "martelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "martel",
+    "suffix": "o",
+    "full": "martello",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "mascot",
+    "suffix": "e",
+    "full": "mascotte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "mase",
+    "suffix": "u",
+    "full": "masu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "mat",
+    "suffix": "oid",
+    "full": "mattoid",
+    "back": 0,
+    "extra": "toid"
+  },
+  {
+    "word": "medal",
+    "suffix": "ic",
+    "full": "medallic",
+    "back": 0,
+    "extra": "lic"
+  },
+  {
+    "word": "medal",
+    "suffix": "ion",
+    "full": "medallion",
+    "back": 0,
+    "extra": "lion"
+  },
+  {
+    "word": "mediate",
+    "suffix": "er",
+    "full": "mediator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "mel",
+    "suffix": "ay",
+    "full": "mellay",
+    "back": 0,
+    "extra": "lay"
+  },
+  {
+    "word": "mel",
+    "suffix": "ette",
+    "full": "mellette",
+    "back": 0,
+    "extra": "lette"
+  },
+  {
+    "word": "mel",
+    "suffix": "ification",
+    "full": "mellification",
+    "back": 0,
+    "extra": "lification"
+  },
+  {
+    "word": "mel",
+    "suffix": "ite",
+    "full": "mellite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "mel",
+    "suffix": "on",
+    "full": "mellon",
+    "back": 0,
+    "extra": "lon"
+  },
+  {
+    "word": "mene",
+    "suffix": "u",
+    "full": "menu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "mere",
+    "suffix": "i",
+    "full": "meri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "metal",
+    "suffix": "ic",
+    "full": "metallic",
+    "back": 0,
+    "extra": "lic"
+  },
+  {
+    "word": "metal",
+    "suffix": "ine",
+    "full": "metalline",
+    "back": 0,
+    "extra": "line"
+  },
+  {
+    "word": "metal",
+    "suffix": "ist",
+    "full": "metallist",
+    "back": 0,
+    "extra": "list"
+  },
+  {
+    "word": "metal",
+    "suffix": "ography",
+    "full": "metallography",
+    "back": 0,
+    "extra": "lography"
+  },
+  {
+    "word": "metal",
+    "suffix": "oid",
+    "full": "metalloid",
+    "back": 0,
+    "extra": "loid"
+  },
+  {
+    "word": "micropipet",
+    "suffix": "e",
+    "full": "micropipette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "mid",
+    "suffix": "ay",
+    "full": "midday",
+    "back": 0,
+    "extra": "day"
+  },
+  {
+    "word": "mignon",
+    "suffix": "e",
+    "full": "mignonne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "mil",
+    "suffix": "age",
+    "full": "millage",
+    "back": 0,
+    "extra": "lage"
+  },
+  {
+    "word": "mil",
+    "suffix": "et",
+    "full": "millet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "mil",
+    "suffix": "ine",
+    "full": "milline",
+    "back": 0,
+    "extra": "line"
+  },
+  {
+    "word": "mil",
+    "suffix": "ion",
+    "full": "million",
+    "back": 0,
+    "extra": "lion"
+  },
+  {
+    "word": "mil",
+    "suffix": "ocrat",
+    "full": "millocrat",
+    "back": 0,
+    "extra": "locrat"
+  },
+  {
+    "word": "mine",
+    "suffix": "i",
+    "full": "mini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "mir",
+    "suffix": "or",
+    "full": "mirror",
+    "back": 0,
+    "extra": "ror"
+  },
+  {
+    "word": "mire",
+    "suffix": "i",
+    "full": "miri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "misc",
+    "suffix": "able",
+    "full": "miscible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "mite",
+    "suffix": "en",
+    "full": "mitten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "mob",
+    "suffix": "ism",
+    "full": "mobbism",
+    "back": 0,
+    "extra": "bism"
+  },
+  {
+    "word": "mode",
+    "suffix": "i",
+    "full": "modi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "model",
+    "suffix": "i",
+    "full": "modelli",
+    "back": 0,
+    "extra": "li"
+  },
+  {
+    "word": "model",
+    "suffix": "o",
+    "full": "modello",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "module",
+    "suffix": "i",
+    "full": "moduli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "mog",
+    "suffix": "an",
+    "full": "moggan",
+    "back": 0,
+    "extra": "gan"
+  },
+  {
+    "word": "moke",
+    "suffix": "i",
+    "full": "moki",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "mol",
+    "suffix": "escent",
+    "full": "mollescent",
+    "back": 0,
+    "extra": "lescent"
+  },
+  {
+    "word": "mol",
+    "suffix": "ification",
+    "full": "mollification",
+    "back": 0,
+    "extra": "lification"
+  },
+  {
+    "word": "mol",
+    "suffix": "ified",
+    "full": "mollified",
+    "back": 0,
+    "extra": "lified"
+  },
+  {
+    "word": "mol",
+    "suffix": "ifier",
+    "full": "mollifier",
+    "back": 0,
+    "extra": "lifier"
+  },
+  {
+    "word": "mol",
+    "suffix": "ifies",
+    "full": "mollifies",
+    "back": 0,
+    "extra": "lifies"
+  },
+  {
+    "word": "mol",
+    "suffix": "ify",
+    "full": "mollify",
+    "back": 0,
+    "extra": "lify"
+  },
+  {
+    "word": "mol",
+    "suffix": "itious",
+    "full": "mollitious",
+    "back": 0,
+    "extra": "litious"
+  },
+  {
+    "word": "mom",
+    "suffix": "et",
+    "full": "mommet",
+    "back": 0,
+    "extra": "met"
+  },
+  {
+    "word": "mome",
+    "suffix": "i",
+    "full": "momi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "monet",
+    "suffix": "e",
+    "full": "monette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "monochromat",
+    "suffix": "er",
+    "full": "monochromator",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "monokine",
+    "suffix": "i",
+    "full": "monokini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "mop",
+    "suffix": "et",
+    "full": "moppet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "mopane",
+    "suffix": "i",
+    "full": "mopani",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "mor",
+    "suffix": "ice",
+    "full": "morrice",
+    "back": 0,
+    "extra": "rice"
+  },
+  {
+    "word": "mor",
+    "suffix": "is",
+    "full": "morris",
+    "back": 0,
+    "extra": "ris"
+  },
+  {
+    "word": "morel",
+    "suffix": "e",
+    "full": "morelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "morel",
+    "suffix": "o",
+    "full": "morello",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "mortgage",
+    "suffix": "er",
+    "full": "mortgagor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "mosel",
+    "suffix": "e",
+    "full": "moselle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "mot",
+    "suffix": "o",
+    "full": "motto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "motet",
+    "suffix": "ist",
+    "full": "motettist",
+    "back": 0,
+    "extra": "tist"
+  },
+  {
+    "word": "mouton",
+    "suffix": "ee",
+    "full": "moutonnee",
+    "back": 0,
+    "extra": "nee"
+  },
+  {
+    "word": "mug",
+    "suffix": "ar",
+    "full": "muggar",
+    "back": 0,
+    "extra": "gar"
+  },
+  {
+    "word": "mug",
+    "suffix": "ee",
+    "full": "muggee",
+    "back": 0,
+    "extra": "gee"
+  },
+  {
+    "word": "mug",
+    "suffix": "ins",
+    "full": "muggins",
+    "back": 0,
+    "extra": "gins"
+  },
+  {
+    "word": "mum",
+    "suffix": "ia",
+    "full": "mummia",
+    "back": 0,
+    "extra": "mia"
+  },
+  {
+    "word": "mum",
+    "suffix": "ification",
+    "full": "mummification",
+    "back": 0,
+    "extra": "mification"
+  },
+  {
+    "word": "mum",
+    "suffix": "ified",
+    "full": "mummified",
+    "back": 0,
+    "extra": "mified"
+  },
+  {
+    "word": "mum",
+    "suffix": "ifies",
+    "full": "mummifies",
+    "back": 0,
+    "extra": "mifies"
+  },
+  {
+    "word": "mum",
+    "suffix": "ify",
+    "full": "mummify",
+    "back": 0,
+    "extra": "mify"
+  },
+  {
+    "word": "mun",
+    "suffix": "ion",
+    "full": "munnion",
+    "back": 0,
+    "extra": "nion"
+  },
+  {
+    "word": "muset",
+    "suffix": "e",
+    "full": "musette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "mut",
+    "suffix": "on",
+    "full": "mutton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "mute",
+    "suffix": "i",
+    "full": "muti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "naeve",
+    "suffix": "i",
+    "full": "naevi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "nam",
+    "suffix": "u",
+    "full": "nammu",
+    "back": 0,
+    "extra": "mu"
+  },
+  {
+    "word": "nan",
+    "suffix": "a",
+    "full": "nanna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "naze",
+    "suffix": "i",
+    "full": "nazi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "negotiate",
+    "suffix": "er",
+    "full": "negotiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "nevil",
+    "suffix": "e",
+    "full": "neville",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "nide",
+    "suffix": "i",
+    "full": "nidi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "nip",
+    "suffix": "on",
+    "full": "nippon",
+    "back": 0,
+    "extra": "pon"
+  },
+  {
+    "word": "node",
+    "suffix": "i",
+    "full": "nodi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "nog",
+    "suffix": "in",
+    "full": "noggin",
+    "back": 0,
+    "extra": "gin"
+  },
+  {
+    "word": "non",
+    "suffix": "ative",
+    "full": "nonnative",
+    "back": 0,
+    "extra": "native"
+  },
+  {
+    "word": "nonet",
+    "suffix": "i",
+    "full": "nonetti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "nonet",
+    "suffix": "o",
+    "full": "nonetto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "norman",
+    "suffix": "a",
+    "full": "normanna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "novel",
+    "suffix": "a",
+    "full": "novella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "nub",
+    "suffix": "in",
+    "full": "nubbin",
+    "back": 0,
+    "extra": "bin"
+  },
+  {
+    "word": "nucleate",
+    "suffix": "er",
+    "full": "nucleator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "nucleole",
+    "suffix": "i",
+    "full": "nucleoli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "nun",
+    "suffix": "ation",
+    "full": "nunnation",
+    "back": 0,
+    "extra": "nation"
+  },
+  {
+    "word": "nuraghe",
+    "suffix": "i",
+    "full": "nuraghi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "nymphet",
+    "suffix": "e",
+    "full": "nymphette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "obligate",
+    "suffix": "i",
+    "full": "obligati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "oblige",
+    "suffix": "er",
+    "full": "obligor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "obole",
+    "suffix": "i",
+    "full": "oboli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "obsess",
+    "suffix": "er",
+    "full": "obsessor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "obviate",
+    "suffix": "er",
+    "full": "obviator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "officiate",
+    "suffix": "er",
+    "full": "officiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "olfact",
+    "suffix": "able",
+    "full": "olfactible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "olivet",
+    "suffix": "i",
+    "full": "olivetti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "omit",
+    "suffix": "ance",
+    "full": "omittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "oppress",
+    "suffix": "er",
+    "full": "oppressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "orate",
+    "suffix": "er",
+    "full": "orator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "orchel",
+    "suffix": "a",
+    "full": "orchella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "orchil",
+    "suffix": "a",
+    "full": "orchilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "ovate",
+    "suffix": "er",
+    "full": "ovator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "over",
+    "suffix": "an",
+    "full": "overran",
+    "back": 0,
+    "extra": "ran"
+  },
+  {
+    "word": "over",
+    "suffix": "ated",
+    "full": "overrated",
+    "back": 0,
+    "extra": "rated"
+  },
+  {
+    "word": "over",
+    "suffix": "ating",
+    "full": "overrating",
+    "back": 0,
+    "extra": "rating"
+  },
+  {
+    "word": "over",
+    "suffix": "ule",
+    "full": "overrule",
+    "back": 0,
+    "extra": "rule"
+  },
+  {
+    "word": "padre",
+    "suffix": "i",
+    "full": "padri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "padrone",
+    "suffix": "i",
+    "full": "padroni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "pal",
+    "suffix": "ial",
+    "full": "pallial",
+    "back": 0,
+    "extra": "lial"
+  },
+  {
+    "word": "pal",
+    "suffix": "iate",
+    "full": "palliate",
+    "back": 0,
+    "extra": "liate"
+  },
+  {
+    "word": "pal",
+    "suffix": "iation",
+    "full": "palliation",
+    "back": 0,
+    "extra": "liation"
+  },
+  {
+    "word": "pal",
+    "suffix": "iative",
+    "full": "palliative",
+    "back": 0,
+    "extra": "liative"
+  },
+  {
+    "word": "pal",
+    "suffix": "one",
+    "full": "pallone",
+    "back": 0,
+    "extra": "lone"
+  },
+  {
+    "word": "pal",
+    "suffix": "or",
+    "full": "pallor",
+    "back": 0,
+    "extra": "lor"
+  },
+  {
+    "word": "palet",
+    "suffix": "e",
+    "full": "palette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "pallet",
+    "suffix": "e",
+    "full": "pallette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "palliate",
+    "suffix": "er",
+    "full": "palliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "pan",
+    "suffix": "age",
+    "full": "pannage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "pan",
+    "suffix": "ose",
+    "full": "pannose",
+    "back": 0,
+    "extra": "nose"
+  },
+  {
+    "word": "pan",
+    "suffix": "us",
+    "full": "pannus",
+    "back": 0,
+    "extra": "nus"
+  },
+  {
+    "word": "panettone",
+    "suffix": "i",
+    "full": "panettoni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "panse",
+    "suffix": "abilit",
+    "full": "pansibilit",
+    "back": 1,
+    "extra": "ibilit"
+  },
+  {
+    "word": "panse",
+    "suffix": "abl",
+    "full": "pansibl",
+    "back": 1,
+    "extra": "ibl"
+  },
+  {
+    "word": "pap",
+    "suffix": "i",
+    "full": "pappi",
+    "back": 0,
+    "extra": "pi"
+  },
+  {
+    "word": "pap",
+    "suffix": "ose",
+    "full": "pappose",
+    "back": 0,
+    "extra": "pose"
+  },
+  {
+    "word": "pap",
+    "suffix": "ous",
+    "full": "pappous",
+    "back": 0,
+    "extra": "pous"
+  },
+  {
+    "word": "pap",
+    "suffix": "us",
+    "full": "pappus",
+    "back": 0,
+    "extra": "pus"
+  },
+  {
+    "word": "par",
+    "suffix": "al",
+    "full": "parral",
+    "back": 0,
+    "extra": "ral"
+  },
+  {
+    "word": "par",
+    "suffix": "icide",
+    "full": "parricide",
+    "back": 0,
+    "extra": "ricide"
+  },
+  {
+    "word": "parallelogram",
+    "suffix": "ic",
+    "full": "parallelogrammic",
+    "back": 0,
+    "extra": "mic"
+  },
+  {
+    "word": "part",
+    "suffix": "able",
+    "full": "partible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "parter",
+    "suffix": "e",
+    "full": "parterre",
+    "back": 0,
+    "extra": "re"
+  },
+  {
+    "word": "pastil",
+    "suffix": "e",
+    "full": "pastille",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "pastorale",
+    "suffix": "i",
+    "full": "pastorali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "pat",
+    "suffix": "able",
+    "full": "patible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "pat",
+    "suffix": "i",
+    "full": "patti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "pat",
+    "suffix": "on",
+    "full": "patton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "pate",
+    "suffix": "able",
+    "full": "patible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "pate",
+    "suffix": "en",
+    "full": "patten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "patent",
+    "suffix": "er",
+    "full": "patentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "patron",
+    "suffix": "e",
+    "full": "patronne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "pec",
+    "suffix": "ability",
+    "full": "peccability",
+    "back": 0,
+    "extra": "cability"
+  },
+  {
+    "word": "pec",
+    "suffix": "able",
+    "full": "peccable",
+    "back": 0,
+    "extra": "cable"
+  },
+  {
+    "word": "pec",
+    "suffix": "ant",
+    "full": "peccant",
+    "back": 0,
+    "extra": "cant"
+  },
+  {
+    "word": "pec",
+    "suffix": "aries",
+    "full": "peccaries",
+    "back": 0,
+    "extra": "caries"
+  },
+  {
+    "word": "pec",
+    "suffix": "ary",
+    "full": "peccary",
+    "back": 0,
+    "extra": "cary"
+  },
+  {
+    "word": "pen",
+    "suffix": "a",
+    "full": "penna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "pen",
+    "suffix": "e",
+    "full": "penne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "pen",
+    "suffix": "i",
+    "full": "penni",
+    "back": 0,
+    "extra": "ni"
+  },
+  {
+    "word": "pen",
+    "suffix": "on",
+    "full": "pennon",
+    "back": 0,
+    "extra": "non"
+  },
+  {
+    "word": "pene",
+    "suffix": "i",
+    "full": "peni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "penicil",
+    "suffix": "amine",
+    "full": "penicillamine",
+    "back": 0,
+    "extra": "lamine"
+  },
+  {
+    "word": "penicil",
+    "suffix": "ate",
+    "full": "penicillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "penicil",
+    "suffix": "ation",
+    "full": "penicillation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "penicil",
+    "suffix": "ia",
+    "full": "penicillia",
+    "back": 0,
+    "extra": "lia"
+  },
+  {
+    "word": "penicil",
+    "suffix": "in",
+    "full": "penicillin",
+    "back": 0,
+    "extra": "lin"
+  },
+  {
+    "word": "penne",
+    "suffix": "i",
+    "full": "penni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "pennoncel",
+    "suffix": "e",
+    "full": "pennoncelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "percuss",
+    "suffix": "er",
+    "full": "percussor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "pere",
+    "suffix": "u",
+    "full": "peru",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "perfect",
+    "suffix": "able",
+    "full": "perfectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "peril",
+    "suffix": "a",
+    "full": "perilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "permit",
+    "suffix": "ance",
+    "full": "permittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "permit",
+    "suffix": "ivity",
+    "full": "permittivity",
+    "back": 0,
+    "extra": "tivity"
+  },
+  {
+    "word": "perpetuate",
+    "suffix": "er",
+    "full": "perpetuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "perquisite",
+    "suffix": "er",
+    "full": "perquisitor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "persecute",
+    "suffix": "er",
+    "full": "persecutor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "pet",
+    "suffix": "o",
+    "full": "petto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "pet",
+    "suffix": "us",
+    "full": "pettus",
+    "back": 0,
+    "extra": "tus"
+  },
+  {
+    "word": "petronel",
+    "suffix": "a",
+    "full": "petronella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "phil",
+    "suffix": "is",
+    "full": "phillis",
+    "back": 0,
+    "extra": "lis"
+  },
+  {
+    "word": "philip",
+    "suffix": "a",
+    "full": "philippa",
+    "back": 0,
+    "extra": "pa"
+  },
+  {
+    "word": "philip",
+    "suffix": "e",
+    "full": "philippe",
+    "back": 0,
+    "extra": "pe"
+  },
+  {
+    "word": "philip",
+    "suffix": "i",
+    "full": "philippi",
+    "back": 0,
+    "extra": "pi"
+  },
+  {
+    "word": "philip",
+    "suffix": "opolis",
+    "full": "philippopolis",
+    "back": 0,
+    "extra": "popolis"
+  },
+  {
+    "word": "pic",
+    "suffix": "ata",
+    "full": "piccata",
+    "back": 0,
+    "extra": "cata"
+  },
+  {
+    "word": "pic",
+    "suffix": "ies",
+    "full": "piccies",
+    "back": 0,
+    "extra": "cies"
+  },
+  {
+    "word": "pic",
+    "suffix": "y",
+    "full": "piccy",
+    "back": 0,
+    "extra": "cy"
+  },
+  {
+    "word": "pig",
+    "suffix": "in",
+    "full": "piggin",
+    "back": 0,
+    "extra": "gin"
+  },
+  {
+    "word": "pike",
+    "suffix": "i",
+    "full": "piki",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "pin",
+    "suffix": "a",
+    "full": "pinna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "pin",
+    "suffix": "et",
+    "full": "pinnet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "pin",
+    "suffix": "ular",
+    "full": "pinnular",
+    "back": 0,
+    "extra": "nular"
+  },
+  {
+    "word": "pin",
+    "suffix": "ulate",
+    "full": "pinnulate",
+    "back": 0,
+    "extra": "nulate"
+  },
+  {
+    "word": "pin",
+    "suffix": "ule",
+    "full": "pinnule",
+    "back": 0,
+    "extra": "nule"
+  },
+  {
+    "word": "pip",
+    "suffix": "in",
+    "full": "pippin",
+    "back": 0,
+    "extra": "pin"
+  },
+  {
+    "word": "pipe",
+    "suffix": "i",
+    "full": "pipi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "pipistrel",
+    "suffix": "e",
+    "full": "pipistrelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "pistil",
+    "suffix": "ary",
+    "full": "pistillary",
+    "back": 0,
+    "extra": "lary"
+  },
+  {
+    "word": "pistil",
+    "suffix": "ate",
+    "full": "pistillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "pit",
+    "suffix": "ance",
+    "full": "pittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "pit",
+    "suffix": "ite",
+    "full": "pittite",
+    "back": 0,
+    "extra": "tite"
+  },
+  {
+    "word": "planchet",
+    "suffix": "e",
+    "full": "planchette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "platan",
+    "suffix": "a",
+    "full": "platanna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "pointel",
+    "suffix": "e",
+    "full": "pointelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "pol",
+    "suffix": "an",
+    "full": "pollan",
+    "back": 0,
+    "extra": "lan"
+  },
+  {
+    "word": "pol",
+    "suffix": "ical",
+    "full": "pollical",
+    "back": 0,
+    "extra": "lical"
+  },
+  {
+    "word": "pol",
+    "suffix": "inate",
+    "full": "pollinate",
+    "back": 0,
+    "extra": "linate"
+  },
+  {
+    "word": "pol",
+    "suffix": "ination",
+    "full": "pollination",
+    "back": 0,
+    "extra": "lination"
+  },
+  {
+    "word": "pol",
+    "suffix": "inator",
+    "full": "pollinator",
+    "back": 0,
+    "extra": "linator"
+  },
+  {
+    "word": "pol",
+    "suffix": "ist",
+    "full": "pollist",
+    "back": 0,
+    "extra": "list"
+  },
+  {
+    "word": "polyglot",
+    "suffix": "ic",
+    "full": "polyglottic",
+    "back": 0,
+    "extra": "tic"
+  },
+  {
+    "word": "pom",
+    "suffix": "ee",
+    "full": "pommee",
+    "back": 0,
+    "extra": "mee"
+  },
+  {
+    "word": "ponse",
+    "suffix": "abilit",
+    "full": "ponsibilit",
+    "back": 1,
+    "extra": "ibilit"
+  },
+  {
+    "word": "ponse",
+    "suffix": "abl",
+    "full": "ponsibl",
+    "back": 1,
+    "extra": "ibl"
+  },
+  {
+    "word": "pop",
+    "suffix": "a",
+    "full": "poppa",
+    "back": 0,
+    "extra": "pa"
+  },
+  {
+    "word": "pop",
+    "suffix": "et",
+    "full": "poppet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "porcine",
+    "suffix": "i",
+    "full": "porcini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "poss",
+    "suffix": "able",
+    "full": "possible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "possess",
+    "suffix": "er",
+    "full": "possessor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "postil",
+    "suffix": "ate",
+    "full": "postillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "postil",
+    "suffix": "ating",
+    "full": "postillating",
+    "back": 0,
+    "extra": "lating"
+  },
+  {
+    "word": "postil",
+    "suffix": "ation",
+    "full": "postillation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "postil",
+    "suffix": "ator",
+    "full": "postillator",
+    "back": 0,
+    "extra": "lator"
+  },
+  {
+    "word": "pot",
+    "suffix": "o",
+    "full": "potto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "potentiate",
+    "suffix": "er",
+    "full": "potentiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "practic",
+    "suffix": "ed",
+    "full": "practicked",
+    "back": 0,
+    "extra": "ked"
+  },
+  {
+    "word": "practic",
+    "suffix": "ing",
+    "full": "practicking",
+    "back": 0,
+    "extra": "king"
+  },
+  {
+    "word": "precent",
+    "suffix": "er",
+    "full": "precentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "precurse",
+    "suffix": "er",
+    "full": "precursor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "preempt",
+    "suffix": "er",
+    "full": "preemptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "prelude",
+    "suffix": "i",
+    "full": "preludi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "prescript",
+    "suffix": "able",
+    "full": "prescriptible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "press",
+    "suffix": "abilit",
+    "full": "pressibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "press",
+    "suffix": "abl",
+    "full": "pressibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "pret",
+    "suffix": "ification",
+    "full": "prettification",
+    "back": 0,
+    "extra": "tification"
+  },
+  {
+    "word": "pret",
+    "suffix": "ified",
+    "full": "prettified",
+    "back": 0,
+    "extra": "tified"
+  },
+  {
+    "word": "pret",
+    "suffix": "ifier",
+    "full": "prettifier",
+    "back": 0,
+    "extra": "tifier"
+  },
+  {
+    "word": "pret",
+    "suffix": "ifies",
+    "full": "prettifies",
+    "back": 0,
+    "extra": "tifies"
+  },
+  {
+    "word": "pret",
+    "suffix": "ify",
+    "full": "prettify",
+    "back": 0,
+    "extra": "tify"
+  },
+  {
+    "word": "prig",
+    "suffix": "ism",
+    "full": "priggism",
+    "back": 0,
+    "extra": "gism"
+  },
+  {
+    "word": "prime",
+    "suffix": "i",
+    "full": "primi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "principe",
+    "suffix": "i",
+    "full": "principi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "process",
+    "suffix": "er",
+    "full": "processor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "prodrome",
+    "suffix": "i",
+    "full": "prodromi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "profess",
+    "suffix": "er",
+    "full": "professor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "prog",
+    "suffix": "ins",
+    "full": "proggins",
+    "back": 0,
+    "extra": "gins"
+  },
+  {
+    "word": "prop",
+    "suffix": "ant",
+    "full": "proppant",
+    "back": 0,
+    "extra": "pant"
+  },
+  {
+    "word": "propel",
+    "suffix": "ant",
+    "full": "propellant",
+    "back": 0,
+    "extra": "lant"
+  },
+  {
+    "word": "propel",
+    "suffix": "or",
+    "full": "propellor",
+    "back": 0,
+    "extra": "lor"
+  },
+  {
+    "word": "propitiate",
+    "suffix": "er",
+    "full": "propitiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "prosecute",
+    "suffix": "er",
+    "full": "prosecutor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "prostitute",
+    "suffix": "er",
+    "full": "prostitutor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "protract",
+    "suffix": "able",
+    "full": "protractible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "puke",
+    "suffix": "u",
+    "full": "puku",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "pul",
+    "suffix": "et",
+    "full": "pullet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "pul",
+    "suffix": "ey",
+    "full": "pulley",
+    "back": 0,
+    "extra": "ley"
+  },
+  {
+    "word": "pul",
+    "suffix": "out",
+    "full": "pullout",
+    "back": 0,
+    "extra": "lout"
+  },
+  {
+    "word": "pul",
+    "suffix": "over",
+    "full": "pullover",
+    "back": 0,
+    "extra": "lover"
+  },
+  {
+    "word": "pul",
+    "suffix": "ulate",
+    "full": "pullulate",
+    "back": 0,
+    "extra": "lulate"
+  },
+  {
+    "word": "pul",
+    "suffix": "ulating",
+    "full": "pullulating",
+    "back": 0,
+    "extra": "lulating"
+  },
+  {
+    "word": "pul",
+    "suffix": "ulation",
+    "full": "pullulation",
+    "back": 0,
+    "extra": "lulation"
+  },
+  {
+    "word": "pule",
+    "suffix": "i",
+    "full": "puli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "pulvil",
+    "suffix": "ar",
+    "full": "pulvillar",
+    "back": 0,
+    "extra": "lar"
+  },
+  {
+    "word": "pulvil",
+    "suffix": "i",
+    "full": "pulvilli",
+    "back": 0,
+    "extra": "li"
+  },
+  {
+    "word": "pulvil",
+    "suffix": "us",
+    "full": "pulvillus",
+    "back": 0,
+    "extra": "lus"
+  },
+  {
+    "word": "pun",
+    "suffix": "et",
+    "full": "punnet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "punctuate",
+    "suffix": "er",
+    "full": "punctuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "pup",
+    "suffix": "et",
+    "full": "puppet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "pupil",
+    "suffix": "age",
+    "full": "pupillage",
+    "back": 0,
+    "extra": "lage"
+  },
+  {
+    "word": "pupil",
+    "suffix": "arity",
+    "full": "pupillarity",
+    "back": 0,
+    "extra": "larity"
+  },
+  {
+    "word": "pupil",
+    "suffix": "ary",
+    "full": "pupillary",
+    "back": 0,
+    "extra": "lary"
+  },
+  {
+    "word": "pupil",
+    "suffix": "ate",
+    "full": "pupillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "pure",
+    "suffix": "i",
+    "full": "puri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "purvey",
+    "suffix": "er",
+    "full": "purveyor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "put",
+    "suffix": "ee",
+    "full": "puttee",
+    "back": 0,
+    "extra": "tee"
+  },
+  {
+    "word": "quag",
+    "suffix": "a",
+    "full": "quagga",
+    "back": 0,
+    "extra": "ga"
+  },
+  {
+    "word": "quartet",
+    "suffix": "i",
+    "full": "quartetti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "quartet",
+    "suffix": "o",
+    "full": "quartetto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "quid",
+    "suffix": "ity",
+    "full": "quiddity",
+    "back": 0,
+    "extra": "dity"
+  },
+  {
+    "word": "quintet",
+    "suffix": "i",
+    "full": "quintetti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "quintet",
+    "suffix": "o",
+    "full": "quintetto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "quit",
+    "suffix": "al",
+    "full": "quittal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "quit",
+    "suffix": "ance",
+    "full": "quittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "quit",
+    "suffix": "or",
+    "full": "quittor",
+    "back": 0,
+    "extra": "tor"
+  },
+  {
+    "word": "quiz",
+    "suffix": "ical",
+    "full": "quizzical",
+    "back": 0,
+    "extra": "zical"
+  },
+  {
+    "word": "quiz",
+    "suffix": "ification",
+    "full": "quizzification",
+    "back": 0,
+    "extra": "zification"
+  },
+  {
+    "word": "quiz",
+    "suffix": "ified",
+    "full": "quizzified",
+    "back": 0,
+    "extra": "zified"
+  },
+  {
+    "word": "quiz",
+    "suffix": "ifies",
+    "full": "quizzifies",
+    "back": 0,
+    "extra": "zifies"
+  },
+  {
+    "word": "quiz",
+    "suffix": "ify",
+    "full": "quizzify",
+    "back": 0,
+    "extra": "zify"
+  },
+  {
+    "word": "rabat",
+    "suffix": "e",
+    "full": "rabatte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "radiate",
+    "suffix": "er",
+    "full": "radiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "rage",
+    "suffix": "i",
+    "full": "ragi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rake",
+    "suffix": "i",
+    "full": "raki",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rake",
+    "suffix": "u",
+    "full": "raku",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "ramtil",
+    "suffix": "a",
+    "full": "ramtilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "rap",
+    "suffix": "ee",
+    "full": "rappee",
+    "back": 0,
+    "extra": "pee"
+  },
+  {
+    "word": "rapine",
+    "suffix": "i",
+    "full": "rapini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rascal",
+    "suffix": "ion",
+    "full": "rascallion",
+    "back": 0,
+    "extra": "lion"
+  },
+  {
+    "word": "rat",
+    "suffix": "an",
+    "full": "rattan",
+    "back": 0,
+    "extra": "tan"
+  },
+  {
+    "word": "rat",
+    "suffix": "on",
+    "full": "ratton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "rate",
+    "suffix": "en",
+    "full": "ratten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "rate",
+    "suffix": "u",
+    "full": "ratu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "raze",
+    "suffix": "er",
+    "full": "razor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "reb",
+    "suffix": "e",
+    "full": "rebbe",
+    "back": 0,
+    "extra": "be"
+  },
+  {
+    "word": "rebel",
+    "suffix": "ion",
+    "full": "rebellion",
+    "back": 0,
+    "extra": "lion"
+  },
+  {
+    "word": "rebel",
+    "suffix": "ious",
+    "full": "rebellious",
+    "back": 0,
+    "extra": "lious"
+  },
+  {
+    "word": "rebut",
+    "suffix": "al",
+    "full": "rebuttal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "receipt",
+    "suffix": "er",
+    "full": "receiptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "recept",
+    "suffix": "er",
+    "full": "receptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "recitative",
+    "suffix": "i",
+    "full": "recitativi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "recover",
+    "suffix": "er",
+    "full": "recoveror",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "redistil",
+    "suffix": "ation",
+    "full": "redistillation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "ref",
+    "suffix": "o",
+    "full": "reffo",
+    "back": 0,
+    "extra": "fo"
+  },
+  {
+    "word": "refer",
+    "suffix": "al",
+    "full": "referral",
+    "back": 0,
+    "extra": "ral"
+  },
+  {
+    "word": "refer",
+    "suffix": "ible",
+    "full": "referrible",
+    "back": 0,
+    "extra": "rible"
+  },
+  {
+    "word": "reg",
+    "suffix": "ae",
+    "full": "reggae",
+    "back": 0,
+    "extra": "gae"
+  },
+  {
+    "word": "regress",
+    "suffix": "er",
+    "full": "regressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "reject",
+    "suffix": "able",
+    "full": "rejectible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "remiss",
+    "suffix": "able",
+    "full": "remissible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "remit",
+    "suffix": "al",
+    "full": "remittal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "remit",
+    "suffix": "ee",
+    "full": "remittee",
+    "back": 0,
+    "extra": "tee"
+  },
+  {
+    "word": "remit",
+    "suffix": "or",
+    "full": "remittor",
+    "back": 0,
+    "extra": "tor"
+  },
+  {
+    "word": "rend",
+    "suffix": "able",
+    "full": "rendible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "repatriate",
+    "suffix": "er",
+    "full": "repatriator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "repel",
+    "suffix": "ance",
+    "full": "repellance",
+    "back": 0,
+    "extra": "lance"
+  },
+  {
+    "word": "repress",
+    "suffix": "er",
+    "full": "repressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "repudiate",
+    "suffix": "er",
+    "full": "repudiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "requisite",
+    "suffix": "er",
+    "full": "requisitor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "resist",
+    "suffix": "able",
+    "full": "resistible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "resist",
+    "suffix": "er",
+    "full": "resistor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "restitute",
+    "suffix": "er",
+    "full": "restitutor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "retaliate",
+    "suffix": "er",
+    "full": "retaliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "retribute",
+    "suffix": "er",
+    "full": "retributor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "revers",
+    "suffix": "able",
+    "full": "reversible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "reverse",
+    "suffix": "able",
+    "full": "reversible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "reverse",
+    "suffix": "i",
+    "full": "reversi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rhet",
+    "suffix": "er",
+    "full": "rhetor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "rib",
+    "suffix": "able",
+    "full": "ribible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "rib",
+    "suffix": "on",
+    "full": "ribbon",
+    "back": 0,
+    "extra": "bon"
+  },
+  {
+    "word": "ricercare",
+    "suffix": "i",
+    "full": "ricercari",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rif",
+    "suffix": "i",
+    "full": "riffi",
+    "back": 0,
+    "extra": "fi"
+  },
+  {
+    "word": "rillet",
+    "suffix": "es",
+    "full": "rillettes",
+    "back": 0,
+    "extra": "tes"
+  },
+  {
+    "word": "rime",
+    "suffix": "u",
+    "full": "rimu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "rins",
+    "suffix": "able",
+    "full": "rinsible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "rinse",
+    "suffix": "able",
+    "full": "rinsible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "rise",
+    "suffix": "able",
+    "full": "risible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "ritornel",
+    "suffix": "e",
+    "full": "ritornelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "ritornel",
+    "suffix": "i",
+    "full": "ritornelli",
+    "back": 0,
+    "extra": "li"
+  },
+  {
+    "word": "ritornel",
+    "suffix": "o",
+    "full": "ritornello",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "ritornelle",
+    "suffix": "i",
+    "full": "ritornelli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rob",
+    "suffix": "ia",
+    "full": "robbia",
+    "back": 0,
+    "extra": "bia"
+  },
+  {
+    "word": "rondel",
+    "suffix": "e",
+    "full": "rondelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "roquet",
+    "suffix": "e",
+    "full": "roquette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "roset",
+    "suffix": "e",
+    "full": "rosette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "rot",
+    "suffix": "an",
+    "full": "rottan",
+    "back": 0,
+    "extra": "tan"
+  },
+  {
+    "word": "rote",
+    "suffix": "en",
+    "full": "rotten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "rote",
+    "suffix": "er",
+    "full": "rotor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "rote",
+    "suffix": "i",
+    "full": "roti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "rozel",
+    "suffix": "e",
+    "full": "rozelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "rubel",
+    "suffix": "a",
+    "full": "rubella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "rubel",
+    "suffix": "ite",
+    "full": "rubellite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "rum",
+    "suffix": "age",
+    "full": "rummage",
+    "back": 0,
+    "extra": "mage"
+  },
+  {
+    "word": "run",
+    "suffix": "et",
+    "full": "runnet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "run",
+    "suffix": "ion",
+    "full": "runnion",
+    "back": 0,
+    "extra": "nion"
+  },
+  {
+    "word": "russel",
+    "suffix": "ite",
+    "full": "russellite",
+    "back": 0,
+    "extra": "lite"
+  },
+  {
+    "word": "saame",
+    "suffix": "i",
+    "full": "saami",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sab",
+    "suffix": "atic",
+    "full": "sabbatic",
+    "back": 0,
+    "extra": "batic"
+  },
+  {
+    "word": "sab",
+    "suffix": "atize",
+    "full": "sabbatize",
+    "back": 0,
+    "extra": "batize"
+  },
+  {
+    "word": "sabme",
+    "suffix": "i",
+    "full": "sabmi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sac",
+    "suffix": "ate",
+    "full": "saccate",
+    "back": 0,
+    "extra": "cate"
+  },
+  {
+    "word": "sac",
+    "suffix": "o",
+    "full": "sacco",
+    "back": 0,
+    "extra": "co"
+  },
+  {
+    "word": "sac",
+    "suffix": "ular",
+    "full": "saccular",
+    "back": 0,
+    "extra": "cular"
+  },
+  {
+    "word": "sac",
+    "suffix": "ulate",
+    "full": "sacculate",
+    "back": 0,
+    "extra": "culate"
+  },
+  {
+    "word": "sac",
+    "suffix": "ulation",
+    "full": "sacculation",
+    "back": 0,
+    "extra": "culation"
+  },
+  {
+    "word": "sac",
+    "suffix": "ule",
+    "full": "saccule",
+    "back": 0,
+    "extra": "cule"
+  },
+  {
+    "word": "sac",
+    "suffix": "ulus",
+    "full": "sacculus",
+    "back": 0,
+    "extra": "culus"
+  },
+  {
+    "word": "saccule",
+    "suffix": "i",
+    "full": "sacculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sade",
+    "suffix": "i",
+    "full": "sadi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sadhe",
+    "suffix": "u",
+    "full": "sadhu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "sag",
+    "suffix": "ar",
+    "full": "saggar",
+    "back": 0,
+    "extra": "gar"
+  },
+  {
+    "word": "sal",
+    "suffix": "ee",
+    "full": "sallee",
+    "back": 0,
+    "extra": "lee"
+  },
+  {
+    "word": "sal",
+    "suffix": "et",
+    "full": "sallet",
+    "back": 0,
+    "extra": "let"
+  },
+  {
+    "word": "sal",
+    "suffix": "ey",
+    "full": "salley",
+    "back": 0,
+    "extra": "ley"
+  },
+  {
+    "word": "sal",
+    "suffix": "is",
+    "full": "sallis",
+    "back": 0,
+    "extra": "lis"
+  },
+  {
+    "word": "salame",
+    "suffix": "i",
+    "full": "salami",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "samite",
+    "suffix": "i",
+    "full": "samiti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sammarinese",
+    "suffix": "i",
+    "full": "sammarinesi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "san",
+    "suffix": "up",
+    "full": "sannup",
+    "back": 0,
+    "extra": "nup"
+  },
+  {
+    "word": "sardel",
+    "suffix": "e",
+    "full": "sardelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "sate",
+    "suffix": "i",
+    "full": "sati",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "satinet",
+    "suffix": "e",
+    "full": "satinette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "scalene",
+    "suffix": "i",
+    "full": "scaleni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sciroc",
+    "suffix": "o",
+    "full": "scirocco",
+    "back": 0,
+    "extra": "co"
+  },
+  {
+    "word": "scot",
+    "suffix": "ice",
+    "full": "scottice",
+    "back": 0,
+    "extra": "tice"
+  },
+  {
+    "word": "scot",
+    "suffix": "ification",
+    "full": "scottification",
+    "back": 0,
+    "extra": "tification"
+  },
+  {
+    "word": "scot",
+    "suffix": "ified",
+    "full": "scottified",
+    "back": 0,
+    "extra": "tified"
+  },
+  {
+    "word": "scot",
+    "suffix": "ify",
+    "full": "scottify",
+    "back": 0,
+    "extra": "tify"
+  },
+  {
+    "word": "scrap",
+    "suffix": "age",
+    "full": "scrappage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "scrim",
+    "suffix": "age",
+    "full": "scrimmage",
+    "back": 0,
+    "extra": "mage"
+  },
+  {
+    "word": "scrip",
+    "suffix": "age",
+    "full": "scrippage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "scul",
+    "suffix": "e",
+    "full": "sculle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "scul",
+    "suffix": "ion",
+    "full": "scullion",
+    "back": 0,
+    "extra": "lion"
+  },
+  {
+    "word": "sculpt",
+    "suffix": "er",
+    "full": "sculptor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "scur",
+    "suffix": "ile",
+    "full": "scurrile",
+    "back": 0,
+    "extra": "rile"
+  },
+  {
+    "word": "scur",
+    "suffix": "ility",
+    "full": "scurrility",
+    "back": 0,
+    "extra": "rility"
+  },
+  {
+    "word": "sec",
+    "suffix": "o",
+    "full": "secco",
+    "back": 0,
+    "extra": "co"
+  },
+  {
+    "word": "seconde",
+    "suffix": "i",
+    "full": "secondi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "secrete",
+    "suffix": "er",
+    "full": "secretor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "semimat",
+    "suffix": "e",
+    "full": "semimatte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "sen",
+    "suffix": "ar",
+    "full": "sennar",
+    "back": 0,
+    "extra": "nar"
+  },
+  {
+    "word": "sense",
+    "suffix": "abilit",
+    "full": "sensibilit",
+    "back": 1,
+    "extra": "ibilit"
+  },
+  {
+    "word": "sense",
+    "suffix": "abl",
+    "full": "sensibl",
+    "back": 1,
+    "extra": "ibl"
+  },
+  {
+    "word": "sense",
+    "suffix": "er",
+    "full": "sensor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "sente",
+    "suffix": "i",
+    "full": "senti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "ser",
+    "suffix": "an",
+    "full": "serran",
+    "back": 0,
+    "extra": "ran"
+  },
+  {
+    "word": "ser",
+    "suffix": "ate",
+    "full": "serrate",
+    "back": 0,
+    "extra": "rate"
+  },
+  {
+    "word": "ser",
+    "suffix": "ating",
+    "full": "serrating",
+    "back": 0,
+    "extra": "rating"
+  },
+  {
+    "word": "ser",
+    "suffix": "ation",
+    "full": "serration",
+    "back": 0,
+    "extra": "ration"
+  },
+  {
+    "word": "ser",
+    "suffix": "ulate",
+    "full": "serrulate",
+    "back": 0,
+    "extra": "rulate"
+  },
+  {
+    "word": "ser",
+    "suffix": "ulation",
+    "full": "serrulation",
+    "back": 0,
+    "extra": "rulation"
+  },
+  {
+    "word": "sestet",
+    "suffix": "e",
+    "full": "sestette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "sestet",
+    "suffix": "o",
+    "full": "sestetto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "shan",
+    "suffix": "on",
+    "full": "shannon",
+    "back": 0,
+    "extra": "non"
+  },
+  {
+    "word": "sher",
+    "suffix": "is",
+    "full": "sherris",
+    "back": 0,
+    "extra": "ris"
+  },
+  {
+    "word": "shim",
+    "suffix": "ey",
+    "full": "shimmey",
+    "back": 0,
+    "extra": "mey"
+  },
+  {
+    "word": "shin",
+    "suffix": "ey",
+    "full": "shinney",
+    "back": 0,
+    "extra": "ney"
+  },
+  {
+    "word": "shop",
+    "suffix": "e",
+    "full": "shoppe",
+    "back": 0,
+    "extra": "pe"
+  },
+  {
+    "word": "shote",
+    "suffix": "en",
+    "full": "shotten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "showbiz",
+    "suffix": "es",
+    "full": "showbizzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "sic",
+    "suffix": "an",
+    "full": "siccan",
+    "back": 0,
+    "extra": "can"
+  },
+  {
+    "word": "sic",
+    "suffix": "ar",
+    "full": "siccar",
+    "back": 0,
+    "extra": "car"
+  },
+  {
+    "word": "sic",
+    "suffix": "ative",
+    "full": "siccative",
+    "back": 0,
+    "extra": "cative"
+  },
+  {
+    "word": "sic",
+    "suffix": "ed",
+    "full": "sicced",
+    "back": 0,
+    "extra": "ced"
+  },
+  {
+    "word": "sic",
+    "suffix": "ing",
+    "full": "siccing",
+    "back": 0,
+    "extra": "cing"
+  },
+  {
+    "word": "sic",
+    "suffix": "ity",
+    "full": "siccity",
+    "back": 0,
+    "extra": "city"
+  },
+  {
+    "word": "sid",
+    "suffix": "ons",
+    "full": "siddons",
+    "back": 0,
+    "extra": "dons"
+  },
+  {
+    "word": "sigil",
+    "suffix": "arian",
+    "full": "sigillarian",
+    "back": 0,
+    "extra": "larian"
+  },
+  {
+    "word": "sigil",
+    "suffix": "ary",
+    "full": "sigillary",
+    "back": 0,
+    "extra": "lary"
+  },
+  {
+    "word": "sigil",
+    "suffix": "ate",
+    "full": "sigillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "sigil",
+    "suffix": "ation",
+    "full": "sigillation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "signore",
+    "suffix": "i",
+    "full": "signori",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "signorine",
+    "suffix": "i",
+    "full": "signorini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "silene",
+    "suffix": "i",
+    "full": "sileni",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "simar",
+    "suffix": "e",
+    "full": "simarre",
+    "back": 0,
+    "extra": "re"
+  },
+  {
+    "word": "sin",
+    "suffix": "et",
+    "full": "sinnet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "sip",
+    "suffix": "et",
+    "full": "sippet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "sir",
+    "suffix": "a",
+    "full": "sirra",
+    "back": 0,
+    "extra": "ra"
+  },
+  {
+    "word": "sire",
+    "suffix": "i",
+    "full": "siri",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "siroc",
+    "suffix": "o",
+    "full": "sirocco",
+    "back": 0,
+    "extra": "co"
+  },
+  {
+    "word": "sit",
+    "suffix": "ine",
+    "full": "sittine",
+    "back": 0,
+    "extra": "tine"
+  },
+  {
+    "word": "site",
+    "suffix": "en",
+    "full": "sitten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "skim",
+    "suffix": "ia",
+    "full": "skimmia",
+    "back": 0,
+    "extra": "mia"
+  },
+  {
+    "word": "skip",
+    "suffix": "et",
+    "full": "skippet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "slip",
+    "suffix": "age",
+    "full": "slippage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "snip",
+    "suffix": "et",
+    "full": "snippet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "snob",
+    "suffix": "ism",
+    "full": "snobbism",
+    "back": 0,
+    "extra": "bism"
+  },
+  {
+    "word": "soc",
+    "suffix": "er",
+    "full": "soccer",
+    "back": 0,
+    "extra": "cer"
+  },
+  {
+    "word": "soche",
+    "suffix": "i",
+    "full": "sochi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "socket",
+    "suffix": "e",
+    "full": "sockette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "son",
+    "suffix": "et",
+    "full": "sonnet",
+    "back": 0,
+    "extra": "net"
+  },
+  {
+    "word": "sord",
+    "suffix": "er",
+    "full": "sordor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "sordine",
+    "suffix": "i",
+    "full": "sordini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sore",
+    "suffix": "i",
+    "full": "sori",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sowar",
+    "suffix": "ee",
+    "full": "sowarree",
+    "back": 0,
+    "extra": "ree"
+  },
+  {
+    "word": "spat",
+    "suffix": "ee",
+    "full": "spattee",
+    "back": 0,
+    "extra": "tee"
+  },
+  {
+    "word": "spaz",
+    "suffix": "es",
+    "full": "spazzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "spec",
+    "suffix": "y",
+    "full": "speccy",
+    "back": 0,
+    "extra": "cy"
+  },
+  {
+    "word": "spin",
+    "suffix": "ey",
+    "full": "spinney",
+    "back": 0,
+    "extra": "ney"
+  },
+  {
+    "word": "spinel",
+    "suffix": "e",
+    "full": "spinelle",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "spinet",
+    "suffix": "e",
+    "full": "spinette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "spinneret",
+    "suffix": "e",
+    "full": "spinnerette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "spite",
+    "suffix": "en",
+    "full": "spitten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "spoliate",
+    "suffix": "er",
+    "full": "spoliator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "spur",
+    "suffix": "ey",
+    "full": "spurrey",
+    "back": 0,
+    "extra": "rey"
+  },
+  {
+    "word": "spur",
+    "suffix": "ial",
+    "full": "spurrial",
+    "back": 0,
+    "extra": "rial"
+  },
+  {
+    "word": "squiz",
+    "suffix": "es",
+    "full": "squizzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "star",
+    "suffix": "e",
+    "full": "starre",
+    "back": 0,
+    "extra": "re"
+  },
+  {
+    "word": "stem",
+    "suffix": "a",
+    "full": "stemma",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "step",
+    "suffix": "e",
+    "full": "steppe",
+    "back": 0,
+    "extra": "pe"
+  },
+  {
+    "word": "stilet",
+    "suffix": "o",
+    "full": "stiletto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "stipel",
+    "suffix": "ate",
+    "full": "stipellate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "stir",
+    "suffix": "a",
+    "full": "stirra",
+    "back": 0,
+    "extra": "ra"
+  },
+  {
+    "word": "stir",
+    "suffix": "up",
+    "full": "stirrup",
+    "back": 0,
+    "extra": "rup"
+  },
+  {
+    "word": "stop",
+    "suffix": "age",
+    "full": "stoppage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "strette",
+    "suffix": "i",
+    "full": "stretti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "strobile",
+    "suffix": "i",
+    "full": "strobili",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "style",
+    "suffix": "i",
+    "full": "styli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sub",
+    "suffix": "ase",
+    "full": "subbase",
+    "back": 0,
+    "extra": "base"
+  },
+  {
+    "word": "submerse",
+    "suffix": "able",
+    "full": "submersible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "submiss",
+    "suffix": "able",
+    "full": "submissible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "submit",
+    "suffix": "al",
+    "full": "submittal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "substantiate",
+    "suffix": "er",
+    "full": "substantiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "success",
+    "suffix": "er",
+    "full": "successor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "succube",
+    "suffix": "i",
+    "full": "succubi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "sue",
+    "suffix": "i",
+    "full": "sui",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "suite",
+    "suffix": "er",
+    "full": "suitor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "sum",
+    "suffix": "a",
+    "full": "summa",
+    "back": 0,
+    "extra": "ma"
+  },
+  {
+    "word": "sum",
+    "suffix": "ist",
+    "full": "summist",
+    "back": 0,
+    "extra": "mist"
+  },
+  {
+    "word": "sum",
+    "suffix": "on",
+    "full": "summon",
+    "back": 0,
+    "extra": "mon"
+  },
+  {
+    "word": "sun",
+    "suffix": "a",
+    "full": "sunna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "sun",
+    "suffix": "ism",
+    "full": "sunnism",
+    "back": 0,
+    "extra": "nism"
+  },
+  {
+    "word": "sun",
+    "suffix": "ite",
+    "full": "sunnite",
+    "back": 0,
+    "extra": "nite"
+  },
+  {
+    "word": "sup",
+    "suffix": "ose",
+    "full": "suppose",
+    "back": 0,
+    "extra": "pose"
+  },
+  {
+    "word": "suppress",
+    "suffix": "er",
+    "full": "suppressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "sur",
+    "suffix": "ey",
+    "full": "surrey",
+    "back": 0,
+    "extra": "rey"
+  },
+  {
+    "word": "surrender",
+    "suffix": "er",
+    "full": "surrenderor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "survey",
+    "suffix": "er",
+    "full": "surveyor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "survive",
+    "suffix": "er",
+    "full": "survivor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "susan",
+    "suffix": "e",
+    "full": "susanne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "suspend",
+    "suffix": "able",
+    "full": "suspendible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "suspense",
+    "suffix": "able",
+    "full": "suspensible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "suspense",
+    "suffix": "er",
+    "full": "suspensor",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "suzan",
+    "suffix": "e",
+    "full": "suzanne",
+    "back": 0,
+    "extra": "ne"
+  },
+  {
+    "word": "swiz",
+    "suffix": "es",
+    "full": "swizzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "tag",
+    "suffix": "ant",
+    "full": "taggant",
+    "back": 0,
+    "extra": "gant"
+  },
+  {
+    "word": "tag",
+    "suffix": "ee",
+    "full": "taggee",
+    "back": 0,
+    "extra": "gee"
+  },
+  {
+    "word": "take",
+    "suffix": "i",
+    "full": "taki",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "talbot",
+    "suffix": "on",
+    "full": "talbotton",
+    "back": 0,
+    "extra": "ton"
+  },
+  {
+    "word": "tale",
+    "suffix": "i",
+    "full": "tali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "tam",
+    "suffix": "ar",
+    "full": "tammar",
+    "back": 0,
+    "extra": "mar"
+  },
+  {
+    "word": "tan",
+    "suffix": "age",
+    "full": "tannage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "tan",
+    "suffix": "ate",
+    "full": "tannate",
+    "back": 0,
+    "extra": "nate"
+  },
+  {
+    "word": "tan",
+    "suffix": "ic",
+    "full": "tannic",
+    "back": 0,
+    "extra": "nic"
+  },
+  {
+    "word": "tan",
+    "suffix": "in",
+    "full": "tannin",
+    "back": 0,
+    "extra": "nin"
+  },
+  {
+    "word": "tang",
+    "suffix": "able",
+    "full": "tangible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "tap",
+    "suffix": "et",
+    "full": "tappet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "tap",
+    "suffix": "ice",
+    "full": "tappice",
+    "back": 0,
+    "extra": "pice"
+  },
+  {
+    "word": "tape",
+    "suffix": "u",
+    "full": "tapu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "tat",
+    "suffix": "oo",
+    "full": "tattoo",
+    "back": 0,
+    "extra": "too"
+  },
+  {
+    "word": "tate",
+    "suffix": "u",
+    "full": "tatu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "tedesche",
+    "suffix": "i",
+    "full": "tedeschi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "telegram",
+    "suffix": "ic",
+    "full": "telegrammic",
+    "back": 0,
+    "extra": "mic"
+  },
+  {
+    "word": "tendril",
+    "suffix": "ar",
+    "full": "tendrillar",
+    "back": 0,
+    "extra": "lar"
+  },
+  {
+    "word": "tens",
+    "suffix": "able",
+    "full": "tensible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "tense",
+    "suffix": "abilit",
+    "full": "tensibilit",
+    "back": 1,
+    "extra": "ibilit"
+  },
+  {
+    "word": "tense",
+    "suffix": "abl",
+    "full": "tensibl",
+    "back": 1,
+    "extra": "ibl"
+  },
+  {
+    "word": "terr",
+    "suffix": "able",
+    "full": "terrible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "terre",
+    "suffix": "able",
+    "full": "terrible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "tet",
+    "suffix": "ix",
+    "full": "tettix",
+    "back": 0,
+    "extra": "tix"
+  },
+  {
+    "word": "thad",
+    "suffix": "eus",
+    "full": "thaddeus",
+    "back": 0,
+    "extra": "deus"
+  },
+  {
+    "word": "thole",
+    "suffix": "i",
+    "full": "tholi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "thug",
+    "suffix": "ee",
+    "full": "thuggee",
+    "back": 0,
+    "extra": "gee"
+  },
+  {
+    "word": "thug",
+    "suffix": "ism",
+    "full": "thuggism",
+    "back": 0,
+    "extra": "gism"
+  },
+  {
+    "word": "thug",
+    "suffix": "o",
+    "full": "thuggo",
+    "back": 0,
+    "extra": "go"
+  },
+  {
+    "word": "thyrse",
+    "suffix": "i",
+    "full": "thyrsi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "tic",
+    "suffix": "a",
+    "full": "ticca",
+    "back": 0,
+    "extra": "ca"
+  },
+  {
+    "word": "tic",
+    "suffix": "ed",
+    "full": "ticced",
+    "back": 0,
+    "extra": "ced"
+  },
+  {
+    "word": "tic",
+    "suffix": "ing",
+    "full": "ticcing",
+    "back": 0,
+    "extra": "cing"
+  },
+  {
+    "word": "tip",
+    "suffix": "et",
+    "full": "tippet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "tit",
+    "suffix": "up",
+    "full": "tittup",
+    "back": 0,
+    "extra": "tup"
+  },
+  {
+    "word": "tite",
+    "suffix": "i",
+    "full": "titi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "toc",
+    "suffix": "ata",
+    "full": "toccata",
+    "back": 0,
+    "extra": "cata"
+  },
+  {
+    "word": "toc",
+    "suffix": "ate",
+    "full": "toccate",
+    "back": 0,
+    "extra": "cate"
+  },
+  {
+    "word": "toilet",
+    "suffix": "e",
+    "full": "toilette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "toilinet",
+    "suffix": "e",
+    "full": "toilinette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "tole",
+    "suffix": "u",
+    "full": "tolu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "ton",
+    "suffix": "age",
+    "full": "tonnage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "tonsil",
+    "suffix": "ar",
+    "full": "tonsillar",
+    "back": 0,
+    "extra": "lar"
+  },
+  {
+    "word": "tonsil",
+    "suffix": "ectomy",
+    "full": "tonsillectomy",
+    "back": 0,
+    "extra": "lectomy"
+  },
+  {
+    "word": "tonsil",
+    "suffix": "itis",
+    "full": "tonsillitis",
+    "back": 0,
+    "extra": "litis"
+  },
+  {
+    "word": "tonsil",
+    "suffix": "otomy",
+    "full": "tonsillotomy",
+    "back": 0,
+    "extra": "lotomy"
+  },
+  {
+    "word": "tope",
+    "suffix": "i",
+    "full": "topi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "tophe",
+    "suffix": "i",
+    "full": "tophi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "tor",
+    "suffix": "et",
+    "full": "torret",
+    "back": 0,
+    "extra": "ret"
+  },
+  {
+    "word": "tor",
+    "suffix": "ified",
+    "full": "torrified",
+    "back": 0,
+    "extra": "rified"
+  },
+  {
+    "word": "tor",
+    "suffix": "ifies",
+    "full": "torrifies",
+    "back": 0,
+    "extra": "rifies"
+  },
+  {
+    "word": "tor",
+    "suffix": "ify",
+    "full": "torrify",
+    "back": 0,
+    "extra": "rify"
+  },
+  {
+    "word": "tore",
+    "suffix": "i",
+    "full": "tori",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "torment",
+    "suffix": "er",
+    "full": "tormentor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "trampet",
+    "suffix": "e",
+    "full": "trampette",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "transfer",
+    "suffix": "er",
+    "full": "transferor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "transfer",
+    "suffix": "ibility",
+    "full": "transferribility",
+    "back": 0,
+    "extra": "ribility"
+  },
+  {
+    "word": "transfer",
+    "suffix": "ible",
+    "full": "transferrible",
+    "back": 0,
+    "extra": "rible"
+  },
+  {
+    "word": "transfer",
+    "suffix": "in",
+    "full": "transferrin",
+    "back": 0,
+    "extra": "rin"
+  },
+  {
+    "word": "transgress",
+    "suffix": "er",
+    "full": "transgressor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "transmit",
+    "suffix": "al",
+    "full": "transmittal",
+    "back": 0,
+    "extra": "tal"
+  },
+  {
+    "word": "transmit",
+    "suffix": "ance",
+    "full": "transmittance",
+    "back": 0,
+    "extra": "tance"
+  },
+  {
+    "word": "transmit",
+    "suffix": "ible",
+    "full": "transmittible",
+    "back": 0,
+    "extra": "tible"
+  },
+  {
+    "word": "trap",
+    "suffix": "ean",
+    "full": "trappean",
+    "back": 0,
+    "extra": "pean"
+  },
+  {
+    "word": "trap",
+    "suffix": "ose",
+    "full": "trappose",
+    "back": 0,
+    "extra": "pose"
+  },
+  {
+    "word": "trap",
+    "suffix": "ous",
+    "full": "trappous",
+    "back": 0,
+    "extra": "pous"
+  },
+  {
+    "word": "trez",
+    "suffix": "es",
+    "full": "trezzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "trigram",
+    "suffix": "ic",
+    "full": "trigrammic",
+    "back": 0,
+    "extra": "mic"
+  },
+  {
+    "word": "trip",
+    "suffix": "ant",
+    "full": "trippant",
+    "back": 0,
+    "extra": "pant"
+  },
+  {
+    "word": "trip",
+    "suffix": "et",
+    "full": "trippet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "trop",
+    "suffix": "o",
+    "full": "troppo",
+    "back": 0,
+    "extra": "po"
+  },
+  {
+    "word": "tun",
+    "suffix": "age",
+    "full": "tunnage",
+    "back": 0,
+    "extra": "nage"
+  },
+  {
+    "word": "tut",
+    "suffix": "i",
+    "full": "tutti",
+    "back": 0,
+    "extra": "ti"
+  },
+  {
+    "word": "twite",
+    "suffix": "en",
+    "full": "twitten",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "uce",
+    "suffix": "ability",
+    "full": "ucibility",
+    "back": 1,
+    "extra": "ibility"
+  },
+  {
+    "word": "uce",
+    "suffix": "able",
+    "full": "ucible",
+    "back": 1,
+    "extra": "ible"
+  },
+  {
+    "word": "uct",
+    "suffix": "ability",
+    "full": "uctibility",
+    "back": 0,
+    "extra": "ibility"
+  },
+  {
+    "word": "uct",
+    "suffix": "able",
+    "full": "uctible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "ul",
+    "suffix": "y",
+    "full": "ully",
+    "back": 0,
+    "extra": "ly"
+  },
+  {
+    "word": "ule",
+    "suffix": "u",
+    "full": "ulu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "umbel",
+    "suffix": "ar",
+    "full": "umbellar",
+    "back": 0,
+    "extra": "lar"
+  },
+  {
+    "word": "umbel",
+    "suffix": "ate",
+    "full": "umbellate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "umbel",
+    "suffix": "ulate",
+    "full": "umbellulate",
+    "back": 0,
+    "extra": "lulate"
+  },
+  {
+    "word": "umbel",
+    "suffix": "ule",
+    "full": "umbellule",
+    "back": 0,
+    "extra": "lule"
+  },
+  {
+    "word": "umbrel",
+    "suffix": "a",
+    "full": "umbrella",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "unce",
+    "suffix": "i",
+    "full": "unci",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "upt",
+    "suffix": "abilit",
+    "full": "uptibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "upt",
+    "suffix": "abl",
+    "full": "uptibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "urare",
+    "suffix": "i",
+    "full": "urari",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "urban",
+    "suffix": "a",
+    "full": "urbanna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "usucapt",
+    "suffix": "able",
+    "full": "usucaptible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "vac",
+    "suffix": "inal",
+    "full": "vaccinal",
+    "back": 0,
+    "extra": "cinal"
+  },
+  {
+    "word": "vac",
+    "suffix": "inate",
+    "full": "vaccinate",
+    "back": 0,
+    "extra": "cinate"
+  },
+  {
+    "word": "vac",
+    "suffix": "ination",
+    "full": "vaccination",
+    "back": 0,
+    "extra": "cination"
+  },
+  {
+    "word": "vac",
+    "suffix": "inator",
+    "full": "vaccinator",
+    "back": 0,
+    "extra": "cinator"
+  },
+  {
+    "word": "vac",
+    "suffix": "ine",
+    "full": "vaccine",
+    "back": 0,
+    "extra": "cine"
+  },
+  {
+    "word": "val",
+    "suffix": "a",
+    "full": "valla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "val",
+    "suffix": "ey",
+    "full": "valley",
+    "back": 0,
+    "extra": "ley"
+  },
+  {
+    "word": "val",
+    "suffix": "um",
+    "full": "vallum",
+    "back": 0,
+    "extra": "lum"
+  },
+  {
+    "word": "vale",
+    "suffix": "i",
+    "full": "vali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "valuate",
+    "suffix": "er",
+    "full": "valuator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "van",
+    "suffix": "a",
+    "full": "vanna",
+    "back": 0,
+    "extra": "na"
+  },
+  {
+    "word": "var",
+    "suffix": "o",
+    "full": "varro",
+    "back": 0,
+    "extra": "ro"
+  },
+  {
+    "word": "varlet",
+    "suffix": "o",
+    "full": "varletto",
+    "back": 0,
+    "extra": "to"
+  },
+  {
+    "word": "vel",
+    "suffix": "ication",
+    "full": "vellication",
+    "back": 0,
+    "extra": "lication"
+  },
+  {
+    "word": "vel",
+    "suffix": "on",
+    "full": "vellon",
+    "back": 0,
+    "extra": "lon"
+  },
+  {
+    "word": "vel",
+    "suffix": "um",
+    "full": "vellum",
+    "back": 0,
+    "extra": "lum"
+  },
+  {
+    "word": "vel",
+    "suffix": "us",
+    "full": "vellus",
+    "back": 0,
+    "extra": "lus"
+  },
+  {
+    "word": "vend",
+    "suffix": "able",
+    "full": "vendible",
+    "back": 0,
+    "extra": "ible"
+  },
+  {
+    "word": "vend",
+    "suffix": "er",
+    "full": "vendor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "ventricule",
+    "suffix": "i",
+    "full": "ventriculi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "venture",
+    "suffix": "i",
+    "full": "venturi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "verde",
+    "suffix": "i",
+    "full": "verdi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "vert",
+    "suffix": "abilit",
+    "full": "vertibilit",
+    "back": 0,
+    "extra": "ibilit"
+  },
+  {
+    "word": "vert",
+    "suffix": "abl",
+    "full": "vertibl",
+    "back": 0,
+    "extra": "ibl"
+  },
+  {
+    "word": "verticil",
+    "suffix": "ate",
+    "full": "verticillate",
+    "back": 0,
+    "extra": "late"
+  },
+  {
+    "word": "verticil",
+    "suffix": "ation",
+    "full": "verticillation",
+    "back": 0,
+    "extra": "lation"
+  },
+  {
+    "word": "vexil",
+    "suffix": "a",
+    "full": "vexilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "vexil",
+    "suffix": "ological",
+    "full": "vexillological",
+    "back": 0,
+    "extra": "lological"
+  },
+  {
+    "word": "vexil",
+    "suffix": "ologist",
+    "full": "vexillologist",
+    "back": 0,
+    "extra": "lologist"
+  },
+  {
+    "word": "vexil",
+    "suffix": "ology",
+    "full": "vexillology",
+    "back": 0,
+    "extra": "lology"
+  },
+  {
+    "word": "vexil",
+    "suffix": "um",
+    "full": "vexillum",
+    "back": 0,
+    "extra": "lum"
+  },
+  {
+    "word": "vince",
+    "suffix": "i",
+    "full": "vinci",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "vitiate",
+    "suffix": "er",
+    "full": "vitiator",
+    "back": 1,
+    "extra": "or"
+  },
+  {
+    "word": "viver",
+    "suffix": "ine",
+    "full": "viverrine",
+    "back": 0,
+    "extra": "rine"
+  },
+  {
+    "word": "vol",
+    "suffix": "ey",
+    "full": "volley",
+    "back": 0,
+    "extra": "ley"
+  },
+  {
+    "word": "volte",
+    "suffix": "i",
+    "full": "volti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "wade",
+    "suffix": "i",
+    "full": "wadi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "wal",
+    "suffix": "is",
+    "full": "wallis",
+    "back": 0,
+    "extra": "lis"
+  },
+  {
+    "word": "wale",
+    "suffix": "i",
+    "full": "wali",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "war",
+    "suffix": "an",
+    "full": "warran",
+    "back": 0,
+    "extra": "ran"
+  },
+  {
+    "word": "war",
+    "suffix": "ay",
+    "full": "warray",
+    "back": 0,
+    "extra": "ray"
+  },
+  {
+    "word": "war",
+    "suffix": "ior",
+    "full": "warrior",
+    "back": 0,
+    "extra": "rior"
+  },
+  {
+    "word": "warrant",
+    "suffix": "er",
+    "full": "warrantor",
+    "back": 0,
+    "extra": "or"
+  },
+  {
+    "word": "whig",
+    "suffix": "ism",
+    "full": "whiggism",
+    "back": 0,
+    "extra": "gism"
+  },
+  {
+    "word": "whip",
+    "suffix": "et",
+    "full": "whippet",
+    "back": 0,
+    "extra": "pet"
+  },
+  {
+    "word": "whir",
+    "suffix": "et",
+    "full": "whirret",
+    "back": 0,
+    "extra": "ret"
+  },
+  {
+    "word": "whiz",
+    "suffix": "es",
+    "full": "whizzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "wile",
+    "suffix": "i",
+    "full": "wili",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "wit",
+    "suffix": "ol",
+    "full": "wittol",
+    "back": 0,
+    "extra": "tol"
+  },
+  {
+    "word": "wot",
+    "suffix": "eth",
+    "full": "wotteth",
+    "back": 0,
+    "extra": "teth"
+  },
+  {
+    "word": "wrap",
+    "suffix": "age",
+    "full": "wrappage",
+    "back": 0,
+    "extra": "page"
+  },
+  {
+    "word": "write",
+    "suffix": "en",
+    "full": "written",
+    "back": 1,
+    "extra": "ten"
+  },
+  {
+    "word": "wyandot",
+    "suffix": "e",
+    "full": "wyandotte",
+    "back": 0,
+    "extra": "te"
+  },
+  {
+    "word": "wyclif",
+    "suffix": "e",
+    "full": "wycliffe",
+    "back": 0,
+    "extra": "fe"
+  },
+  {
+    "word": "wyclif",
+    "suffix": "ian",
+    "full": "wycliffian",
+    "back": 0,
+    "extra": "fian"
+  },
+  {
+    "word": "wyclif",
+    "suffix": "ism",
+    "full": "wycliffism",
+    "back": 0,
+    "extra": "fism"
+  },
+  {
+    "word": "wyclif",
+    "suffix": "ite",
+    "full": "wycliffite",
+    "back": 0,
+    "extra": "fite"
+  },
+  {
+    "word": "yak",
+    "suffix": "a",
+    "full": "yakka",
+    "back": 0,
+    "extra": "ka"
+  },
+  {
+    "word": "yale",
+    "suffix": "u",
+    "full": "yalu",
+    "back": 1,
+    "extra": "u"
+  },
+  {
+    "word": "yar",
+    "suffix": "an",
+    "full": "yarran",
+    "back": 0,
+    "extra": "ran"
+  },
+  {
+    "word": "yip",
+    "suffix": "ee",
+    "full": "yippee",
+    "back": 0,
+    "extra": "pee"
+  },
+  {
+    "word": "yob",
+    "suffix": "ism",
+    "full": "yobbism",
+    "back": 0,
+    "extra": "bism"
+  },
+  {
+    "word": "yob",
+    "suffix": "o",
+    "full": "yobbo",
+    "back": 0,
+    "extra": "bo"
+  },
+  {
+    "word": "yup",
+    "suffix": "ification",
+    "full": "yuppification",
+    "back": 0,
+    "extra": "pification"
+  },
+  {
+    "word": "yup",
+    "suffix": "ified",
+    "full": "yuppified",
+    "back": 0,
+    "extra": "pified"
+  },
+  {
+    "word": "yup",
+    "suffix": "ifies",
+    "full": "yuppifies",
+    "back": 0,
+    "extra": "pifies"
+  },
+  {
+    "word": "yup",
+    "suffix": "ify",
+    "full": "yuppify",
+    "back": 0,
+    "extra": "pify"
+  },
+  {
+    "word": "zampone",
+    "suffix": "i",
+    "full": "zamponi",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "zecchine",
+    "suffix": "i",
+    "full": "zecchini",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "zen",
+    "suffix": "ist",
+    "full": "zennist",
+    "back": 0,
+    "extra": "nist"
+  },
+  {
+    "word": "zeppole",
+    "suffix": "i",
+    "full": "zeppoli",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "zin",
+    "suffix": "ia",
+    "full": "zinnia",
+    "back": 0,
+    "extra": "nia"
+  },
+  {
+    "word": "zingare",
+    "suffix": "i",
+    "full": "zingari",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "zip",
+    "suffix": "o",
+    "full": "zippo",
+    "back": 0,
+    "extra": "po"
+  },
+  {
+    "word": "zite",
+    "suffix": "i",
+    "full": "ziti",
+    "back": 1,
+    "extra": "i"
+  },
+  {
+    "word": "ziz",
+    "suffix": "es",
+    "full": "zizzes",
+    "back": 0,
+    "extra": "zes"
+  },
+  {
+    "word": "zoril",
+    "suffix": "a",
+    "full": "zorilla",
+    "back": 0,
+    "extra": "la"
+  },
+  {
+    "word": "zoril",
+    "suffix": "e",
+    "full": "zorille",
+    "back": 0,
+    "extra": "le"
+  },
+  {
+    "word": "zoril",
+    "suffix": "o",
+    "full": "zorillo",
+    "back": 0,
+    "extra": "lo"
+  },
+  {
+    "word": "zwingle",
+    "suffix": "i",
+    "full": "zwingli",
+    "back": 1,
+    "extra": "i"
+  }
+]

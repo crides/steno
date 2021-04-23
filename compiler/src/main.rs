@@ -11,6 +11,7 @@ mod dict;
 mod freemap;
 mod hash;
 mod keycode;
+mod orthography;
 mod rule;
 mod stroke;
 

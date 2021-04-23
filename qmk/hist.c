@@ -106,7 +106,7 @@ static uint8_t steno_send_unicode(const uint32_t u) {
     }
 }
 
-static uint8_t steno_send_keycodes(const uint8_t *keycodes, const uint8_t len) {
+static uint8_t steno_send_keycodes(const uint8_t *const keycodes, const uint8_t len) {
 #ifdef STENO_DEBUG_HIST
     steno_debug("keys(%u):", len);
 #endif

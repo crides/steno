@@ -7,7 +7,7 @@ use crate::hash;
 pub static KEYS: &str = "#STKPWHRAO*EUFRPBLGTSDZ";
 
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone, Copy)]
-pub struct Stroke(u32);
+pub struct Stroke(pub u32);
 
 impl Stroke {
     pub fn new() -> Self {
