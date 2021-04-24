@@ -292,15 +292,14 @@ state_t process_output(const uint8_t h_ind) {
     const uint8_t *entry = kvpair_buf + STROKE_SIZE * strokes_len + 1;
 
     // Possible suffix
-    // TODO include simple rules checking
-    if (!attr.space_prev) {
+    if (!attr.space_prev && strokes_len == 1) {
         const uint8_t last_hist_ind = HIST_LIMIT(h_ind - strokes_len);
         const history_t *const last_hist = hist_get(last_hist_ind);
         char word_end[32];
         memcpy(word_end, last_hist->end_buf, 8);
         char output[16] = {0};
         // NOTE assuming everything is ascii i.e. no commands, unicode, keycodes
-        const int8_t ret = ortho_transform((const char *) word_end, (const char *) entry, output);
+        const int8_t ret = process_ortho((const char *) word_end, (const char *) entry, output);
         if (ret >= 0) {
             const uint8_t output_len = strlen(output);
             const uint8_t old_end_len = strlen((const char *) word_end);

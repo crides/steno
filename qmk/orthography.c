@@ -1,4 +1,5 @@
 #include "steno.h"
+#include "store.h"
 #include "orthography.h"
 #include <string.h>
 #include <ctype.h>
@@ -14,7 +15,7 @@ static bool chrin(const char *s, const char c) {
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
 // Rules borrowed from https://github.com/nimble0/dotterel/blob/master/app/src/main/assets/orthography/english.regex.json
-int8_t ortho_transform(const char *word, const char *suffix, char *output) {
+static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
     const uint8_t word_len = strlen(word);
     char rev[WORD_ENDING_SIZE];
     // Invert `word` so that indexing is anchored to the end
@@ -172,4 +173,65 @@ int8_t ortho_transform(const char *word, const char *suffix, char *output) {
     }
 
     return -1;
+}
+
+#define ORTHO_BUCKET_SIZE 3
+#define ORTHO_BUCKET_NUM 0x3C00
+#define BUCKET_OFFSET_BITS 18
+#define BUCKET_LENGTH_BITS 6
+
+static uint32_t hash_str(const char *str) {
+    uint32_t hash = FNV_SEED;
+    while (*str) {
+        hash *= FNV_FACTOR;
+        hash ^= *str;
+        str ++;
+    }
+    return hash;
+}
+
+static int8_t simple_ortho(const char *word, const char *suffix, char *output) {
+    const uint8_t word_len = strlen(word);
+    const uint8_t suffix_len = strlen(suffix);
+    if (word_len > 13 || suffix_len > 9) {  // None of the entries in the rules are that long
+        return -1;
+    }
+    uint8_t merged[24] = {0};
+    memcpy(merged, word, word_len);
+    merged[word_len] = ' ';
+    memcpy(merged + word_len + 1, suffix, suffix_len);
+    const uint8_t merged_len = word_len + suffix_len + 1;
+    const uint32_t hash = hash_str((const char *) merged);
+    const uint32_t bucket_ind = hash % (ORTHO_BUCKET_NUM - 1);
+    uint32_t bucket_addr = ORTHOGRAPHY_START + bucket_ind * ORTHO_BUCKET_SIZE;
+    uint32_t bucket;
+
+    const uint8_t length_mask = (1 << BUCKET_LENGTH_BITS) - 1;
+    for (; ; bucket_addr += ORTHO_BUCKET_SIZE) {
+        store_read(bucket_addr, (uint8_t *) &bucket, ORTHO_BUCKET_SIZE);
+        const uint8_t entry_len = (bucket >> BUCKET_OFFSET_BITS) & length_mask;
+        if (entry_len == length_mask) {
+            return -1;
+        }
+        const uint32_t entry_addr = (bucket & (((uint32_t) 1 << BUCKET_OFFSET_BITS) - 1)) + (uint32_t) ORTHOGRAPHY_START + (uint32_t) ORTHO_BUCKET_SIZE * ORTHO_BUCKET_NUM;
+        uint8_t entry_buf[32];
+        store_read(entry_addr, entry_buf, entry_len);
+        if (strcmp((const char *) merged, (const char *) entry_buf) == 0) {
+            const uint8_t extra_len = entry_len - merged_len - 2;
+            memcpy(output, entry_buf + merged_len + 2, extra_len);
+            output[extra_len] = 0;
+            return (int8_t) entry_buf[merged_len + 1];
+        } else {
+            continue;
+        }
+    }
+    return -1;
+}
+
+int8_t process_ortho(const char *word, const char *suffix, char *output) {
+    const int8_t ret = regex_ortho(word, suffix, output);
+    if (ret == -1) {
+        return simple_ortho(word, suffix, output);
+    }
+    return ret;
 }
