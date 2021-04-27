@@ -22,15 +22,21 @@ use clap::{App, Arg, SubCommand};
 
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
-use stroke::Stroke;
+use stroke::{Stroke, Strokes};
 
 fn main() {
     let matches = App::new("compile-steno")
         .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
         .subcommand(SubCommand::with_name("hash").arg(Arg::with_name("strokes").required(true)))
+        .subcommand(SubCommand::with_name("hash-str").arg(Arg::with_name("str").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
-                .arg(Arg::with_name("input").required(true).multiple(true).min_values(1))
+                .arg(
+                    Arg::with_name("input")
+                        .required(true)
+                        .multiple(true)
+                        .min_values(1),
+                )
                 .arg(Arg::with_name("output").required(true)),
         )
         .subcommand(
@@ -47,12 +53,25 @@ fn main() {
 
             let inputs: Vec<_> = input_files
                 .map(|f| {
-                    (f, serde_json::from_reader(File::open(f).expect("input file")).expect("parse json"))
+                    (
+                        f,
+                        serde_json::from_reader(File::open(f).expect("input file"))
+                            .expect("parse json"),
+                    )
                 })
                 .collect();
-            let dict = Dict::parse_from_json(inputs).unwrap();
+            let dict = match Dict::parse_from_json(inputs) {
+                Ok(d) => d,
+                Err(e) => {
+                    eprintln!("{}", e);
+                    return;
+                }
+            };
             let mut output_file = File::create(output_file).expect("output file");
-            compile::to_writer(dict, &mut output_file).expect("write output");
+            if let Err(e) = compile::to_writer(dict, &mut output_file) {
+                eprintln!("{}", e);
+                return;
+            };
             println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());
         }
         ("apply-rules", Some(m)) => {
@@ -81,7 +100,16 @@ fn main() {
                 .map(|stroke| stroke.parse().unwrap())
                 .collect::<Vec<_>>();
             dbg!(&strokes);
-            println!("{:x}", stroke::hash_strokes(&strokes));
+            println!("{:x}", stroke::hash_strokes(&Strokes(strokes)));
+        }
+        ("hash-str", Some(m)) => {
+            let s: String = m.value_of("str").unwrap().parse().unwrap();
+            dbg!(&s);
+            let hash = hash::hash(s.as_bytes(), None);
+            println!("{:x}", hash);
+            let bucket_cap: usize = 0x3C00;
+            let index = hash as usize % (bucket_cap - 1);
+            println!("{:x}", index);
         }
         (cmd, _) => panic!("{}", cmd),
     }

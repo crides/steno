@@ -4,16 +4,17 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 
 use lalrpop_util::ParseError;
-use onig::Regex;
+use onig::{Captures, Regex};
 
 use crate::bar::progress_bar;
 use crate::keycode::TermListParser;
-use crate::stroke::Stroke;
+use crate::stroke::Strokes;
 
 lazy_static! {
     /// Stolen from somewhere in Plover. Matches against atoms inside a meta string (either `{}` enclosed
     /// atoms or not enclosed plain strings)
-    static ref META_RE: Regex = Regex::new(r"[^{}]+|\{[^{}]*\}").unwrap();
+    static ref META_RE: Regex = Regex::new(r"(?:\\\}|\\\{|[^{}])+|\{(?:\\\}|\\\{|[^{}])*\}").unwrap();
+    static ref ESCAPED_BRACES: Regex = Regex::new(r"\\\\(\{|\})").unwrap();
 }
 
 pub type JsonDict = BTreeMap<String, String>;
@@ -138,11 +139,13 @@ impl Entry {
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
-    fn parse_atom(mut s: &str) -> Result<Entry, ParseDictError> {
+    fn parse_atom(s: &str) -> Result<Entry, ParseEntryError> {
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
         let mut attr = Attr::valid_default();
         if s.starts_with('{') && s.ends_with('}') {
-            s = &s[1..(s.len() - 1)];
+            
+            let s = ESCAPED_BRACES.replace_all(&s[1..(s.len() - 1)], |c: &Captures| c.at(1).unwrap().to_string());
+            let mut s = s.as_str();
             if s.starts_with('#') {
                 let keycodes = TermListParser::new()
                     .parse(&s[1..])?
@@ -202,14 +205,16 @@ impl Entry {
             }
             Ok(Entry {
                 attr,
-                inputs: vec![Input::String(s.into())],
+                inputs: vec![Input::String(
+                    ESCAPED_BRACES.replace_all(s, |c: &Captures| c.at(1).unwrap().to_string()),
+                )],
             })
         }
     }
 
     /// Parses the whole entry. Calls `parse_atom` and joins the inputs and attributes together, changing the
     /// contents when necessary
-    pub fn parse_entry(s: &str) -> Result<Entry, ParseDictError> {
+    fn parse_entry(s: &str) -> Result<Entry, ParseEntryError> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
             inputs: Vec::new(),
@@ -218,7 +223,7 @@ impl Entry {
         let atoms = META_RE
             .find_iter(s)
             .map(|(b, e)| Entry::parse_atom(&s[b..e]))
-            .collect::<Result<Vec<Entry>, ParseDictError>>()?;
+            .collect::<Result<Vec<Entry>, ParseEntryError>>()?;
         if atoms.is_empty() {
             Ok(entry)
         } else if atoms.len() == 1 {
@@ -279,18 +284,59 @@ impl Entry {
 }
 
 #[derive(Debug)]
-pub enum ParseDictError {
-    InvalidStroke(String),
+enum ParseEntryError {
     InvalidKeycode(String),
-    ParseError(String),
+    Other(String),
 }
 
-impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
-    fn from(e: ParseError<L, T, String>) -> ParseDictError {
+#[derive(Debug)]
+pub enum ParseDictError {
+    InvalidStroke(String, String),
+    InvalidKeycode {
+        strokes: String,
+        entry: String,
+        code: String,
+    },
+    Other {
+        strokes: String,
+        entry: String,
+        msg: String,
+    },
+}
+
+impl Display for ParseDictError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use ParseDictError::*;
+        match self {
+            InvalidStroke(s, ss) => write!(f, "Invalid stroke '{}' in '{}'", s, ss),
+            InvalidKeycode {
+                strokes,
+                entry,
+                code,
+            } => write!(
+                f,
+                "Invalid keycode '{}' in '{}', mapped from '{}'",
+                code, entry, strokes
+            ),
+            Other {
+                strokes,
+                entry,
+                msg,
+            } => write!(
+                f,
+                "Invalid entry '{}' in '{}', mapped from '{}'",
+                msg, entry, strokes
+            ),
+        }
+    }
+}
+
+impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseEntryError {
+    fn from(e: ParseError<L, T, String>) -> ParseEntryError {
         if let ParseError::User { error } = e {
-            ParseDictError::InvalidKeycode(error)
+            ParseEntryError::InvalidKeycode(error)
         } else {
-            ParseDictError::ParseError(e.to_string())
+            ParseEntryError::Other(e.to_string())
         }
     }
 }
@@ -298,7 +344,7 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
 /// Parsed value representation for a JSON dictionary. Differs from the JSON dictionary only in that the
 /// values here are parsed.
 #[derive(Debug, Clone)]
-pub struct Dict(pub BTreeMap<Vec<Stroke>, Entry>);
+pub struct Dict(pub BTreeMap<Strokes, Entry>);
 
 impl Dict {
     pub fn parse_from_json(mut dicts: Vec<(&str, JsonDict)>) -> Result<Dict, ParseDictError> {
@@ -326,19 +372,25 @@ impl Dict {
             }
 
             let (first_name, first) = dicts.remove(0);
-            let first = first.into_iter().map(|(k, v)| (k, Multiple::Single((first_name, v)))).collect::<BTreeMap<_, _>>();
-            let merged = dicts.into_iter().fold(first, |mut merged, (new_name, new)| {
-                for (key, val) in new.into_iter() {
-                    if let Some(ref mut v) = merged.get_mut(&key) {
-                        v.push((new_name, val));
-                    } else {
-                        merged.insert(key, Multiple::Single((new_name, val)));
+            let first = first
+                .into_iter()
+                .map(|(k, v)| (k, Multiple::Single((first_name, v))))
+                .collect::<BTreeMap<_, _>>();
+            let merged = dicts
+                .into_iter()
+                .fold(first, |mut merged, (new_name, new)| {
+                    for (key, val) in new.into_iter() {
+                        if let Some(ref mut v) = merged.get_mut(&key) {
+                            v.push((new_name, val));
+                        } else {
+                            merged.insert(key, Multiple::Single((new_name, val)));
+                        }
                     }
-                }
-                merged
-            });
-            merged.into_iter().map(|(k, m)| {
-                match m {
+                    merged
+                });
+            merged
+                .into_iter()
+                .map(|(k, m)| match m {
                     Multiple::Single((_name, val)) => (k, val),
                     Multiple::Multiple(mut v) => {
                         pbar.println(format!("Conflict on key '{}'", k));
@@ -349,23 +401,34 @@ impl Dict {
                         pbar.println(format!("  using '{}' from {}", last.1, last.0));
                         (k, last.1)
                     }
-                }
-            }).collect()
+                })
+                .collect()
         };
         let parsed = merged
-            .iter()
+            .into_iter()
             .map(|(strokes, entry)| {
-                let strokes = strokes
+                let parsed_strokes = strokes
                     .split('/')
                     .map(|stroke| {
-                        stroke
-                            .parse()
-                            .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
+                        stroke.parse().map_err(|_| {
+                            ParseDictError::InvalidStroke(stroke.to_string(), strokes.clone())
+                        })
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let entry = Entry::parse_entry(entry)?;
+                let entry = Entry::parse_entry(&entry).map_err(|e| match e {
+                    ParseEntryError::InvalidKeycode(code) => ParseDictError::InvalidKeycode {
+                        strokes,
+                        entry,
+                        code,
+                    },
+                    ParseEntryError::Other(msg) => ParseDictError::Other {
+                        strokes,
+                        entry,
+                        msg,
+                    },
+                })?;
                 pbar.inc(1);
-                Ok((strokes, entry))
+                Ok((Strokes(parsed_strokes), entry))
             })
             .collect::<Result<BTreeMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");
@@ -490,6 +553,22 @@ fn test_command() {
         Entry {
             attr: Attr::valid_default(),
             inputs: vec![Input::String("oh yeah, babe".into())],
+        }
+    );
+}
+
+#[test]
+fn test_braces() {
+    dbg!(META_RE.find(r"\\}"));
+    assert_eq!(
+        Entry::parse_entry(r"{^}\\}{^}").unwrap(),
+        Entry {
+            attr: Attr {
+                space_after: false,
+                space_prev: false,
+                ..Attr::valid_default()
+            },
+            inputs: vec![Input::String("}".into())],
         }
     );
 }
