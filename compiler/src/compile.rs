@@ -142,10 +142,10 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
         } else if pair_size <= 128 {
             map.req(3)
         } else {
-            return Err(CompileError::NoStorage { cur_len: i, total: total_len });
+            return Err(CompileError::LargeEntry(strokes.clone()));
         };
         assert!(strokes.len() < 15 && strokes.len() > 0);
-        let block_offset = block_no.ok_or_else(|| CompileError::LargeEntry(strokes.clone()))? << 4;
+        let block_offset = block_no.ok_or_else(|| CompileError::NoStorage { cur_len: i, total: total_len })? << 4;
         buckets[index] = (entry_len as u32) << 24 | block_offset | strokes.len() as u32;
         file.seek(KVPAIR_START + block_offset as usize);
         for stroke in strokes.0 {
