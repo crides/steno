@@ -8,7 +8,7 @@ use onig::Regex;
 
 use crate::bar::progress_bar;
 use crate::keycode::TermListParser;
-use crate::stroke::Stroke;
+use crate::stroke::Strokes;
 
 lazy_static! {
     /// Stolen from somewhere in Plover. Matches against atoms inside a meta string (either `{}` enclosed
@@ -325,7 +325,7 @@ impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseEntryError 
 /// Parsed value representation for a JSON dictionary. Differs from the JSON dictionary only in that the
 /// values here are parsed.
 #[derive(Debug, Clone)]
-pub struct Dict(pub BTreeMap<Vec<Stroke>, Entry>);
+pub struct Dict(pub BTreeMap<Strokes, Entry>);
 
 impl Dict {
     pub fn parse_from_json(mut dicts: Vec<(&str, JsonDict)>) -> Result<Dict, ParseDictError> {
@@ -405,7 +405,7 @@ impl Dict {
                     }
                 })?;
                 pbar.inc(1);
-                Ok((parsed_strokes, entry))
+                Ok((Strokes(parsed_strokes), entry))
             })
             .collect::<Result<BTreeMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");

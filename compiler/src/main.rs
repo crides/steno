@@ -22,7 +22,7 @@ use clap::{App, Arg, SubCommand};
 
 use dict::Dict;
 use rule::{apply_rules, Dict as RuleDict, Rules};
-use stroke::Stroke;
+use stroke::{Stroke, Strokes};
 
 fn main() {
     let matches = App::new("compile-steno")
@@ -59,7 +59,10 @@ fn main() {
                 }
             };
             let mut output_file = File::create(output_file).expect("output file");
-            compile::to_writer(dict, &mut output_file).expect("write output");
+            if let Err(e) = compile::to_writer(dict, &mut output_file) {
+                eprintln!("{}", e);
+                return;
+            };
             println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());
         }
         ("apply-rules", Some(m)) => {
@@ -88,7 +91,7 @@ fn main() {
                 .map(|stroke| stroke.parse().unwrap())
                 .collect::<Vec<_>>();
             dbg!(&strokes);
-            println!("{:x}", stroke::hash_strokes(&strokes));
+            println!("{:x}", stroke::hash_strokes(&Strokes(strokes)));
         }
         ("hash-str", Some(m)) => {
             let s: String = m.value_of("str").unwrap().parse().unwrap();

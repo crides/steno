@@ -33,9 +33,9 @@ impl Stroke {
     }
 }
 
-pub fn hash_strokes(strokes: &[Stroke]) -> u32 {
+pub fn hash_strokes(strokes: &Strokes) -> u32 {
     let mut hash = None;
-    for stroke in strokes {
+    for stroke in &strokes.0 {
         hash = Some(stroke.hash(hash));
     }
     hash.unwrap()
@@ -80,6 +80,22 @@ impl Display for Stroke {
             }
         }
         write!(f, "{}", buf)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Strokes(pub Vec<Stroke>);
+
+impl Strokes {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl Display for Strokes {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let strs = self.0.iter().map(|s| format!("{}", s)).collect::<Vec<_>>();
+        write!(f, "{}", strs.join("/"))
     }
 }
 

@@ -6,7 +6,7 @@ use std::iter;
 
 use crate::dict::{Attr, Dict, Entry, Input};
 use crate::freemap::FreeMap;
-use crate::stroke::hash_strokes;
+use crate::stroke::{Strokes, hash_strokes};
 use crate::orthography;
 
 /// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
@@ -90,14 +90,38 @@ pub const SCRATCH_START: usize = 0xF22000;
 #[allow(dead_code)]
 pub const ORTHOGRAPHY_START: usize = 0xF30000;
 
-pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
+#[derive(Debug)]
+pub enum CompileError {
+    TooManyStrokes(Strokes),
+    LargeEntry(Strokes),
+    NoStorage { cur_len: usize, total: usize },
+    Io(std::io::Error),
+}
+
+impl std::fmt::Display for CompileError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use CompileError::*;
+        match self {
+            TooManyStrokes(s) => write!(f, "The entry '{}' has too many (>14) strokes", s),
+            LargeEntry(s) => write!(f, "The entry mapped from '{}' is too large", s),
+            NoStorage { cur_len, total } => write!(f, "Storage space runs out for entries. Entries stored {}/{}", cur_len, total),
+            Io(e) => write!(f, "IO error: {}", e),
+        }
+    }
+}
+
+pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
     let mut file = Uf2File::new();
     // Buffering buckets so less book keeping
     // 1M entries of 4 bytes; key length cannot be 15
     let mut buckets = vec![0xFFFFFFFF; 2usize.pow(20)];
     let mut map = FreeMap::new((FREEMAP_START - KVPAIR_START) as u32);
     let mut collisions = BTreeMap::new();
-    for (strokes, entry) in d.0.into_iter() {
+    let total_len = d.0.len();
+    for (i, (strokes, entry)) in d.0.into_iter().enumerate() {
+        if strokes.len() > 14 {
+            return Err(CompileError::TooManyStrokes(strokes.clone()));
+        }
         let hash = hash_strokes(&strokes);
         let mut index = hash as usize % 2usize.pow(20);
         let mut collision = 0;
@@ -118,13 +142,13 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
         } else if pair_size <= 128 {
             map.req(3)
         } else {
-            panic!("Entry too big!");
+            return Err(CompileError::NoStorage { cur_len: i, total: total_len });
         };
         assert!(strokes.len() < 15 && strokes.len() > 0);
-        let block_offset = block_no.unwrap() << 4;
+        let block_offset = block_no.ok_or_else(|| CompileError::LargeEntry(strokes.clone()))? << 4;
         buckets[index] = (entry_len as u32) << 24 | block_offset | strokes.len() as u32;
         file.seek(KVPAIR_START + block_offset as usize);
-        for stroke in strokes {
+        for stroke in strokes.0 {
             file.write_all(&stroke.raw().to_le_bytes()[0..3]);
         }
         let raw_entry: RawEntry = entry.into();
@@ -142,7 +166,7 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> io::Result<()> {
     }
     file.seek(ORTHOGRAPHY_START);
     file.write_all(&orthography::generate());
-    file.write_to(w)
+    file.write_to(w).map_err(CompileError::Io)
 }
 
 #[allow(dead_code)]
