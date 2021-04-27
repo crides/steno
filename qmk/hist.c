@@ -119,11 +119,11 @@ static uint8_t steno_send_keycodes(const uint8_t *const keycodes, const uint8_t 
     }
 #endif
     for (uint8_t i = 0; i < len; i++) {
-        if ((keycodes[i] & 0xFC) == 0xE0) {
-            const uint8_t mod = keycodes[i] & 0x03;
+        if ((keycodes[i] & 0xF8) == 0xE0) {
+            const uint8_t mod = keycodes[i] & 0x07;
 #if defined(STENO_DEBUG_HIST) || !defined(STENO_READONLY)
             uint8_t mod_char;
-            switch (mod) {
+            switch (mod & 3) {
             case 0: mod_char = 'c'; break;
             case 1: mod_char = 's'; break;
             case 2: mod_char = 'a'; break;
