@@ -138,7 +138,7 @@ impl Entry {
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
-    fn parse_atom(mut s: &str) -> Result<Entry, ParseDictError> {
+    fn parse_atom(mut s: &str) -> Result<Entry, ParseEntryError> {
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
         let mut attr = Attr::valid_default();
         if s.starts_with('{') && s.ends_with('}') {
@@ -209,7 +209,7 @@ impl Entry {
 
     /// Parses the whole entry. Calls `parse_atom` and joins the inputs and attributes together, changing the
     /// contents when necessary
-    pub fn parse_entry(s: &str) -> Result<Entry, ParseDictError> {
+    fn parse_entry(s: &str) -> Result<Entry, ParseEntryError> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
             inputs: Vec::new(),
@@ -218,7 +218,7 @@ impl Entry {
         let atoms = META_RE
             .find_iter(s)
             .map(|(b, e)| Entry::parse_atom(&s[b..e]))
-            .collect::<Result<Vec<Entry>, ParseDictError>>()?;
+            .collect::<Result<Vec<Entry>, ParseEntryError>>()?;
         if atoms.is_empty() {
             Ok(entry)
         } else if atoms.len() == 1 {
@@ -279,18 +279,45 @@ impl Entry {
 }
 
 #[derive(Debug)]
-pub enum ParseDictError {
-    InvalidStroke(String),
+enum ParseEntryError {
     InvalidKeycode(String),
-    ParseError(String),
+    Other(String),
 }
 
-impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseDictError {
-    fn from(e: ParseError<L, T, String>) -> ParseDictError {
+#[derive(Debug)]
+pub enum ParseDictError {
+    InvalidStroke(String, String),
+    InvalidKeycode {
+        strokes: String,
+        entry: String,
+        code: String,
+    },
+    Other {
+        strokes: String,
+        entry: String,
+        msg: String,
+    },
+}
+
+impl Display for ParseDictError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use ParseDictError::*;
+        match self {
+            InvalidStroke(s, ss) => write!(f, "Invalid stroke '{}' in '{}'", s, ss),
+            InvalidKeycode {
+                strokes, entry, code } => write!(f, "Invalid keycode '{}' in '{}', mapped from '{}'", code, entry, strokes),
+            Other {
+                strokes, entry, msg } => write!(f, "Invalid entry '{}' in '{}', mapped from '{}'", msg, entry, strokes),
+        }
+    }
+}
+
+impl<L: Display, T: Display> From<ParseError<L, T, String>> for ParseEntryError {
+    fn from(e: ParseError<L, T, String>) -> ParseEntryError {
         if let ParseError::User { error } = e {
-            ParseDictError::InvalidKeycode(error)
+            ParseEntryError::InvalidKeycode(error)
         } else {
-            ParseDictError::ParseError(e.to_string())
+            ParseEntryError::Other(e.to_string())
         }
     }
 }
@@ -353,19 +380,32 @@ impl Dict {
             }).collect()
         };
         let parsed = merged
-            .iter()
+            .into_iter()
             .map(|(strokes, entry)| {
-                let strokes = strokes
+                let parsed_strokes = strokes
                     .split('/')
                     .map(|stroke| {
                         stroke
                             .parse()
-                            .map_err(|_| ParseDictError::InvalidStroke(strokes.clone()))
+                            .map_err(|_| ParseDictError::InvalidStroke(stroke.to_string(), strokes.clone()))
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let entry = Entry::parse_entry(entry)?;
+                let entry = Entry::parse_entry(&entry).map_err(|e| {
+                    match e {
+                        ParseEntryError::InvalidKeycode(code) => ParseDictError::InvalidKeycode {
+                            strokes,
+                            entry,
+                            code,
+                        },
+                        ParseEntryError::Other(msg) => ParseDictError::Other { 
+                            strokes,
+                            entry,
+                            msg,
+                        },
+                    }
+                })?;
                 pbar.inc(1);
-                Ok((strokes, entry))
+                Ok((parsed_strokes, entry))
             })
             .collect::<Result<BTreeMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");
