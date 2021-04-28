@@ -33,10 +33,11 @@
  *  Header file for SCSI.c.
  */
 
-#ifndef _SCSI_H_
-#define _SCSI_H_
+#pragma once 
 
 #include <LUFA/Drivers/USB/USB.h>
+
+#define STATIC_ASSERT(thing) _Static_assert(thing, "static assert")
 
 /** Macro to set the current SCSI sense data to the given key, additional sense code and additional sense qualifier.
  * This is for convenience, as it allows for all three sense values (returned upon request to the host to give
@@ -129,48 +130,51 @@ void fat_write_block(uint32_t block_no, uint8_t packet_num, uint8_t *data);
 #define UF2_DATA_SIZE 476
 #define DATA_SIZE 256
 
-#if defined(INCLUDE_FROM_SCSI_C)
-static bool scsi_inquiry(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_request_sense(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_read_capacity_10(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_send_diagnostic(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_read_write_10(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo, const bool IsDataRead);
-static bool scsi_mode_sense_6(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-#endif
-
-#define FLASH_SIZE (16 * (1ul << 20)) // 16MB
-#define UF2_FLASH_SIZE (30 * (1ul << 20))     // 256 data blocks wrapped in 512 byte blocks
+#define FILE_SIZE (16ul << 20) // 16MB
+#define UF2_FLASH_SIZE (32ul << 20)      // 256 data blocks wrapped in 512 byte blocks
+#define DATA_CLUSTERS_SIZE (FILE_SIZE + UF2_FLASH_SIZE)
 #define BLOCK_SIZE 512  // GhostFAT does not support other sector sizes (currently) */
-#define FLASH_BLOCKS (UF2_FLASH_SIZE / BLOCK_SIZE)
 #define DISK_READ_ONLY false
 #define EPSIZE 64
 
-#define BLOCKS_PER_CLUSTER (1) // GhostFAT presumes one sector == one cluster (for simplicity)
-#define RESERVED_BLOCKS (1)
+#define BLOCKS_PER_CLUSTER (2)
+#define RESERVED_CLUSTERS (1)
+#define RESERVED_BLOCKS (RESERVED_CLUSTERS * BLOCKS_PER_CLUSTER)
 #define NUMBER_OF_FATS (2) // FAT highest compatibility
-#define ROOT_DIR_ENTRIES (16)
 #define MEDIA_DESCRIPTOR_BYTE (0xF8)
 #define FAT_ENTRY_SIZE (2) // FAT16
 #define FAT_ENTRIES_PER_BLOCK (BLOCK_SIZE / FAT_ENTRY_SIZE)
+#define FAT_ENTRIES_PER_CLUSTER (FAT_ENTRIES_PER_BLOCK * BLOCKS_PER_CLUSTER)
 #define FAT_ENTRIES_PER_PACKET (EPSIZE / FAT_ENTRY_SIZE)
-#define FAT_BLOCKS (FLASH_BLOCKS + NUM_DIRENTRIES) // Flash blocks + 1 reserved block + ID
+#define NUM_FILES 1
+#define ROOT_DIR_CLUSTERS 1
+#define PACKETS_PER_BLOCK (BLOCK_SIZE / EPSIZE)
+
+#define FILE_BLOCKS (FILE_SIZE / BLOCK_SIZE)
+#define FILE_CLUSTERS (FILE_BLOCKS / BLOCKS_PER_CLUSTER)
+#define UF2_FLASH_CLUSTERS (UF2_FLASH_SIZE / BLOCK_SIZE / BLOCKS_PER_CLUSTER)
+#define DATA_CLUSTERS ((DATA_CLUSTERS_SIZE / BLOCKS_PER_CLUSTER / BLOCK_SIZE) + ROOT_DIR_CLUSTERS)
 // NOTE: MS specification explicitly allows FAT to be larger than necessary
 // Number of blocks used by each cluster map
-#define CLUSTER_BLOCKS ((FAT_BLOCKS / FAT_ENTRIES_PER_BLOCK) + ((FAT_BLOCKS % FAT_ENTRIES_PER_BLOCK) ? 1 : 0))
+#define TABLE_CLUSTERS ((DATA_CLUSTERS / FAT_ENTRIES_PER_CLUSTER) + ((DATA_CLUSTERS % FAT_ENTRIES_PER_CLUSTER) ? 1 : 0))
+/* #define TABLE_BLOCKS ((DATA_CLUSTERS / FAT_ENTRIES_PER_BLOCK) + ((DATA_CLUSTERS % FAT_ENTRIES_PER_BLOCK) ? 1 : 0)) */
+#define TABLE_BLOCKS (TABLE_CLUSTERS * BLOCKS_PER_CLUSTER)
 #define DIRENTRIES_PER_BLOCK (BLOCK_SIZE / sizeof(DirEntry))
-#define ROOT_DIR_BLOCKS (ROOT_DIR_ENTRIES / DIRENTRIES_PER_BLOCK)
+#define ROOT_DIR_ENTRIES (ROOT_DIR_CLUSTERS * DIRENTRIES_PER_BLOCK * BLOCKS_PER_CLUSTER)
 
-#define NUM_FILES 1
-#define NUM_DIRENTRIES (NUM_FILES + 1) // Root directory + files
+#define FILE_FIRST_DATA_CLUSTER (ROOT_DIR_CLUSTERS + 1)
+#define FILE_LAST_DATA_CLUSTER (FILE_FIRST_DATA_CLUSTER + FILE_CLUSTERS)
 
-#define FLASH_FIRST_BLOCK (NUM_DIRENTRIES * BLOCKS_PER_CLUSTER)
-#define FLASH_LAST_BLOCK ((FLASH_FIRST_BLOCK + FLASH_BLOCKS - 1) * BLOCKS_PER_CLUSTER)
+#define FAT0_START RESERVED_CLUSTERS
+#define FAT1_START (FAT0_START + TABLE_CLUSTERS)
+#define ROOTDIR_START (FAT1_START + TABLE_CLUSTERS)
+#define FILE_START (ROOTDIR_START + ROOT_DIR_CLUSTERS)
+#define FILE_END (FILE_START + FILE_CLUSTERS)
+#define TOTAL_CLUSTERS (FILE_END + UF2_FLASH_CLUSTERS)
+#define TOTAL_BLOCKS (TOTAL_CLUSTERS * BLOCKS_PER_CLUSTER)
 
-#define FS_FAT0 RESERVED_BLOCKS
-#define FS_FAT1 (FS_FAT0 + CLUSTER_BLOCKS)
-#define FS_ROOTDIR (FS_FAT1 + CLUSTER_BLOCKS)
-#define FS_DATA_BLOCKS (FS_ROOTDIR + ROOT_DIR_BLOCKS)
-
-#define FS_BLOCKS (FS_DATA_BLOCKS + FLASH_BLOCKS)
-
-#endif
+STATIC_ASSERT(sizeof(DirEntry) == 32);
+STATIC_ASSERT(FILE_CLUSTERS == 16ul << 10);
+STATIC_ASSERT(DATA_CLUSTERS == ((48ul << 10) + 1));
+STATIC_ASSERT(TABLE_CLUSTERS == 97);
+STATIC_ASSERT(DATA_CLUSTERS_SIZE == 48ul << 20);
