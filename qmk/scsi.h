@@ -38,6 +38,8 @@
 
 #include <LUFA/Drivers/USB/USB.h>
 
+#define STATIC_ASSERT(thing) _Static_assert(thing, "static assert")
+
 /** Macro to set the current SCSI sense data to the given key, additional sense code and additional sense qualifier.
  * This is for convenience, as it allows for all three sense values (returned upon request to the host to give
  * information about the last command failure) in a quick and easy manner.
@@ -129,19 +131,11 @@ void fat_write_block(uint32_t block_no, uint8_t packet_num, uint8_t *data);
 #define UF2_DATA_SIZE 476
 #define DATA_SIZE 256
 
-#if defined(INCLUDE_FROM_SCSI_C)
-static bool scsi_inquiry(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_request_sense(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_read_capacity_10(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_send_diagnostic(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-static bool scsi_read_write_10(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo, const bool IsDataRead);
-static bool scsi_mode_sense_6(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
-#endif
-
 #define FLASH_SIZE (16 * (1ul << 20)) // 16MB
-#define UF2_FLASH_SIZE (30 * (1ul << 20))     // 256 data blocks wrapped in 512 byte blocks
+#define UF2_FLASH_SIZE ((32 * (1ul << 20)) - 16ul * 512)      // 256 data blocks wrapped in 512 byte blocks
 #define BLOCK_SIZE 512  // GhostFAT does not support other sector sizes (currently) */
-#define FLASH_BLOCKS (UF2_FLASH_SIZE / BLOCK_SIZE)
+#define FLASH_BLOCKS (FLASH_SIZE / BLOCK_SIZE)
+#define UF2_FLASH_BLOCKS (UF2_FLASH_SIZE / BLOCK_SIZE)
 #define DISK_READ_ONLY false
 #define EPSIZE 64
 
@@ -153,18 +147,17 @@ static bool scsi_mode_sense_6(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
 #define FAT_ENTRY_SIZE (2) // FAT16
 #define FAT_ENTRIES_PER_BLOCK (BLOCK_SIZE / FAT_ENTRY_SIZE)
 #define FAT_ENTRIES_PER_PACKET (EPSIZE / FAT_ENTRY_SIZE)
-#define FAT_BLOCKS (FLASH_BLOCKS + NUM_DIRENTRIES) // Flash blocks + 1 reserved block + ID
+#define NUM_FILES 1
+#define NUM_DIRENTRIES (NUM_FILES + 1) // Root directory + files
+#define FAT_BLOCKS (UF2_FLASH_BLOCKS + NUM_DIRENTRIES) // Flash blocks + 1 reserved block + ID
 // NOTE: MS specification explicitly allows FAT to be larger than necessary
 // Number of blocks used by each cluster map
 #define CLUSTER_BLOCKS ((FAT_BLOCKS / FAT_ENTRIES_PER_BLOCK) + ((FAT_BLOCKS % FAT_ENTRIES_PER_BLOCK) ? 1 : 0))
 #define DIRENTRIES_PER_BLOCK (BLOCK_SIZE / sizeof(DirEntry))
 #define ROOT_DIR_BLOCKS (ROOT_DIR_ENTRIES / DIRENTRIES_PER_BLOCK)
 
-#define NUM_FILES 1
-#define NUM_DIRENTRIES (NUM_FILES + 1) // Root directory + files
-
-#define FLASH_FIRST_BLOCK (NUM_DIRENTRIES * BLOCKS_PER_CLUSTER)
-#define FLASH_LAST_BLOCK ((FLASH_FIRST_BLOCK + FLASH_BLOCKS - 1) * BLOCKS_PER_CLUSTER)
+#define FILE_FIRST_BLOCK (NUM_DIRENTRIES * BLOCKS_PER_CLUSTER)
+#define FILE_LAST_BLOCK ((FILE_FIRST_BLOCK + FLASH_BLOCKS - 1) * BLOCKS_PER_CLUSTER)
 
 #define FS_FAT0 RESERVED_BLOCKS
 #define FS_FAT1 (FS_FAT0 + CLUSTER_BLOCKS)
@@ -172,5 +165,11 @@ static bool scsi_mode_sense_6(USB_ClassInfo_MS_Device_t *const MSInterfaceInfo);
 #define FS_DATA_BLOCKS (FS_ROOTDIR + ROOT_DIR_BLOCKS)
 
 #define FS_BLOCKS (FS_DATA_BLOCKS + FLASH_BLOCKS)
+#define FS_TOTAL_BLOCKS (FS_DATA_BLOCKS + UF2_FLASH_BLOCKS)
+
+STATIC_ASSERT(sizeof(DirEntry) == 32);
+/* STATIC_ASSERT(UF2_FLASH_BLOCKS == (65536 - 252)); */
+/* STATIC_ASSERT(CLUSTER_BLOCKS == 257); */
+/* STATIC_ASSERT(FS_TOTAL_BLOCKS == (0x10204 - 252)); */
 
 #endif
