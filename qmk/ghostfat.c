@@ -134,6 +134,6 @@ void fat_read_block(const uint32_t block_no, const uint8_t packet_num, uint8_t *
         }
     } else if (cluster_no < FILE_END) {
         cluster_no -= FILE_START;
-        store_read((cluster_no * 8 + cluster_packet_num) * EPSIZE, data, EPSIZE);
+        store_read((cluster_no * PACKETS_PER_CLUSTER + cluster_packet_num) * EPSIZE, data, EPSIZE);
     }
 }

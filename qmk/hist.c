@@ -240,14 +240,14 @@ void hist_undo(const uint8_t h_ind) {
 // to the bytes. Also takes care of outputting key codes and Unicode characters.
 state_t process_output(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("process_output()");
+    steno_debug_ln("proc_out(%u)", h_ind);
 #endif
     // TODO optimization: compare beginning of current and string to replace
     history_t *const hist = hist_get(h_ind);
     const state_t old_state = hist->state;
     state_t new_state = old_state;
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  old_state: scg: %u%u%u", old_state.space, old_state.cap, old_state.glue);
+    steno_debug_ln("  old scg: %u%u%u", old_state.space, old_state.cap, old_state.glue);
 #endif
 
     if (hist->bucket == 0) {
@@ -255,9 +255,12 @@ state_t process_output(const uint8_t h_ind) {
         steno_debug_ln("  stroke: %lX", hist->stroke & 0xFFFFFF);
 #endif
         char buf[24];
+        new_state.space = 1;
+        new_state.cap = 0;
         if (stroke_to_string(hist->stroke, buf, &hist->len)) {
             new_state.glue = 1;
         }
+        hist->ortho_len = 1;
 #ifdef STENO_DEBUG_HIST
         steno_debug("  out: '");
 #endif
@@ -348,8 +351,30 @@ state_t process_output(const uint8_t h_ind) {
             }
             steno_back(old_hist->len);
             const uint8_t old_strokes_len = BUCKET_GET_STROKES_LEN(old_hist->bucket);
-            const uint8_t old_repl_len = old_strokes_len > 1 ? old_strokes_len - 1 : 0;
-            counter -= old_repl_len + 1;
+            const uint8_t old_ortho_len = old_hist->ortho_len;
+            if (counter >= old_ortho_len) {
+                counter -= old_ortho_len;
+            } else if (old_ortho_len != old_strokes_len && counter == old_strokes_len) {
+                const uint8_t old_word_stroke_len = old_ortho_len - old_strokes_len;
+                for (uint8_t i = 0; i < old_word_stroke_len; i++) {
+                    const uint8_t old_hist_ind = HIST_LIMIT(h_ind + i - old_ortho_len);
+                    const history_t *const old_hist = hist_get(old_hist_ind);
+#ifdef STENO_DEBUG_HIST
+                    steno_debug_ln("  old_hist_ind: %u", old_hist_ind);
+#endif
+                    if (!old_hist->len) {
+                        hist->len = 0;
+                        steno_error_ln("bad prev hist entry");
+                        return new_state;
+                    }
+                    process_output(old_hist_ind);
+                }
+                // Reread the bucket cuz buffer is used
+                read_entry(bucket, kvpair_buf);
+                counter -= old_strokes_len;
+            } else {
+                steno_error_ln("??? ortho %u strokes %u counter %u", old_ortho_len, old_strokes_len, counter);
+            }
         }
     }
 
