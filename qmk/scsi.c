@@ -254,7 +254,7 @@ static bool scsi_request_sense(USB_ClassInfo_MS_Device_t *const msc_interface_in
  * device's capacity on the selected Logical Unit (drive), as a number of OS-sized blocks.
  */
 static bool scsi_read_capacity_10(USB_ClassInfo_MS_Device_t *const msc_interface_info) {
-    const uint32_t LastBlockAddressInLUN = FS_TOTAL_BLOCKS - 1;
+    const uint32_t LastBlockAddressInLUN = TOTAL_BLOCKS - 1;
     const uint32_t MediaBlockSize = BLOCK_SIZE;
 
     Endpoint_Write_Stream_BE(&LastBlockAddressInLUN, sizeof(LastBlockAddressInLUN), NULL);
@@ -307,7 +307,7 @@ static bool scsi_read_write_10(USB_ClassInfo_MS_Device_t *const msc_interface_in
     blocks = SwapEndian_16(*(uint16_t *) &msc_interface_info->State.CommandBlock.SCSICommandData[7]);
 
     /* Check if the block address is outside the maximum allowable value for the LUN */
-    if (block_addr >= FS_TOTAL_BLOCKS) {
+    if (block_addr >= TOTAL_BLOCKS) {
         /* Block address is invalid, update SENSE key and return command fail */
         SCSI_SET_SENSE(SCSI_SENSE_KEY_ILLEGAL_REQUEST, SCSI_ASENSE_LOGICAL_BLOCK_ADDRESS_OUT_OF_RANGE,
                        SCSI_ASENSEQ_NO_QUALIFIER);

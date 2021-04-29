@@ -48,16 +48,15 @@ static FAT_BootBlock const BootBlock = {
     /* .TotalSectors16 = (FS_TOTAL_BLOCKS > 0xFFFF) ? 0 : FS_TOTAL_BLOCKS, */
     .TotalSectors16 = 0,
     .MediaDescriptor = MEDIA_DESCRIPTOR_BYTE,
-    .SectorsPerFAT = CLUSTER_BLOCKS,
+    .SectorsPerFAT = TABLE_BLOCKS,
     .SectorsPerTrack = 1,
     .Heads = 1,
     /* .TotalSectors32 = (FS_TOTAL_BLOCKS > 0xFFFF) ? FS_TOTAL_BLOCKS : 0, */
-    .TotalSectors32 = FS_TOTAL_BLOCKS,
+    .TotalSectors32 = TOTAL_CLUSTERS * BLOCKS_PER_CLUSTER,
     .PhysicalDriveNum = 0x80, // to match MediaDescriptor of 0xF8
-    .Reserved = 0x01,
     .ExtendedBootSig = 0x29,
     .VolumeSerialNumber = 0xfeed6062,
-    .VolumeLabel = "BatWings",
+    .VolumeLabel = "BATWINGS",
     .FilesystemIdentifier = "FAT16   ",
 };
 
@@ -74,22 +73,23 @@ void padded_memcpy(char *dst, char const *src, const int len) {
 
 // `data` will be packet sized
 void fat_read_block(const uint32_t block_no, const uint8_t packet_num, uint8_t *const data) {
-    uint32_t sectionIdx = block_no;
-
+    uint32_t cluster_no = block_no / BLOCKS_PER_CLUSTER;
+    const uint8_t cluster_packet_num = packet_num + ((block_no % BLOCKS_PER_CLUSTER) ? PACKETS_PER_BLOCK : 0);
     memset(data, 0, EPSIZE);
-    if (block_no == 0) { // Requested boot block
-        memcpy(data, (uint8_t *) &BootBlock + packet_num * EPSIZE, EPSIZE);
-        if (packet_num == 7) {
+    if (cluster_no == 0) { // Requested boot block
+        if (cluster_packet_num == 0) {
+            memcpy(data, &BootBlock, sizeof(BootBlock));
+        } else if (cluster_packet_num == 7) {
             data[62] = 0x55; // Always at offsets 510/511, even when BLOCK_SIZE is larger
             data[63] = 0xaa; // Always at offsets 510/511, even when BLOCK_SIZE is larger
         }
-    } else if (block_no < FS_ROOTDIR) { // Requested FAT table sector
-        if (sectionIdx >= FS_FAT1) {
-            sectionIdx -= FS_FAT1;
+    } else if (cluster_no < ROOTDIR_START) { // Requested FAT table sector
+        if (cluster_no >= FAT1_START) {
+            cluster_no -= FAT1_START;
         } else {
-            sectionIdx -= FS_FAT0;
+            cluster_no -= FAT0_START;
         }
-        if (sectionIdx == 0 && packet_num == 0) {
+        if (cluster_no == 0 && cluster_packet_num == 0) {
             // first FAT entry must match BPB MediaDescriptor
             data[0] = MEDIA_DESCRIPTOR_BYTE;
             data[1] = 0xff;
@@ -100,17 +100,21 @@ void fat_read_block(const uint32_t block_no, const uint8_t packet_num, uint8_t *
             //            and requires it be the last element of the array
         }
         for (uint32_t i = 0; i < FAT_ENTRIES_PER_PACKET; ++i) { // Generate the FAT chain for the firmware "file"
-            const uint32_t v = (sectionIdx * FAT_ENTRIES_PER_BLOCK) + (uint32_t) packet_num * FAT_ENTRIES_PER_PACKET + i;
-            if (FILE_FIRST_BLOCK <= v && v <= FILE_LAST_BLOCK) {
-                ((uint16_t *)(void *)data)[i] = v == FILE_LAST_BLOCK ? 0xffff : v + 1;
+            const uint16_t v = (cluster_no * FAT_ENTRIES_PER_CLUSTER) + cluster_packet_num * FAT_ENTRIES_PER_PACKET + i;
+            if (v >= FILE_FIRST_DATA_CLUSTER) {
+                if (v < FILE_LAST_DATA_CLUSTER) {
+                    ((uint16_t *)(void *)data)[i] = v + 1;
+                } else if (v == FILE_LAST_DATA_CLUSTER) {
+                    ((uint16_t *)(void *)data)[i] = 0xffff;
+                }
             }
         }
-    } else if (block_no < FS_DATA_BLOCKS) { // Requested root directory sector
-        sectionIdx -= FS_ROOTDIR;
+    } else if (cluster_no < FILE_START) { // Requested root directory sector
+        cluster_no -= ROOTDIR_START;
         DirEntry *d = (void *) data;
         // Since we only have 2 entries (the volume and the firmware), and they also fit inside one
         // packet, we can construct this manually
-        if (sectionIdx == 0 && packet_num == 0) { // volume label first
+        if (cluster_no == 0 && cluster_packet_num == 0) { // volume label first
             // volume label is first directory entry
             padded_memcpy(d[0].name, (char const *) BootBlock.VolumeLabel, 11);
             d[0].attrs = 0x28;
@@ -126,10 +130,10 @@ void fat_read_block(const uint32_t block_no, const uint8_t packet_num, uint8_t *
             d[1].updateTime = __DOSTIME__;
             d[1].updateDate = __DOSDATE__;
             d[1].startCluster = 2;
-            d[1].size = FLASH_SIZE;
+            d[1].size = FILE_SIZE;
         }
-    } else if (block_no < FS_BLOCKS) {
-        sectionIdx -= FS_DATA_BLOCKS;
-        store_read((sectionIdx * 8 + packet_num) * EPSIZE, data, EPSIZE);
+    } else if (cluster_no < FILE_END) {
+        cluster_no -= FILE_START;
+        store_read((cluster_no * 8 + cluster_packet_num) * EPSIZE, data, EPSIZE);
     }
 }
