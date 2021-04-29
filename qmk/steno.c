@@ -11,7 +11,6 @@
 #endif
 
 bool flashing = false;
-char last_stroke[24];
 char last_trans[128];
 uint8_t last_trans_size;
 
@@ -21,7 +20,7 @@ uint8_t hist_ind = 0;
 uint8_t stroke_start_ind = 0;
 uint16_t time = 0;
 
-#define print_time(sec) steno_debug_ln("-- " sec ": %ums", timer_elapsed(time));
+#define print_time(sec) steno_debug_ln("<> " sec ": %ums", timer_elapsed(time));
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 void _ebd_steno_process_stroke(const uint32_t stroke);
@@ -30,9 +29,6 @@ void ebd_steno_process_stroke(const uint32_t stroke) {
     time = timer_read();
 #endif
     _ebd_steno_process_stroke(stroke);
-#ifdef CONSOLE_ENABLE
-    print_time("final");
-#endif
 }
 
 void _ebd_steno_process_stroke(const uint32_t stroke) {
@@ -41,21 +37,19 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
         return;
     }
 
-    /* #ifdef OLED_DRIVER_ENABLE */
     last_trans_size = 0;
-    /* memset(last_trans, 0, 128); */
-    stroke_to_string(stroke, last_stroke, NULL);
-    /* #endif */
 
 #ifndef STENO_READONLY
     if (handle_dict_editing(stroke)) {
         return;
     }
 #endif
+    print_time("dicted");
 
     if (stroke == STENO_STAR) {
         hist_ind = HIST_LIMIT(hist_ind - 1);
         hist_undo(hist_ind);
+        print_time("undo");
 #ifndef STENO_NOUI
 #ifndef STENO_READONLY
         if (editing_state == ED_IDLE)
@@ -71,6 +65,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     hist->stroke = stroke;
     // Default `state` set in last cycle
     const uint32_t bucket = search_entry(hist_ind);
+    print_time("search");
     hist->bucket = bucket;
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  bucket: %08lX", bucket);
@@ -83,6 +78,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     steno_debug_ln("this %u: scg: %u%u%u", hist_ind, hist->state.space, hist->state.cap, hist->state.glue);
 #endif
     const state_t new_state = process_output(hist_ind);
+    print_time("out");
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("next %u: scg: %u%u%u", HIST_LIMIT(hist_ind + 1), new_state.space, new_state.cap, new_state.glue);
 #endif
@@ -120,6 +116,9 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     }
     hist_get(hist_ind)->state = new_state;
 
+#ifdef CONSOLE_ENABLE
+    print_time("final");
+#endif
 #if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE) || defined(STENO_DEBUG_DICTED)
     steno_debug_ln("----\n");
 #endif
