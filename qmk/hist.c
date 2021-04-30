@@ -72,6 +72,7 @@ static void steno_send_char(const char c) {
 #endif
 }
 
+#ifndef STENO_NOUNICODE
 static uint8_t steno_send_unicode(const uint32_t u) {
 #ifdef STENO_DEBUG_HIST
     if (u < 0xFFFF) {
@@ -105,6 +106,7 @@ static uint8_t steno_send_unicode(const uint32_t u) {
         return 1;
     }
 }
+#endif
 
 static uint8_t steno_send_keycodes(const uint8_t *const keycodes, const uint8_t len) {
 #ifdef STENO_DEBUG_HIST
@@ -440,9 +442,11 @@ state_t process_output(const uint8_t h_ind) {
                     } else if (entry[i] >= 128) {
                         int32_t code_point = 0;
                         const char *str = decode_utf8((char *) &entry[i], &code_point);
+#ifndef STENO_NOUNICODE
                         if (code_point > 0) {
                             str_len += steno_send_unicode(code_point);
                         }
+#endif
                         i += str - (char *) &entry[i];
                     }
                 }
@@ -504,9 +508,11 @@ state_t process_output(const uint8_t h_ind) {
         } else {
             int32_t code_point = 0;
             const char *str = decode_utf8((char *) &entry[i], &code_point);
+#ifndef STENO_NOUNICODE
             if (code_point > 0) {
                 steno_send_unicode(code_point);
             }
+#endif
             str_len += 1;
             i = str - (char *) entry;
         }

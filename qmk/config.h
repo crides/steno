@@ -3,14 +3,6 @@
 
 #include "config_common.h"
 
-#define USE_SPI_FLASH
-
-#define STENO_DEBUG
-/* #define DEBUG_FLASH */
-/* #define DEBUG_STROKE */
-#define DEBUG_HIST
-/* #define DEBUG_DICTED */
-
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0x6061
@@ -19,8 +11,6 @@
 #define PRODUCT         Steno
 #define SERIAL_NUMBER   v2
 #define DESCRIPTION     28 key steno board
-
-#undef VIRTSER_ENABLE
 
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 6
