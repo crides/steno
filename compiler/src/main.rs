@@ -31,7 +31,12 @@ fn main() {
         .subcommand(SubCommand::with_name("hash-str").arg(Arg::with_name("str").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
-                .arg(Arg::with_name("input").required(true).multiple(true).min_values(1))
+                .arg(
+                    Arg::with_name("input")
+                        .required(true)
+                        .multiple(true)
+                        .min_values(1),
+                )
                 .arg(Arg::with_name("output").required(true)),
         )
         .subcommand(
@@ -48,7 +53,11 @@ fn main() {
 
             let inputs: Vec<_> = input_files
                 .map(|f| {
-                    (f, serde_json::from_reader(File::open(f).expect("input file")).expect("parse json"))
+                    (
+                        f,
+                        serde_json::from_reader(File::open(f).expect("input file"))
+                            .expect("parse json"),
+                    )
                 })
                 .collect();
             let dict = match Dict::parse_from_json(inputs) {

@@ -6,8 +6,8 @@ use std::iter;
 
 use crate::dict::{Attr, Dict, Entry, Input};
 use crate::freemap::FreeMap;
-use crate::stroke::{Strokes, hash_strokes};
 use crate::orthography;
+use crate::stroke::{hash_strokes, Strokes};
 
 /// Byte level counterpart for `Entry`, is just a wrapper around the actual bytes that would be written to the
 /// keyboard storage.
@@ -104,7 +104,11 @@ impl std::fmt::Display for CompileError {
         match self {
             TooManyStrokes(s) => write!(f, "The entry '{}' has too many (>14) strokes", s),
             LargeEntry(s) => write!(f, "The entry mapped from '{}' is too large", s),
-            NoStorage { cur_len, total } => write!(f, "Storage space runs out for entries. Entries stored {}/{}", cur_len, total),
+            NoStorage { cur_len, total } => write!(
+                f,
+                "Storage space runs out for entries. Entries stored {}/{}",
+                cur_len, total
+            ),
             Io(e) => write!(f, "IO error: {}", e),
         }
     }
@@ -129,7 +133,10 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
             index = (index + 1) % 2usize.pow(20);
             collision += 1;
         }
-        collisions.entry(collision).and_modify(|c| *c += 1).or_insert(1);
+        collisions
+            .entry(collision)
+            .and_modify(|c| *c += 1)
+            .or_insert(1);
         let entry_len = entry.byte_len();
         assert!(entry_len < 256);
         let pair_size = strokes.len() * 3 + 1 + entry_len;
@@ -145,7 +152,10 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
             return Err(CompileError::LargeEntry(strokes.clone()));
         };
         assert!(strokes.len() < 15 && strokes.len() > 0);
-        let block_offset = block_no.ok_or_else(|| CompileError::NoStorage { cur_len: i, total: total_len })? << 4;
+        let block_offset = block_no.ok_or_else(|| CompileError::NoStorage {
+            cur_len: i,
+            total: total_len,
+        })? << 4;
         buckets[index] = (entry_len as u32) << 24 | block_offset | strokes.len() as u32;
         file.seek(KVPAIR_START + block_offset as usize);
         for stroke in strokes.0 {
@@ -183,7 +193,7 @@ struct Uf2 {
     magic_end: u32,
 }
 
-/// A lazily filled file containing Uf2 chunks. 
+/// A lazily filled file containing Uf2 chunks.
 struct Uf2File {
     map: BTreeMap<usize, Vec<u8>>,
     cur_block: usize,
@@ -214,7 +224,8 @@ impl Uf2File {
         self.cur_block = addr / Uf2File::DATA_SIZE;
         self.cur_block_ind = addr % Uf2File::DATA_SIZE;
         if !self.map.contains_key(&self.cur_block) {
-            self.map.insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
+            self.map
+                .insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
         }
     }
 
@@ -222,7 +233,8 @@ impl Uf2File {
         if self.cur_block_ind == Uf2File::DATA_SIZE {
             self.cur_block += 1;
             self.cur_block_ind = 0;
-            self.map.insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
+            self.map
+                .insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
         }
         self.map.get_mut(&self.cur_block).unwrap()[self.cur_block_ind] = byte;
         self.cur_block_ind += 1;
