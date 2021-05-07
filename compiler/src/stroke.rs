@@ -120,27 +120,33 @@ impl Display for StrokeParseError {
 impl FromStr for Stroke {
     type Err = StrokeParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let s = s
-            .replace("1", "#S")
-            .replace("2", "#T")
-            .replace("3", "#P")
-            .replace("4", "#H")
-            .replace("5", "#A")
-            .replace("6", "#F")
-            .replace("7", "#P")
-            .replace("8", "#L")
-            .replace("9", "#T")
-            .replace("0", "#O");
         let mut res = Stroke::new();
         let mut ind = 0;
         for c in s.chars() {
             match c {
+                dig @ '0'..='9' => {
+                    res.set(KEYS.len() - 1);
+                    let mapped = match dig {
+                        '1' => 21,
+                        '2' => 20,
+                        '3' => 18,
+                        '4' => 16,
+                        '5' => 14,
+                        '0' => 13,
+                        '6' => 9,
+                        '7' => 7,
+                        '8' => 5,
+                        '9' => 3,
+                        _ => panic!(),
+                    };
+                    res.set(mapped);
+                }
                 '-' => ind = KEYS.find('*').unwrap(),
                 '#' => res.set(KEYS.len() - 1),
                 _ => {
                     ind += KEYS[ind..]
                         .find(c)
-                        .ok_or_else(|| StrokeParseError(s.clone(), c))?;
+                        .ok_or_else(|| StrokeParseError(s.to_string(), c))?;
                     res.set(KEYS.len() - ind - 1);
                 }
             }

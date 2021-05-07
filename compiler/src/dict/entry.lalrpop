@@ -1,0 +1,114 @@
+use lalrpop_util::ParseError;
+
+use super::{Parsed, ParseEntryError};
+use crate::keycode::KeyExpr;
+
+grammar;
+
+extern {
+    type Error = ParseEntryError<'input>;
+}
+
+match {
+    r"[ \t]*" => WS,
+} else {
+    "{", "}",
+    ",", ";", ":", "?", "!", ".",
+    "PLOVER:ADD_TRANSLATION" => DictEdit,
+    "#" => Key,
+    "&" => Glue,
+    "-|" => Capital,
+    "*-|" => CapitalLast,
+    ">" => Lower,
+    "*>" => LowerLast,
+    "<" => Upper,
+    "*<" => UpperLast,
+    "^" => Attach,
+    "~|" => Carry,
+    "*?" => RetroSpace,
+    "*!" => RetroNoSpace,
+    "*" => ToggleStar,
+    "*+" => Repeat,
+} else {
+    r"\\|\\\{|\\\}|[^\\{}]+" => Text,
+} else {
+    r"[a-zA-Z_][[:word:]]*" => Ident,
+    "" => { },
+    _,
+}
+
+Keycode: KeyExpr = {
+    Ident =>? KeyExpr::new_key(<>).ok_or_else(|| ParseError::User {
+        error: ParseEntryError::InvalidKeycode(<>),
+    }),
+};
+
+Mod: u8 = {
+    "Control_L" => 0xe0,
+    "control" => 0xe0,
+    "Shift_L" => 0xe1,
+    "shift" => 0xe1,
+    "Alt_L" => 0xe2,
+    "alt" => 0xe2,
+    "option" => 0xe2,
+    "Super_L" => 0xe3,
+    "super" => 0xe3,
+    "windows" => 0xe3,
+    "command" => 0xe3,
+    "Control_R" => 0xe4,
+    "Shift_R" => 0xe5,
+    "Alt_R" => 0xe6,
+    "Super_R" => 0xe7,
+};
+
+KeyList = (<KeyExpr> WS)+;
+
+KeyExpr = {
+    Keycode,
+    <Mod> "(" <KeyList> ")" => KeyExpr::Mod(<>),
+};
+
+Meta = "{" <MetaInner> "}";
+
+HalfStop = { ",", ";", ":" };
+FullStop = { "?", "!", "." };
+
+MetaInner: Parsed<'input> = {
+    #[precedence(level = "3")]
+    Key <KeyList> => Parsed::Keycodes(<>),
+    #[precedence(level = "4")]
+    HalfStop => Parsed::HalfStop(<>),
+    FullStop => Parsed::FullStop(<>),
+    DictEdit => Parsed::DictEdit,
+    Glue <Text> => Parsed::Glue(<>),
+    Capital => Parsed::Capital,
+    CapitalLast => Parsed::CapitalLast,
+    Lower => Parsed::Lower,
+    LowerLast => Parsed::LowerLast,
+    Upper => Parsed::Upper,
+    UpperLast => Parsed::UpperLast,
+    Attach => Parsed::Attach,
+    Attach <Text> => Parsed::AttachFront(<>),
+    #[precedence(level = "2")]
+    <Text> Attach => Parsed::AttachBack(<>),
+    #[precedence(level = "4")]
+    Attach <Text> Attach => Parsed::AttachBoth(<>),
+    "" => Parsed::ResetFormat,
+    <Attach?> Carry <Text> <Attach?> => Parsed::Carry((<>).0.is_some(), (<>).1, (<>).2.is_some()),
+    RetroSpace => Parsed::RetroSpace,
+    RetroNoSpace => Parsed::RetroNoSpace,
+    ToggleStar => Parsed::ToggleStar,
+    Repeat => Parsed::Repeat,
+};
+
+Atom: Parsed<'input> = {
+    Meta,
+    Text => Parsed::Text(<>),
+};
+
+pub Test = r"\\\{";
+pub Test1 = "\\" "{";
+pub Test2 = r"\{";
+pub Test3 = "\\";
+
+pub Entry = Atom+;

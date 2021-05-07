@@ -29,7 +29,7 @@ impl From<Entry> for RawEntry {
                     }
                 }
                 Input::String(s) => s.as_bytes().to_vec(),
-                Input::Keep(s) => {
+                Input::Carry(s) => {
                     let mut bytes = s.as_bytes().to_vec();
                     bytes.insert(0, 4);
                     bytes.insert(1, s.len() as u8);
@@ -37,16 +37,16 @@ impl From<Entry> for RawEntry {
                 }
                 Input::Lower => vec![1],
                 Input::Upper => vec![2],
-                Input::Capitalized => vec![3],
+                Input::Capital => vec![3],
                 Input::ResetFormat => vec![5],
                 Input::LowerLast => vec![8],
                 Input::UpperLast => vec![9],
-                Input::CapitalizedLast => vec![10],
+                Input::CapitalLast => vec![10],
                 Input::Repeat => vec![11],
                 Input::ToggleStar => vec![12],
-                Input::AddSpace => vec![13],
-                Input::RemoveSpace => vec![14],
-                Input::EditDictionary => vec![16],
+                Input::RetroSpace => vec![13],
+                Input::RetroNoSpace => vec![14],
+                Input::DictEdit => vec![16],
             }))
             .collect();
         RawEntry(bytes)

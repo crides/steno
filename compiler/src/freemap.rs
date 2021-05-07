@@ -78,16 +78,16 @@ impl FreeMap {
 #[test]
 fn test_alloc() {
     let mut map = FreeMap::new(1 << 20); // 0|----|----+----|---------|----+----|----|31
-    assert_eq!(map.req(0), Some(0));     //  |x   |    +    |    -    |    +    |    |
-    assert_eq!(map.req(1), Some(2));     //  |  xx|    +    |    -    |    +    |    |
-    assert_eq!(map.req(2), Some(4));     //  |    |xxxx+    |    -    |    +    |    |
-    assert_eq!(map.req(2), Some(8));     //  |    |    +xxxx|    -    |    +    |    |
-    assert_eq!(map.req(3), Some(16));    //  |    |    +    |    -xxxx|xxxx+    |    |
-    assert_eq!(map.req(2), Some(12));    //  |    |    +    |xxxx-    |    +    |    |
-    assert_eq!(map.req(2), Some(24));    //  |    |    +    |    -    |    +xxxx|    |
-    assert_eq!(map.req(0), Some(1));     //  | x  |    +    |    -    |    +    |    |
-    assert_eq!(map.req(1), Some(28));    //  |    |    +    |    -    |    +    |xx  |
-    assert_eq!(map.req(0), Some(30));    //  |    |    +    |    -    |    +    |  x |
-                                         // 1 block in the first word is free here
-    assert_eq!(map.req(3), Some(32));    //  |    |    +    |    -    |    +    |    |
+    assert_eq!(map.req(0), Some(0)); //  |x   |    +    |    -    |    +    |    |
+    assert_eq!(map.req(1), Some(2)); //  |  xx|    +    |    -    |    +    |    |
+    assert_eq!(map.req(2), Some(4)); //  |    |xxxx+    |    -    |    +    |    |
+    assert_eq!(map.req(2), Some(8)); //  |    |    +xxxx|    -    |    +    |    |
+    assert_eq!(map.req(3), Some(16)); //  |    |    +    |    -xxxx|xxxx+    |    |
+    assert_eq!(map.req(2), Some(12)); //  |    |    +    |xxxx-    |    +    |    |
+    assert_eq!(map.req(2), Some(24)); //  |    |    +    |    -    |    +xxxx|    |
+    assert_eq!(map.req(0), Some(1)); //  | x  |    +    |    -    |    +    |    |
+    assert_eq!(map.req(1), Some(28)); //  |    |    +    |    -    |    +    |xx  |
+    assert_eq!(map.req(0), Some(30)); //  |    |    +    |    -    |    +    |  x |
+                                      // 1 block in the first word is free here
+    assert_eq!(map.req(3), Some(32)); //  |    |    +    |    -    |    +    |    |
 }
