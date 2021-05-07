@@ -1,29 +1,23 @@
-//! Keycode parsing for use in atom parsing in dictionary
 use std::iter::once;
 
-use lalrpop_util::lalrpop_mod;
-
-lalrpop_mod!(pub keycode);
-pub use keycode::TermListParser;
-
 #[derive(Debug)]
-pub enum Term {
-    Mod(u8, Vec<Term>),
+pub enum KeyExpr {
+    Mod(u8, Vec<KeyExpr>),
     Key(u8),
 }
 
-impl Term {
+impl KeyExpr {
     pub fn into_keycodes(self) -> Vec<u8> {
         match self {
-            Term::Key(k) => vec![k],
-            Term::Mod(m, terms) => once(m)
+            KeyExpr::Key(k) => vec![k],
+            KeyExpr::Mod(m, terms) => once(m)
                 .chain(terms.into_iter().flat_map(|t| t.into_keycodes()))
                 .chain(once(m))
                 .collect(),
         }
     }
 
-    pub fn new_key(s: &str) -> Option<Term> {
+    pub fn new_key(s: &str) -> Option<KeyExpr> {
         let keycode = match s {
             "XF86Cut" => 0x7b,
             "XF86Copy" => 0x7c,
@@ -129,7 +123,7 @@ impl Term {
         if keycode == 0 {
             None
         } else {
-            Some(Term::Key(keycode))
+            Some(KeyExpr::Key(keycode))
         }
     }
 }

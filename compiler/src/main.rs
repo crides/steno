@@ -60,7 +60,7 @@ fn main() {
                     )
                 })
                 .collect();
-            let dict = match Dict::parse_from_json(inputs) {
+            let dict = match Dict::parse(Dict::merge_dicts(inputs)) {
                 Ok(d) => d,
                 Err(e) => {
                     eprintln!("{}", e);
