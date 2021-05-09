@@ -1,6 +1,6 @@
 use std::iter::once;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum KeyExpr {
     Mod(u8, Vec<KeyExpr>),
     Key(u8),
@@ -17,7 +17,26 @@ impl KeyExpr {
         }
     }
 
-    pub fn new_key(s: &str) -> Option<KeyExpr> {
+    pub fn modifier(s: &str) -> Option<u8> {
+        let b = match s {
+            "control" | "Control_L" => 0x80,
+            "Shift_L" | "shift" => 0xe1,
+            "Alt_L" | "alt" | "option" => 0xe2,
+            "Super_L" | "super" | "windows" | "command" => 0xe3,
+            "Control_R" => 0xe4,
+            "Shift_R" => 0xe5,
+            "Alt_R" => 0xe6,
+            "Super_R" => 0xe7,
+            _ => 0,
+        };
+        if b == 0 {
+            None
+        } else {
+            Some(b)
+        }
+    }
+
+    pub fn key(s: &str) -> Option<KeyExpr> {
         let keycode = match s {
             "XF86Cut" => 0x7b,
             "XF86Copy" => 0x7c,

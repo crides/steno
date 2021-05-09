@@ -111,7 +111,7 @@ pub fn apply_rules(rules: &Rules, source: &Dict) -> Dict {
                     if pat_re.find(&simple_add).is_some() {
                         let word = replace(pat_re, &simple_add[..], &rule.repl[..]);
                         if rules.word_list.contains_key(&word) && &word != entry {
-                            output.insert(format!("{}/{}", stroke, new_stroke), word.into());
+                            output.insert(format!("{}/{}", stroke, new_stroke), word);
                         }
                     }
                 }

@@ -1,4 +1,6 @@
 mod entry;
+mod keycode;
+pub mod parse;
 
 use std::collections::BTreeMap;
 use std::fmt::Display;
@@ -7,23 +9,12 @@ use crate::bar::progress_bar;
 use crate::stroke::Strokes;
 
 pub use entry::{Attr, Entry, Input};
-use entry::{ParseEntryError, ParseError};
 
 pub type JsonDict = BTreeMap<String, String>;
 
 #[derive(Debug)]
 pub enum ParseDictError {
     InvalidStroke(String, String),
-    InvalidKeycode {
-        strokes: String,
-        entry: String,
-        code: String,
-    },
-    Other {
-        strokes: String,
-        entry: String,
-        msg: String,
-    },
 }
 
 impl Display for ParseDictError {
@@ -31,24 +22,6 @@ impl Display for ParseDictError {
         use ParseDictError::*;
         match self {
             InvalidStroke(s, ss) => write!(f, "Invalid stroke '{}' in '{}'", s, ss),
-            InvalidKeycode {
-                strokes,
-                entry,
-                code,
-            } => write!(
-                f,
-                "Invalid keycode '{}' in '{}', mapped from '{}'",
-                code, entry, strokes
-            ),
-            Other {
-                strokes,
-                entry,
-                msg,
-            } => write!(
-                f,
-                "Invalid entry '{}' in '{}', mapped from '{}'",
-                msg, entry, strokes
-            ),
         }
     }
 }
@@ -96,11 +69,13 @@ impl Dict {
                     }
                     merged
                 });
-            merged
+            let mut has_conflict = false;
+            let merged = merged
                 .into_iter()
                 .map(|(k, m)| match m {
                     Multiple::Single((_name, val)) => (k, val),
                     Multiple::Multiple(mut v) => {
+                        has_conflict = true;
                         println!("Conflict on key '{}'", k);
                         for (file, val) in &v[..(v.len() - 1)] {
                             println!("    in file {}, mapped to '{}'", file, val);
@@ -110,7 +85,11 @@ impl Dict {
                         (k, last.1)
                     }
                 })
-                .collect()
+                .collect();
+            if !has_conflict {
+                println!("Merged without conflicts");
+            }
+            merged
         }
     }
 
@@ -121,31 +100,32 @@ impl Dict {
 
         let parsed = merged
             .into_iter()
-            .map(|(strokes, entry)| {
-                let parsed_strokes = strokes
+            .filter_map(|(strokes, entry)| {
+                let res = match strokes
                     .split('/')
                     .map(|stroke| {
                         stroke.parse().map_err(|_| {
                             ParseDictError::InvalidStroke(stroke.to_string(), strokes.clone())
                         })
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
-                let entry = Entry::parse_entry(&entry.clone()).map_err(|e| match e {
-                    ParseError::User { error: e } => match e {
-                        ParseEntryError::InvalidKeycode(code) => ParseDictError::InvalidKeycode {
-                            strokes,
-                            entry,
-                            code: code.to_string(),
-                        },
+                    .collect::<Result<Vec<_>, _>>()
+                {
+                    Ok(parsed_strokes) => match Entry::parse_entry(&entry) {
+                        Ok(e) => Some(Ok((Strokes(parsed_strokes), e))),
+                        Err(e) => {
+                            pbar.println(format!(
+                                "Ignoring malformed entry '{}' mapped from '{}': {}",
+                                entry,
+                                strokes,
+                                e.format_error(&entry)
+                            ));
+                            None
+                        }
                     },
-                    _ => ParseDictError::Other {
-                        strokes,
-                        entry,
-                        msg: format!("{:?}", e),
-                    },
-                })?;
+                    Err(e) => Some(Err(e)),
+                };
                 pbar.inc(1);
-                Ok((Strokes(parsed_strokes), entry))
+                res
             })
             .collect::<Result<BTreeMap<_, _>, ParseDictError>>()?;
         pbar.finish_with_message("Dictionary parsed");

@@ -1,59 +1,14 @@
 //! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
 //! values which are already byte level (e.g. keycodes) for simplicity
-use lalrpop_util::lalrpop_mod;
 use onig::{Captures, Regex};
 
-lalrpop_mod!(entry, "/dict/entry.rs");
-use entry::EntryParser;
-
-use crate::keycode::KeyExpr;
+use super::parse::parse_entry;
+pub use super::parse::{ParseEntryError, Parsed};
 
 lazy_static! {
     /// Stolen from somewhere in Plover. Matches against atoms inside a meta string (either `{}` enclosed
     /// atoms or not enclosed plain strings)
-    static ref ESCAPED: Regex = Regex::new(r"\\\\(\{|\})").unwrap();
-}
-
-pub type ParseError<'input> =
-    lalrpop_util::ParseError<usize, lalrpop_util::lexer::Token<'input>, ParseEntryError<'input>>;
-
-#[derive(Debug)]
-pub enum ParseEntryError<'input> {
-    InvalidKeycode(&'input str),
-}
-
-impl<'input> std::fmt::Display for ParseEntryError<'input> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            ParseEntryError::InvalidKeycode(k) => write!(f, "Invalid keycode '{}'", k),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum Parsed<'input> {
-    Keycodes(Vec<KeyExpr>),
-    Text(&'input str),
-    HalfStop(&'input str),
-    FullStop(&'input str),
-    Glue(&'input str),
-    AttachFront(&'input str),
-    AttachBack(&'input str),
-    AttachBoth(&'input str),
-    Carry(bool, &'input str, bool),
-    Capital,
-    CapitalLast,
-    Lower,
-    LowerLast,
-    Upper,
-    UpperLast,
-    Attach,
-    ResetFormat,
-    ToggleStar,
-    Repeat,
-    RetroSpace,
-    RetroNoSpace,
-    DictEdit,
+    static ref ESCAPED: Regex = Regex::new(r"\\([\\{}^])").unwrap();
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -170,7 +125,7 @@ impl Entry {
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
-    fn compile_atom<'input>(a: Parsed<'input>) -> Entry {
+    fn compile_atom(a: Parsed) -> Entry {
         use Parsed::*;
         match a {
             Text(s) => Entry {
@@ -300,16 +255,15 @@ impl Entry {
 
     /// Parses the whole entry. Calls `parse_atom` and joins the inputs and attributes together, changing the
     /// contents when necessary
-    pub fn parse_entry(s: &str) -> Result<Entry, ParseError> {
+    pub fn parse_entry(s: &str) -> Result<Entry, ParseEntryError> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
             inputs: Vec::new(),
         };
 
-        let atoms = EntryParser::new()
-            .parse(s)?
+        let atoms = parse_entry(s)?
             .into_iter()
-            .map(|a| Entry::compile_atom(a))
+            .map(Entry::compile_atom)
             .collect::<Vec<Entry>>();
         if atoms.is_empty() {
             Ok(entry)
@@ -373,20 +327,19 @@ impl Entry {
 #[test]
 fn test_plain() {
     assert_eq!(
-        Entry::parse_entry("a").unwrap(),
-        Entry {
+        Entry::parse_entry("a"),
+        Ok(Entry {
             attr: Attr::valid_default(),
             inputs: vec![Input::String("a".into())]
-        }
+        })
     );
 }
 
 #[test]
 fn test_punctuation() {
-    let entry = Entry::parse_entry("{.}is").unwrap();
     assert_eq!(
-        entry,
-        Entry {
+        Entry::parse_entry("{.}is"),
+        Ok(Entry {
             attr: Attr {
                 space_prev: false,
                 ..Attr::valid_default()
@@ -396,124 +349,158 @@ fn test_punctuation() {
                 Input::Capital,
                 Input::String(" is".into())
             ],
-        }
+        })
     );
 }
 
 #[test]
 fn test_finger_spell() {
-    let entry = Entry::parse_entry("{&P}").unwrap();
     assert_eq!(
-        entry,
-        Entry {
+        Entry::parse_entry("{&P}"),
+        Ok(Entry {
             attr: Attr {
                 glue: true,
                 ..Attr::valid_default()
             },
             inputs: vec![Input::String("P".into())],
-        }
+        })
     );
 }
 
 #[test]
 fn test_finger_spell_lower() {
-    let entry = Entry::parse_entry("{>}{&c}").unwrap();
     assert_eq!(
-        entry,
-        Entry {
+        Entry::parse_entry("{>}{&c}"),
+        Ok(Entry {
             attr: Attr {
                 glue: true,
                 ..Attr::valid_default()
             },
             inputs: vec![Input::Lower, Input::String("c".into())],
-        }
+        })
     );
 }
 
 #[test]
 fn test_cap() {
     assert_eq!(
-        Entry::parse_entry("{-|}").unwrap(),
-        Entry {
+        Entry::parse_entry("{-|}"),
+        Ok(Entry {
             attr: Attr::valid_default(),
             inputs: vec![Input::Capital],
-        }
+        })
     );
 }
 
 #[test]
 fn test_cap_star() {
     assert_eq!(
-        Entry::parse_entry("{^}{-|}").unwrap(),
-        Entry {
+        Entry::parse_entry("{^}{-|}"),
+        Ok(Entry {
             attr: Attr {
                 space_prev: false,
                 space_after: false,
                 ..Attr::valid_default()
             },
             inputs: vec![Input::Capital],
-        }
+        })
     );
 }
 
 #[test]
 fn test_entry_len() {
     assert_eq!(
-        Entry::parse_entry("{^}{#Return}{^}{-|}")
-            .unwrap()
-            .byte_len(),
-        4
+        Entry::parse_entry("{^}{#Return}{^}{-|}").map(|e| e.byte_len()),
+        Ok(4)
     );
 }
 
 #[test]
 fn test_number_only() {
     assert_eq!(
-        Entry::parse_entry("05").unwrap(),
-        Entry {
+        Entry::parse_entry("05"),
+        Ok(Entry {
             attr: Attr {
                 glue: true,
                 ..Attr::valid_default()
             },
             inputs: vec![Input::String("05".into())],
-        }
+        })
     );
 }
 
 #[test]
 fn test_command() {
     assert_eq!(
-        Entry::parse_entry("oh yeah{,}babe").unwrap(),
-        Entry {
+        Entry::parse_entry("oh yeah{,}babe"),
+        Ok(Entry {
             attr: Attr::valid_default(),
             inputs: vec![Input::String("oh yeah, babe".into())],
-        }
+        })
+    );
+    assert_eq!(
+        Entry::parse_entry("ab{}cd"),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![
+                Input::String("ab".into()),
+                Input::ResetFormat,
+                Input::String("cd".into())
+            ],
+        })
     );
 }
 
 #[test]
 fn test_braces() {
-    if let Err(e) = entry::TestParser::new().parse(r"\}\{") {
-        println!("{}", e);
-    }
-    if let Err(e) = entry::Test1Parser::new().parse(r"\}\{") {
-        println!("{}", e);
-    }
-    if let Err(e) = entry::Test2Parser::new().parse(r"\}\{") {
-        println!("{}", e);
-    }
-    if let Err(e) = entry::Test3Parser::new().parse(r"\") {
-        println!("{}", e);
-    }
     assert_eq!(
-        Entry::parse_entry(r"{^}\}{^}").unwrap(),
-        Entry {
+        Entry::parse_entry(r"{^}\}{^}"),
+        Ok(Entry {
             attr: Attr {
                 space_after: false,
                 space_prev: false,
                 ..Attr::valid_default()
             },
             inputs: vec![Input::String("}".into())],
-        }
+        })
+    );
+    assert_eq!(
+        Entry::parse_entry(r"\\\{\}"),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::String("\\{}".into())],
+        })
+    );
+}
+
+#[test]
+fn test_keycode_error() {
+    assert_eq!(
+        Entry::parse_entry(r"{#key}"),
+        Err(ParseEntryError::InvalidKeycode("key"))
+    );
+    assert_eq!(
+        Entry::parse_entry(r"{#control(key)}"),
+        Err(ParseEntryError::InvalidKeycode("key"))
+    );
+    assert_eq!(
+        Entry::parse_entry(r"{#ctrl(enter)}"),
+        Err(ParseEntryError::InvalidModifier("ctrl"))
+    );
+}
+
+#[test]
+fn test_error() {
+    assert_eq!(
+        Entry::parse_entry(r"{PLOVER:LOOKUP}"),
+        Err(ParseEntryError::Plover("LOOKUP"))
+    );
+    assert_eq!(
+        Entry::parse_entry(r"{MODE:CAPS}"),
+        Err(ParseEntryError::PloverMode("CAPS"))
+    );
+    assert_eq!(
+        Entry::parse_entry(r"{entry}"),
+        Err(ParseEntryError::UnknownEntry("entry"))
     );
 }

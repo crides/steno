@@ -124,7 +124,7 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
     let total_len = d.0.len();
     for (i, (strokes, entry)) in d.0.into_iter().enumerate() {
         if strokes.len() > 14 {
-            return Err(CompileError::TooManyStrokes(strokes.clone()));
+            return Err(CompileError::TooManyStrokes(strokes));
         }
         let hash = hash_strokes(&strokes);
         let mut index = hash as usize % 2usize.pow(20);
@@ -149,10 +149,10 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
         } else if pair_size <= 128 {
             map.req(3)
         } else {
-            return Err(CompileError::LargeEntry(strokes.clone()));
+            return Err(CompileError::LargeEntry(strokes));
         };
         assert!(strokes.len() < 15 && strokes.len() > 0);
-        let block_offset = block_no.ok_or_else(|| CompileError::NoStorage {
+        let block_offset = block_no.ok_or(CompileError::NoStorage {
             cur_len: i,
             total: total_len,
         })? << 4;
@@ -223,10 +223,9 @@ impl Uf2File {
     fn seek(&mut self, addr: usize) {
         self.cur_block = addr / Uf2File::DATA_SIZE;
         self.cur_block_ind = addr % Uf2File::DATA_SIZE;
-        if !self.map.contains_key(&self.cur_block) {
-            self.map
-                .insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
-        }
+        self.map
+            .entry(self.cur_block)
+            .or_insert_with(|| vec![0xFFu8; Uf2File::DATA_SIZE]);
     }
 
     fn write(&mut self, byte: u8) {

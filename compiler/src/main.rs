@@ -10,7 +10,6 @@ mod compile;
 mod dict;
 mod freemap;
 mod hash;
-mod keycode;
 mod orthography;
 mod rule;
 mod stroke;
@@ -28,6 +27,7 @@ fn main() {
     let matches = App::new("compile-steno")
         .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
         .subcommand(SubCommand::with_name("hash").arg(Arg::with_name("strokes").required(true)))
+        .subcommand(SubCommand::with_name("test-parse").arg(Arg::with_name("text").required(true)))
         .subcommand(SubCommand::with_name("hash-str").arg(Arg::with_name("str").required(true)))
         .subcommand(
             SubCommand::with_name("compile")
@@ -110,6 +110,17 @@ fn main() {
             let bucket_cap: usize = 0x3C00;
             let index = hash as usize % (bucket_cap - 1);
             println!("{:x}", index);
+        }
+        ("test-parse", Some(m)) => {
+            let input = m.value_of("text").unwrap();
+            match dbg!(crate::dict::parse::parse_entry(input)) {
+                Err(e) => {
+                    println!("{}", e.format_error(input));
+                }
+                Ok(v) => {
+                    println!("{:?}", v);
+                }
+            }
         }
         (cmd, _) => panic!("{}", cmd),
     }
