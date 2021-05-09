@@ -1,59 +1,27 @@
 //! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
 //! values which are already byte level (e.g. keycodes) for simplicity
-use lalrpop_util::lalrpop_mod;
 use onig::{Captures, Regex};
 
-lalrpop_mod!(entry, "/dict/entry.rs");
-use entry::EntryParser;
-
-use crate::keycode::KeyExpr;
+use super::parse::parse_entry;
+pub use super::parse::{Parsed, ParseError};
 
 lazy_static! {
     /// Stolen from somewhere in Plover. Matches against atoms inside a meta string (either `{}` enclosed
     /// atoms or not enclosed plain strings)
-    static ref ESCAPED: Regex = Regex::new(r"\\\\(\{|\})").unwrap();
+    static ref ESCAPED: Regex = Regex::new(r"\\([\\{}^])").unwrap();
 }
-
-pub type ParseError<'input> =
-    lalrpop_util::ParseError<usize, lalrpop_util::lexer::Token<'input>, ParseEntryError<'input>>;
 
 #[derive(Debug)]
-pub enum ParseEntryError<'input> {
-    InvalidKeycode(&'input str),
+pub enum ParseEntryError<'i> {
+    InvalidKeycode(&'i str),
 }
 
-impl<'input> std::fmt::Display for ParseEntryError<'input> {
+impl<'i> std::fmt::Display for ParseEntryError<'i> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             ParseEntryError::InvalidKeycode(k) => write!(f, "Invalid keycode '{}'", k),
         }
     }
-}
-
-#[derive(Debug)]
-pub enum Parsed<'input> {
-    Keycodes(Vec<KeyExpr>),
-    Text(&'input str),
-    HalfStop(&'input str),
-    FullStop(&'input str),
-    Glue(&'input str),
-    AttachFront(&'input str),
-    AttachBack(&'input str),
-    AttachBoth(&'input str),
-    Carry(bool, &'input str, bool),
-    Capital,
-    CapitalLast,
-    Lower,
-    LowerLast,
-    Upper,
-    UpperLast,
-    Attach,
-    ResetFormat,
-    ToggleStar,
-    Repeat,
-    RetroSpace,
-    RetroNoSpace,
-    DictEdit,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -170,7 +138,7 @@ impl Entry {
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
-    fn compile_atom<'input>(a: Parsed<'input>) -> Entry {
+    fn compile_atom<'i>(a: Parsed<'i>) -> Entry {
         use Parsed::*;
         match a {
             Text(s) => Entry {
@@ -293,6 +261,20 @@ impl Entry {
                 attr: Attr::valid_default(),
                 inputs: vec![Input::DictEdit],
             },
+            Plover(s) => {
+                eprintln!("{{PLOVER:{}}} not supported yet", s);
+                Entry {
+                    attr: Attr::valid_default(),
+                    inputs: vec![Input::String(format!("{{PLOVER:{}}}", s))],
+                }
+            }
+            PloverMode(s) => {
+                eprintln!("{{MODE:{}}} not supported yet", s);
+                Entry {
+                    attr: Attr::valid_default(),
+                    inputs: vec![Input::String(format!("{{MODE:{}}}", s))],
+                }
+            }
         }
 
         // Attributes for the current entry; i.e. will not appear in returning `Attr`
@@ -300,14 +282,13 @@ impl Entry {
 
     /// Parses the whole entry. Calls `parse_atom` and joins the inputs and attributes together, changing the
     /// contents when necessary
-    pub fn parse_entry(s: &str) -> Result<Entry, ParseError> {
+    pub fn parse_entry(s: &str) -> Result<Entry, ParseError<&str>> {
         let mut entry = Entry {
             attr: Attr::valid_default(),
             inputs: Vec::new(),
         };
 
-        let atoms = EntryParser::new()
-            .parse(s)?
+        let atoms = parse_entry(s)?
             .into_iter()
             .map(|a| Entry::compile_atom(a))
             .collect::<Vec<Entry>>();
@@ -493,18 +474,6 @@ fn test_command() {
 
 #[test]
 fn test_braces() {
-    if let Err(e) = entry::TestParser::new().parse(r"\}\{") {
-        println!("{}", e);
-    }
-    if let Err(e) = entry::Test1Parser::new().parse(r"\}\{") {
-        println!("{}", e);
-    }
-    if let Err(e) = entry::Test2Parser::new().parse(r"\}\{") {
-        println!("{}", e);
-    }
-    if let Err(e) = entry::Test3Parser::new().parse(r"\") {
-        println!("{}", e);
-    }
     assert_eq!(
         Entry::parse_entry(r"{^}\}{^}").unwrap(),
         Entry {
@@ -514,6 +483,13 @@ fn test_braces() {
                 ..Attr::valid_default()
             },
             inputs: vec![Input::String("}".into())],
+        }
+    );
+    assert_eq!(
+        Entry::parse_entry(r"\\\{\}").unwrap(),
+        Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::String("\\{}".into())],
         }
     );
 }

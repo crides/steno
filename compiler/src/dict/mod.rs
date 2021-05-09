@@ -1,4 +1,6 @@
 mod entry;
+mod keycode;
+pub mod parse;
 
 use std::collections::BTreeMap;
 use std::fmt::Display;
@@ -46,8 +48,8 @@ impl Display for ParseDictError {
                 msg,
             } => write!(
                 f,
-                "Invalid entry '{}' in '{}', mapped from '{}'",
-                msg, entry, strokes
+                "Invalid entry '{}' mapped from '{}':\n{}",
+                entry, strokes, msg
             ),
         }
     }
@@ -130,20 +132,12 @@ impl Dict {
                         })
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let entry = Entry::parse_entry(&entry.clone()).map_err(|e| match e {
-                    ParseError::User { error: e } => match e {
-                        ParseEntryError::InvalidKeycode(code) => ParseDictError::InvalidKeycode {
-                            strokes,
-                            entry,
-                            code: code.to_string(),
-                        },
-                    },
-                    _ => ParseDictError::Other {
+                let entry =
+                    Entry::parse_entry(&entry.clone()).map_err(|e| ParseDictError::Other {
                         strokes,
                         entry,
                         msg: format!("{:?}", e),
-                    },
-                })?;
+                    })?;
                 pbar.inc(1);
                 Ok((Strokes(parsed_strokes), entry))
             })

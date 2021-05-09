@@ -1,7 +1,7 @@
 use lalrpop_util::ParseError;
 
 use super::{Parsed, ParseEntryError};
-use crate::keycode::KeyExpr;
+use crate::dict::keycode::KeyExpr;
 
 grammar;
 

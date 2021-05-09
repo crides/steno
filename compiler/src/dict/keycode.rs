@@ -1,6 +1,6 @@
 use std::iter::once;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum KeyExpr {
     Mod(u8, Vec<KeyExpr>),
     Key(u8),
