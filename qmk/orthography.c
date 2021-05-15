@@ -4,18 +4,18 @@
 #include <string.h>
 #include <ctype.h>
 
-static bool strneq(const char *a, const char *b, const uint8_t n) {
+static bool strneq(const char *const a, const char *const b, const uint8_t n) {
     return strncmp(a, b, n) == 0;
 }
 
-static bool chrin(const char *s, const char c) {
+static bool chrin(const char *const s, const char c) {
     return c != 0 && strchr(s, c);
 }
 
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
 // Rules borrowed from https://github.com/nimble0/dotterel/blob/master/app/src/main/assets/orthography/english.regex.json
-static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
+static int8_t regex_ortho(const char *const word, const char *const suffix, char *const output) {
     const uint8_t word_len = strlen(word);
     char rev[WORD_ENDING_SIZE];
     // Invert `word` so that indexing is anchored to the end
@@ -57,10 +57,11 @@ static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
 
     // word: (s|sh|x|z|zh)
     //       ((?:oa|ea|i|ee|oo|au|ou|l|n|(?<![gin]a)r|t)ch)
-    //  + s(\w|$) -> \1es\2
-    // ([bcdfghjklmnpqrstvwxz])y + s(\w|$) -> \1ies\2
-    if (suffix[0] == 's') {
-        if ((chrin("sxz", rev[0]) || (rev[1] == 'h' && (rev[2] == 's' || rev[2] == 'z')))
+    //  + s([^\w]|$) -> \1es\2
+    // ([bcdfghjklmnpqrstvwxz])y + s([^\w]|$) -> \1ies\2
+    // End of string is just \0, which is not [[:alpha:]]
+    if (suffix[0] == 's' && !isalpha(suffix[1])) {
+        if ((chrin("sxz", rev[0]) || (rev[0] == 'h' && (rev[1] == 's' || rev[1] == 'z')))
                 || (strneq("hc", rev, 2) && (chrin("ilnt", rev[2]) || strneq("ao", rev + 2, 2) || strneq("ae", rev + 2, 2)
                         || strneq("ee", rev + 2, 2) || strneq("oo", rev + 2, 2)
                         || strneq("ua", rev + 2, 2) || strneq("uo", rev + 2, 2)
@@ -145,7 +146,6 @@ static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
         return 0;
     }
 
-    // XXX ((?:^|\\W)(?:[bcdfghjklmnprstvwxyz]+|[bcdfghjklmnprstvwxyz]*qu)[aeiou])([bdfgklmnprstz]) + (ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities) -> \1\2\2\3
     // suffix: (ed|en|er|ier|est|in[g]|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)
     // word: ((?:[bcdfghjklmnprstvwxyz]+|[bcdfghjklmnprstvwxyz]*qu)[aeiou])([bdfgklmnprstz])
     //       ((?:[bcdfghjklmnprstvwxyz]|qu)a)([gbmptv])
@@ -162,7 +162,8 @@ static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
             || suffix[0] == 'y') {
         if ((rev[1] == 'a' && chrin("gbmptv", rev[0])) || (rev[1] == 'e' && chrin("gbpv", rev[0]))
                 || (rev[1] == 'i' && chrin("gbmpv", rev[0])) || (rev[1] == 'o' && chrin("gbdlv", rev[0]))
-                || (rev[1] == 'u' && chrin("gbdlmntv", rev[0]))) {
+                || (rev[1] == 'u' && chrin("gbdlmntv", rev[0]))
+                || (chrin("bdfgklmnprstz", rev[0]) && chrin("aeiou", rev[1]))) {
             const bool junk = chrin("bcdfghjklmnprstvwxyz", rev[2]);
             if (junk || (rev[1] != 'u' && strneq("uq", rev + 2, 2))) {
                 output[0] = rev[0];
@@ -171,7 +172,6 @@ static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
             }
         }
     }
-
     return -1;
 }
 
@@ -190,7 +190,7 @@ static uint32_t hash_str(const char *str) {
     return hash;
 }
 
-static int8_t simple_ortho(const char *word, const char *suffix, char *output) {
+static int8_t simple_ortho(const char *const word, const char *const suffix, char *const output) {
     const uint8_t word_len = strlen(word);
     const uint8_t suffix_len = strlen(suffix);
     if (word_len > 13 || suffix_len > 9) {  // None of the entries in the rules are that long
@@ -228,7 +228,7 @@ static int8_t simple_ortho(const char *word, const char *suffix, char *output) {
     return -1;
 }
 
-int8_t process_ortho(const char *word, const char *suffix, char *output) {
+int8_t process_ortho(const char *const word, const char *const suffix, char *const output) {
     const int8_t ret = regex_ortho(word, suffix, output);
     if (ret == -1) {
         return simple_ortho(word, suffix, output);
