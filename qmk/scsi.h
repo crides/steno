@@ -149,6 +149,7 @@ void fat_write_block(uint32_t block_no, uint8_t packet_num, uint8_t *data);
 #define NUM_FILES 1
 #define ROOT_DIR_CLUSTERS 1
 #define PACKETS_PER_BLOCK (BLOCK_SIZE / EPSIZE)
+#define PACKETS_PER_CLUSTER (PACKETS_PER_BLOCK * BLOCKS_PER_CLUSTER)
 
 #define FILE_BLOCKS (FILE_SIZE / BLOCK_SIZE)
 #define FILE_CLUSTERS (FILE_BLOCKS / BLOCKS_PER_CLUSTER)
