@@ -12,7 +12,6 @@ use nom::{
 
 use crate::dict::keycode::KeyExpr;
 
-// pub type ParseError<'i> = nom::error::Error<&'i str>;
 pub type ParseResult<'i, T, E = ParseEntryError<'i>> = IResult<&'i str, T, E>;
 
 #[derive(Debug, PartialEq)]
@@ -118,16 +117,15 @@ parsers! {
     ident: &str = recognize(pair(alt((alpha1, tag("_"))), many0(alt((alphanumeric1, tag("_"))))))
 
     keycode: KeyExpr =
-    inspect("keycode", map_res(ident, |k| KeyExpr::key(k).ok_or_else(|| ParseEntryError::InvalidKeycode(k))))
+    inspect("keycode", map_res(ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
 }
 
 fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
     let (after_key, key) = ident(s)?;
     if let Ok((after_left, _)) = char::<_, ParseEntryError>('(')(after_key) {
-        let m =
-            KeyExpr::modifier(key).ok_or_else(|| Error(ParseEntryError::InvalidModifier(key)))?;
-        let ke = map(terminated(cut(keylist), char(')')), |k| KeyExpr::Mod(m, k))(after_left);
-        ke
+        let m = KeyExpr::modifier(key).ok_or(Error(ParseEntryError::InvalidModifier(key)))?;
+        let mut p = map(terminated(cut(keylist), char(')')), |k| KeyExpr::Mod(m, k));
+        p(after_left)
     } else {
         keycode(s)
     }

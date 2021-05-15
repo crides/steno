@@ -125,7 +125,7 @@ impl Entry {
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
-    fn compile_atom<'i>(a: Parsed<'i>) -> Entry {
+    fn compile_atom(a: Parsed) -> Entry {
         use Parsed::*;
         match a {
             Text(s) => Entry {
@@ -263,7 +263,7 @@ impl Entry {
 
         let atoms = parse_entry(s)?
             .into_iter()
-            .map(|a| Entry::compile_atom(a))
+            .map(Entry::compile_atom)
             .collect::<Vec<Entry>>();
         if atoms.is_empty() {
             Ok(entry)

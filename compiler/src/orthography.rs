@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::hash;
 
-static RULE: &'static str = include_str!("../simple-rules.json");
+static RULE: &str = include_str!("../simple-rules.json");
 
 #[derive(Deserialize)]
 pub struct SimpleRuleEntry {
@@ -12,6 +12,7 @@ pub struct SimpleRuleEntry {
     suffix: String,
     /// Full text replacement for the entry; should be equivalent to the result obtained using the
     /// other way
+    #[allow(dead_code)]
     full: String,
     /// The number of characters to be backspaced corresponding to the end of the word
     back: u8,
@@ -45,7 +46,7 @@ pub fn generate() -> Vec<u8> {
             .or_insert(1);
         let offset = value_blocks.len();
         value_blocks.extend_from_slice(rule.word.as_bytes());
-        value_blocks.push(' ' as u8);
+        value_blocks.push(b' ');
         value_blocks.extend_from_slice(rule.suffix.as_bytes());
         value_blocks.push(0);
         value_blocks.push(rule.back as u8);
