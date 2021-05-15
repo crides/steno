@@ -60,7 +60,7 @@ static int8_t regex_ortho(const char *word, const char *suffix, char *output) {
     //  + s(\w|$) -> \1es\2
     // ([bcdfghjklmnpqrstvwxz])y + s(\w|$) -> \1ies\2
     if (suffix[0] == 's') {
-        if ((chrin("sxz", rev[0]) || (rev[1] == 'h' && (rev[2] == 's' || rev[2] == 'z')))
+        if ((chrin("sxz", rev[0]) || (rev[0] == 'h' && (rev[1] == 's' || rev[1] == 'z')))
                 || (strneq("hc", rev, 2) && (chrin("ilnt", rev[2]) || strneq("ao", rev + 2, 2) || strneq("ae", rev + 2, 2)
                         || strneq("ee", rev + 2, 2) || strneq("oo", rev + 2, 2)
                         || strneq("ua", rev + 2, 2) || strneq("uo", rev + 2, 2)
