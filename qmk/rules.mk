@@ -32,6 +32,11 @@ ifeq ($(STENO_NOUNICODE), yes)
 	CFLAGS += -DSTENO_NOUNICODE
 endif
 
+ifeq ($(STENO_FLASH_LOGGING),yes)
+	SRC += flog.c
+	CFLAGS += -DSTENO_FLASH_LOGGING
+endif
+
 STENO_DEBUG := $(filter hist stroke flash dicted, $(STENO_DEBUG))
 
 ifneq (, $(findstring hist, $(STENO_DEBUG)))

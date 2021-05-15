@@ -9,3 +9,4 @@ STENO_STROKE_DISPLAY = no
 STENO_NOUNICODE = yes
 
 STENO_DEBUG = hist # stroke flash dicted
+STENO_FLASH_LOGGING = yes

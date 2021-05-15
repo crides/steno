@@ -48,7 +48,7 @@ static void flash_read_page(uint32_t addr, uint8_t *buf) {
     unselect_card();
 }
 
-void flash_flush(void) {
+static void flash_flush(void) {
     select_card();
     while (1) {
         spi_send_byte(0x05);    // read status reg
@@ -108,7 +108,11 @@ static void flash_write_page(const uint32_t addr, const uint8_t *const buf) {
     unselect_card();
 }
 
-static void flash_erase_4k(const uint32_t addr) {
+// HACK uses private/platform specific interface
+#ifndef STENO_FLASH_LOGGING
+static
+#endif
+void flash_erase_4k(const uint32_t addr) {
 #ifdef STENO_DEBUG_FLASH
     if (flash_debug_enable) {
         steno_debug_ln("flash_erase_4k(@ 0x%06lX)", addr);
