@@ -2,21 +2,76 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, alphanumeric1, char, multispace0, none_of, one_of},
-    combinator::{eof, map, map_opt, opt, recognize},
+    combinator::{cut, eof, map, map_res, opt, peek, recognize},
+    error::VerboseError,
     multi::{many0, many1},
     sequence::{delimited, pair, preceded, terminated, tuple},
+    Err::Error,
     Finish, IResult,
 };
 
 use crate::dict::keycode::KeyExpr;
 
 // pub type ParseError<'i> = nom::error::Error<&'i str>;
-pub type ParseError<I> = nom::error::VerboseError<I>;
-pub type ParseResult<'i, T, E = ParseError<&'i str>> = IResult<&'i str, T, E>;
+pub type ParseResult<'i, T, E = ParseEntryError<'i>> = IResult<&'i str, T, E>;
+
+#[derive(Debug, PartialEq)]
+pub enum ParseEntryError<'i> {
+    InvalidKeycode(&'i str),
+    InvalidModifier(&'i str),
+    Plover(&'i str),
+    PloverMode(&'i str),
+    UnknownEntry(&'i str),
+    Nom(nom::error::VerboseError<&'i str>),
+}
+
+impl<'i> nom::error::ParseError<&'i str> for ParseEntryError<'i> {
+    fn from_error_kind(input: &'i str, kind: nom::error::ErrorKind) -> Self {
+        ParseEntryError::Nom(VerboseError::from_error_kind(input, kind))
+    }
+
+    fn append(input: &'i str, kind: nom::error::ErrorKind, other: Self) -> Self {
+        match other {
+            ParseEntryError::Nom(err) => {
+                ParseEntryError::Nom(VerboseError::append(input, kind, err))
+            }
+            _ => other,
+        }
+    }
+}
+
+impl<'i> nom::error::FromExternalError<&'i str, ParseEntryError<'i>> for ParseEntryError<'i> {
+    fn from_external_error(
+        _input: &'i str,
+        _kind: nom::error::ErrorKind,
+        e: ParseEntryError<'i>,
+    ) -> Self {
+        e
+    }
+}
+
+impl<'i> ParseEntryError<'i> {
+    pub fn format_error(self, input: &'i str) -> String {
+        match self {
+            ParseEntryError::Nom(n) => {
+                format!("Nom error:\n{}", nom::error::convert_error(input, n))
+            }
+            ParseEntryError::InvalidKeycode(k) => format!("Invalid keycode '{}'", k),
+            ParseEntryError::InvalidModifier(k) => format!("Invalid modifier '{}'", k),
+            ParseEntryError::Plover(p) => format!("Plover command '{}' not supported yet", p),
+            ParseEntryError::PloverMode(p) => {
+                format!("Plover MODE command '{}' not supported yet", p)
+            }
+            ParseEntryError::UnknownEntry(e) => {
+                format!("Unknown entry '{}'", e)
+            }
+        }
+    }
+}
 
 macro_rules! parsers {
-    ($($vis:vis $name:ident: $ret:ty = $body:expr)*) => {
-        $($vis fn $name(s: &str) -> ParseResult<$ret> { $body(s) })*
+    ($($name:ident: $ret:ty = $body:expr)*) => {
+        $(fn $name(s: &str) -> ParseResult<$ret> { $body(s) })*
     };
 }
 
@@ -46,49 +101,39 @@ pub enum Parsed<'i> {
     RetroSpace,
     RetroNoSpace,
     DictEdit,
-    Plover(&'i str),
-    PloverMode(&'i str),
 }
 
 fn inspect<'i, T: std::fmt::Debug>(
-    t: &'static str,
-    mut f: impl nom::Parser<&'i str, T, ParseError<&'i str>>,
+    _t: &'static str,
+    mut f: impl nom::Parser<&'i str, T, ParseEntryError<'i>>,
 ) -> impl FnMut(&'i str) -> ParseResult<T> {
     move |s: &'i str| {
         let r = f.parse(s);
-        println!("[{}]: {:#?}", t, r);
+        // println!("[{}]: {:?}", _t, r);
         r
     }
 }
 
 parsers! {
-    modifier: u8 =
-    alt((
-        map(alt((tag("control"), tag("Control_L"))), |_| 0x80),
-        map(alt((tag("Shift_L"), tag("shift"))), |_| 0xe1),
-        map(alt((tag("Alt_L"), tag("alt"), tag("option"))), |_| 0xe2),
-        map(
-            alt((tag("Super_L"), tag("super"), tag("windows"), tag("command"))),
-            |_| 0xe3,
-        ),
-        map(tag("Control_R"), |_| 0xe4),
-        map(tag("Shift_R"), |_| 0xe5),
-        map(tag("Alt_R"), |_| 0xe6),
-        map(tag("Super_R"), |_| 0xe7),
-    ))
+    ident: &str = recognize(pair(alt((alpha1, tag("_"))), many0(alt((alphanumeric1, tag("_"))))))
 
     keycode: KeyExpr =
-    map_opt(
-        recognize(pair(alt((alpha1, tag("_"))), many0(alt((alphanumeric1, tag("_")))))),
-        KeyExpr::new_key,
-    )
+    inspect("keycode", map_res(ident, |k| KeyExpr::key(k).ok_or_else(|| ParseEntryError::InvalidKeycode(k))))
+}
 
-    keyexpr: KeyExpr =
-    alt((
-        keycode,
-        map(tuple((modifier, char('('), keylist, char(')'))), |(m, _, k, _)| KeyExpr::Mod(m, k))
-    ))
+fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
+    let (after_key, key) = ident(s)?;
+    if let Ok((after_left, _)) = char::<_, ParseEntryError>('(')(after_key) {
+        let m =
+            KeyExpr::modifier(key).ok_or_else(|| Error(ParseEntryError::InvalidModifier(key)))?;
+        let ke = map(terminated(cut(keylist), char(')')), |k| KeyExpr::Mod(m, k))(after_left);
+        ke
+    } else {
+        keycode(s)
+    }
+}
 
+parsers! {
     keylist: Vec<KeyExpr> = many1(map(pair(keyexpr, multispace0), |(k, _)| k))
 
     text: &str = recognize(many1(alt((recognize(none_of(r"\{}")), recognize(pair(char('\\'), one_of(r"\{}")))))))
@@ -96,11 +141,11 @@ parsers! {
 
     meta_inner: Parsed =
     alt((
-        map(preceded(char('#'), keylist), Parsed::Keycodes),
+        map(preceded(char('#'), inspect("keylist", cut(keylist))), Parsed::Keycodes),
         map(tag("PLOVER:ADD_TRANSLATION"), |_| Parsed::DictEdit),
-        map(preceded(tag("PLOVER:"), text), Parsed::Plover),
-        map(preceded(tag("MODE:"), text), Parsed::PloverMode),
-        map(preceded(char('&'), text), Parsed::Glue),
+        preceded(tag("PLOVER:"), cut(map_res(text, |p| Err(ParseEntryError::Plover(p))))),
+        preceded(tag("MODE:"), cut(map_res(text, |p| Err(ParseEntryError::PloverMode(p))))),
+        map(preceded(char('&'), cut(text)), Parsed::Glue),
         map(
             tuple((opt(char(ATTACH)), preceded(tag("~|"), attachable_text), opt(char(ATTACH)))),
             |(f, t, b)| Parsed::Carry(f.is_some(), t, b.is_some())
@@ -122,15 +167,18 @@ parsers! {
             map(char('*'), |_| Parsed::ToggleStar),
             map(alt((tag(","), tag(";"), tag(":"), tag("--"))), Parsed::HalfStop),
             map(recognize(alt((char('?'), char('!'), char('.')))), Parsed::FullStop),
-            map(tag(""), |_| Parsed::ResetFormat),
+            // HACK? peek back up to ensure this is _indeed_ an empty entry without passing it to the
+            // all-handling error muncher
+            map(terminated(tag(""), peek(char('}'))), |_| Parsed::ResetFormat),
+            inspect("last", cut(map_res(recognize(many1(none_of("}"))), |i| Err(ParseEntryError::UnknownEntry(i))))),
         )),
     ))
 
-    atom: Parsed = alt((map(text, Parsed::Text), map(tuple((char('{'), meta_inner, char('}'))), |(_, m, _)| m)))
+    atom: Parsed = alt((preceded(char('{'), cut(terminated(inspect("minner", meta_inner), char('}')))), map(text, Parsed::Text)))
 
     entry: Vec<Parsed> = terminated(many1(atom), eof)
 }
 
-pub fn parse_entry(s: &str) -> Result<Vec<Parsed>, ParseError<&str>> {
+pub fn parse_entry(s: &str) -> Result<Vec<Parsed>, ParseEntryError> {
     entry(s).finish().map(|(_, p)| p)
 }

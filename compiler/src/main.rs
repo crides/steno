@@ -115,7 +115,7 @@ fn main() {
             let input = m.value_of("text").unwrap();
             match dbg!(crate::dict::parse::parse_entry(input)) {
                 Err(e) => {
-                    println!("{}", nom::error::convert_error(input, e));
+                    println!("{}", e.format_error(input));
                 }
                 Ok(v) => {
                     println!("{:?}", v);
