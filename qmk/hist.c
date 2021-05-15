@@ -260,6 +260,7 @@ state_t process_output(const uint8_t h_ind) {
         if (stroke_to_string(hist->stroke, buf, &hist->len)) {
             new_state.glue = 1;
         }
+        hist->ortho_len = 1;
 #ifdef STENO_DEBUG_HIST
         steno_debug("  out: '");
 #endif
