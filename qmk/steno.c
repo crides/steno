@@ -9,6 +9,9 @@
 #ifndef STENO_NOUI
 #include "disp.h"
 #endif
+#ifdef STENO_FLASH_LOGGING
+#include "flog.h"
+#endif
 
 bool flashing = false;
 char last_trans[128];
@@ -29,6 +32,9 @@ void ebd_steno_process_stroke(const uint32_t stroke) {
     time = timer_read();
 #endif
     _ebd_steno_process_stroke(stroke);
+#ifdef STENO_FLASH_LOGGING
+    flog_finish_cycle();
+#endif
 }
 
 void _ebd_steno_process_stroke(const uint32_t stroke) {
@@ -130,5 +136,8 @@ void ebd_steno_init(void) {     // to avoid clashing with `steno_init` in QMK
     store_init();
 #ifndef STENO_NOUI
     disp_init();
+#endif
+#ifdef STENO_FLASH_LOGGING
+    flog_init();
 #endif
 }

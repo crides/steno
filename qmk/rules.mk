@@ -17,6 +17,7 @@ else
 endif
 
 ifeq ($(STENO_NOMSD),yes)
+	STENO_FLASH_LOGGING = no
 	CFLAGS += -DSTENO_NOMSD
 	MSC_ENABLE = no
 else
@@ -30,6 +31,11 @@ endif
 
 ifeq ($(STENO_NOUNICODE), yes)
 	CFLAGS += -DSTENO_NOUNICODE
+endif
+
+ifeq ($(STENO_FLASH_LOGGING),yes)
+	SRC += flog.c
+	CFLAGS += -DSTENO_FLASH_LOGGING
 endif
 
 STENO_DEBUG := $(filter hist stroke flash dicted, $(STENO_DEBUG))

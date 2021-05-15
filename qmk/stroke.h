@@ -19,6 +19,8 @@
 #define FREEMAP_START       0xF00000
 #define SCRATCH_START       0xF22000
 #define ORTHOGRAPHY_START   0xF30000
+#define FLOG_START          0xF80000
+#define STORE_END          0x1000000
 
 #define BUCKET_GET_ENTRY_LEN(e) ((e >> 24) & 0xFF)
 #define BUCKET_GET_STROKES_LEN(e) (e & 0x0F)
