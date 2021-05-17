@@ -56,7 +56,7 @@ static FAT_BootBlock const BootBlock = {
     .PhysicalDriveNum = 0x80, // to match MediaDescriptor of 0xF8
     .ExtendedBootSig = 0x29,
     .VolumeSerialNumber = 0xfeed6062,
-    .VolumeLabel = "BATWINGS",
+    .VolumeLabel = "BATWINGS   ",
     .FilesystemIdentifier = "FAT16   ",
 };
 
