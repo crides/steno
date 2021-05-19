@@ -17,6 +17,7 @@ else
 endif
 
 ifeq ($(STENO_NOMSD),yes)
+	STENO_FLASH_LOGGING = no
 	CFLAGS += -DSTENO_NOMSD
 	MSC_ENABLE = no
 else
