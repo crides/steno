@@ -34,7 +34,7 @@
 
 static struct TextFile const info[] = {
     // current.uf2 must be the last element and its content must be NULL
-    {.name = "steno   bin", .content = NULL},
+    {.name = "STENO   BIN", .content = NULL},
 };
 
 static FAT_BootBlock const BootBlock = {
