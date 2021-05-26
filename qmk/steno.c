@@ -105,7 +105,15 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist %u:", hist_ind);
-        steno_debug_ln("  len: %u, stroke: %u, ortho: %u", hist->len, BUCKET_GET_STROKES_LEN(hist->bucket), hist->ortho_len);
+        steno_debug_ln("  len: %u, stroke: %u"
+#ifndef STENO_NOORTHOGRAPHY
+                ", ortho: %u"
+#endif
+                , hist->len, BUCKET_GET_STROKES_LEN(hist->bucket)
+#ifndef STENO_NOORTHOGRAPHY
+                , hist->ortho_len
+#endif
+                );
         const state_t state = hist->state;
         steno_debug_ln("  scg: %u%u%u", state.space, state.cap, state.glue);
         char buf[24];

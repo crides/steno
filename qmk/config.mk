@@ -10,3 +10,5 @@ STENO_NOUNICODE = yes
 
 STENO_DEBUG = hist # stroke flash dicted
 STENO_FLASH_LOGGING = yes
+# Disables the internal orthography engine
+STENO_NOORTHOGRAPHY = yes

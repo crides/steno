@@ -1,7 +1,7 @@
 THIS_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(THIS_DIR)/config.mk
 
-SRC += hist.c stroke.c orthography.c
+SRC += hist.c stroke.c
 SRC += impl/qmk/hooks.c impl/qmk/spi.c impl/qmk/flash.c
 ifeq ($(STENO_NOUI),yes)
 	STENO_READONLY = yes
@@ -36,6 +36,12 @@ endif
 ifeq ($(STENO_FLASH_LOGGING),yes)
 	SRC += flog.c
 	CFLAGS += -DSTENO_FLASH_LOGGING
+endif
+
+ifeq ($(STENO_NOORTHOGRAPHY),yes)
+	CFLAGS += -DSTENO_NOORTHOGRAPHY
+else
+	SRC += orthography.c
 endif
 
 STENO_DEBUG := $(filter hist stroke flash dicted, $(STENO_DEBUG))
