@@ -11,7 +11,9 @@
 #ifndef STENO_READONLY
 #include "dict_editing.h"
 #endif
+#ifndef STENO_NOORTHOGRAPHY
 #include "orthography.h"
+#endif
 #ifndef STENO_NOUI
 #include "disp.h"
 #endif
@@ -214,7 +216,12 @@ void hist_undo(const uint8_t h_ind) {
     steno_debug_ln("  back: %u", len);
 #endif
     steno_back(len);
-    const uint8_t strokes_len = hist->ortho_len;
+    const uint8_t strokes_len =
+#ifdef STENO_NOORTHOGRAPHY
+            BUCKET_GET_STROKES_LEN(hist->bucket);
+#else
+            hist->ortho_len;
+#endif
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  strokes: %u", strokes_len);
 #endif
@@ -260,7 +267,9 @@ state_t process_output(const uint8_t h_ind) {
         if (stroke_to_string(hist->stroke, buf, &hist->len)) {
             new_state.glue = 1;
         }
+#ifndef STENO_NOORTHOGRAPHY
         hist->ortho_len = 1;
+#endif
 #ifdef STENO_DEBUG_HIST
         steno_debug("  out: '");
 #endif
@@ -296,6 +305,7 @@ state_t process_output(const uint8_t h_ind) {
 #endif
     const uint8_t *entry = kvpair_buf + STROKE_SIZE * strokes_len + 1;
 
+#ifndef STENO_NOORTHOGRAPHY
     // Possible suffix
     if (!attr.space_prev && strokes_len == 1) {
         const uint8_t last_hist_ind = HIST_LIMIT(h_ind - strokes_len);
@@ -335,6 +345,7 @@ state_t process_output(const uint8_t h_ind) {
     strncpy((char *) hist->end_buf, (const char *) entry + start_of_end, 7);
     hist->end_buf[7] = 0;
     hist->ortho_len = strokes_len;
+#endif
 
     {
         const uint8_t repl_len = strokes_len > 1 ? strokes_len - 1 : 0;
@@ -351,6 +362,10 @@ state_t process_output(const uint8_t h_ind) {
             }
             steno_back(old_hist->len);
             const uint8_t old_strokes_len = BUCKET_GET_STROKES_LEN(old_hist->bucket);
+#ifdef STENO_NOORTHOGRAPHY
+            const uint8_t old_repl_len = old_strokes_len > 1 ? old_strokes_len - 1 : 0;
+            counter -= old_repl_len + 1;
+#else
             const uint8_t old_ortho_len = old_hist->ortho_len;
             if (counter >= old_ortho_len) {
                 counter -= old_ortho_len;
@@ -375,6 +390,7 @@ state_t process_output(const uint8_t h_ind) {
             } else {
                 steno_error_ln("??? ortho %u strokes %u counter %u", old_ortho_len, old_strokes_len, counter);
             }
+#endif
         }
     }
 

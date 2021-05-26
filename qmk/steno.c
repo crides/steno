@@ -28,7 +28,7 @@ uint16_t time = 0;
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 void _ebd_steno_process_stroke(const uint32_t stroke);
 void ebd_steno_process_stroke(const uint32_t stroke) {
-#ifdef CONSOLE_ENABLE
+#ifdef STENO_DEBUG
     time = timer_read();
 #endif
     _ebd_steno_process_stroke(stroke);
@@ -70,6 +70,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     history_t *hist = hist_get(hist_ind);
     hist->stroke = stroke;
     // Default `state` set in last cycle
+    print_time("start search");
     const uint32_t bucket = search_entry(hist_ind);
     print_time("search");
     hist->bucket = bucket;
@@ -105,7 +106,15 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     if (hist->len) {
 #ifdef STENO_DEBUG_HIST
         steno_debug_ln("hist %u:", hist_ind);
-        steno_debug_ln("  len: %u, stroke: %u, ortho: %u", hist->len, BUCKET_GET_STROKES_LEN(hist->bucket), hist->ortho_len);
+        steno_debug_ln("  len: %u, stroke: %u"
+#ifndef STENO_NOORTHOGRAPHY
+                ", ortho: %u"
+#endif
+                , hist->len, BUCKET_GET_STROKES_LEN(hist->bucket)
+#ifndef STENO_NOORTHOGRAPHY
+                , hist->ortho_len
+#endif
+                );
         const state_t state = hist->state;
         steno_debug_ln("  scg: %u%u%u", state.space, state.cap, state.glue);
         char buf[24];
@@ -122,10 +131,8 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     }
     hist_get(hist_ind)->state = new_state;
 
-#ifdef CONSOLE_ENABLE
+#ifdef STENO_DEBUG
     print_time("final");
-#endif
-#if defined(STENO_DEBUG_HIST) || defined(STENO_DEBUG_FLASH) || defined(STENO_DEBUG_STROKE) || defined(STENO_DEBUG_DICTED)
     steno_debug_ln("----\n");
 #endif
 }

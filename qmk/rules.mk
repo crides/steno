@@ -1,7 +1,7 @@
 THIS_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(THIS_DIR)/config.mk
 
-SRC += hist.c stroke.c orthography.c
+SRC += hist.c stroke.c
 SRC += impl/qmk/hooks.c impl/qmk/spi.c impl/qmk/flash.c
 ifeq ($(STENO_NOUI),yes)
 	STENO_READONLY = yes
@@ -17,7 +17,6 @@ else
 endif
 
 ifeq ($(STENO_NOMSD),yes)
-	STENO_FLASH_LOGGING = no
 	CFLAGS += -DSTENO_NOMSD
 	MSC_ENABLE = no
 else
@@ -33,12 +32,17 @@ ifeq ($(STENO_NOUNICODE), yes)
 	CFLAGS += -DSTENO_NOUNICODE
 endif
 
-ifeq ($(STENO_FLASH_LOGGING),yes)
-	SRC += flog.c
-	CFLAGS += -DSTENO_FLASH_LOGGING
+ifeq ($(STENO_NOORTHOGRAPHY),yes)
+	CFLAGS += -DSTENO_NOORTHOGRAPHY
+else
+	SRC += orthography.c
 endif
 
 STENO_DEBUG := $(filter hist stroke flash dicted, $(STENO_DEBUG))
+STENO_LOG_BACKEND := $(filter flash console, $(STENO_LOG_BACKEND))
+
+ifneq (, $(STENO_LOG_BACKEND))
+	CFLAGS += -DSTENO_DEBUG
 
 ifneq (, $(findstring hist, $(STENO_DEBUG)))
 	CFLAGS += -DSTENO_DEBUG_HIST
@@ -55,8 +59,14 @@ endif
 ifneq (, $(findstring dicted, $(STENO_DEBUG)))
 	CFLAGS += -DSTENO_DEBUG_DICTED
 endif
+endif
 
-ifneq (, $(STENO_DEBUG))
+ifneq (, $(findstring flash, $(STENO_LOG_BACKEND)))
+	SRC += flog.c
+	CFLAGS += -DSTENO_FLASH_LOGGING
+endif
+
+ifneq (, $(findstring console, $(STENO_LOG_BACKEND)))
 	CONSOLE_ENABLE = yes
 endif
 

@@ -7,16 +7,9 @@
 
 #include "config.h"
 
-#if !defined(CONSOLE_ENABLE)
-#undef STENO_DEBUG_FLASH
-#undef STENO_DEBUG_HIST
-#undef STENO_DEBUG_STROKE
-#undef STENO_DEBUG_DICTED
-#endif
-
 #define steno_error(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_error_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
-#if defined(CONSOLE_ENABLE)
+#if STENO_DEBUG
 #define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_debug_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
 #else

@@ -6,6 +6,12 @@
 #define HIST_MASK 0x1F
 #define HIST_LIMIT(a) ((a) & HIST_MASK)
 
+#ifdef STENO_NOORTHOGRAPHY
+#define HIST_GET_ORTHO_LEN(hist) (BUCKET_GET_STROKES_LEN(hist->bucket))
+#else
+#define HIST_GET_ORTHO_LEN(hist) (hist->ortho_len)
+#endif
+
 typedef struct __attribute__((packed)) {
     uint8_t space : 1;
     uint8_t cap : 2;
@@ -15,11 +21,15 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
     uint8_t len;
     state_t state;
+#ifndef STENO_NOORTHOGRAPHY
     uint8_t ortho_len;       // Length of orthographic entries' total strokes
+#endif
     uint32_t stroke : 24;
     // Pointer + strokes length of the bucket; invalid if 0 or -1
     uint32_t bucket;
+#ifndef STENO_NOORTHOGRAPHY
     uint8_t end_buf[8];
+#endif
 } history_t;
 
 void hist_undo(uint8_t h_ind);
