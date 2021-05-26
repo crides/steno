@@ -9,7 +9,7 @@
 
 uint8_t kvpair_buf[128];
 
-void hash_stroke_ptr(uint32_t *hash, const uint8_t *stroke) {
+void hash_stroke_ptr(uint32_t *const hash, const uint8_t *const stroke) {
     *hash *= FNV_FACTOR;
     *hash ^= stroke[0];
     *hash *= FNV_FACTOR;
@@ -20,7 +20,7 @@ void hash_stroke_ptr(uint32_t *hash, const uint8_t *stroke) {
 }
 
 // Returns if the stroke contains only digits
-bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
+bool stroke_to_string(const uint32_t stroke, char *const buf, const uint8_t *const ret_len) {
     uint8_t len = 0;
     const uint32_t DIGIT_BITS = 0x7562A8;
     if (stroke & ((uint32_t) 1 << 22) && !(stroke & ~DIGIT_BITS)) {
@@ -65,7 +65,7 @@ bool stroke_to_string(uint32_t stroke, char *buf, uint8_t *ret_len) {
     return false;
 }
 
-uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free) {
+uint32_t find_strokes(const uint8_t *const strokes, const uint8_t len, const uint8_t free) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug("  find_strokes(%u):\n    ", free);
 #endif
@@ -78,8 +78,7 @@ uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t f
     }
     uint32_t bucket_ind = BUCKET_SIZE * (hash & 0xFFFFF);   // Lower 20 bits, mul 4 to byte address
 #ifdef STENO_DEBUG_STROKE
-    steno_debug_ln("");
-    steno_debug_ln("    hash: %08lX, bucket_ind: %06lX", hash, bucket_ind);
+    steno_debug_ln("\n    hash: %08lX, bucket_ind: %06lX", hash, bucket_ind);
 #endif
     uint32_t bucket;
     for (; ; bucket_ind += BUCKET_SIZE) {
