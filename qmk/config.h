@@ -28,6 +28,10 @@
 #define PREVENT_STUCK_MODIFIERS
 #define UNICODE_SELECTED_MODES UC_LNX
 
+#ifdef STENO_DEBUG
+#undef NO_PRINT
+#endif
+
 #define LAYER_STATE_8BIT
 #define NO_RESET
 #define NO_ACTION_LAYER
