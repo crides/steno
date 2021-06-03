@@ -20,7 +20,7 @@ pub enum ParseEntryError<'i> {
     InvalidModifier(&'i str),
     Plover(&'i str),
     PloverMode(&'i str),
-    UnknownEntry(&'i str),
+    UnknownCommand(&'i str),
     Nom(nom::error::VerboseError<&'i str>),
 }
 
@@ -61,8 +61,8 @@ impl<'i> ParseEntryError<'i> {
             ParseEntryError::PloverMode(p) => {
                 format!("Plover MODE command '{}' not supported yet", p)
             }
-            ParseEntryError::UnknownEntry(e) => {
-                format!("Unknown entry '{}'", e)
+            ParseEntryError::UnknownCommand(e) => {
+                format!("Unknown command '{}'", e)
             }
         }
     }
@@ -135,7 +135,7 @@ parsers! {
     keylist: Vec<KeyExpr> = many1(map(pair(keyexpr, multispace0), |(k, _)| k))
 
     text: &str = recognize(many1(alt((recognize(none_of(r"\{}")), recognize(pair(char('\\'), one_of(r"\{}")))))))
-    attachable_text: &str = recognize(many1(alt((recognize(none_of(r"\{}^")), recognize(pair(char('\\'), one_of(r"\{}^")))))))
+    attachable_text: &str = recognize(many0(alt((recognize(none_of(r"\{}^")), recognize(pair(char('\\'), one_of(r"\{}^")))))))
 
     meta_inner: Parsed =
     alt((
@@ -168,7 +168,7 @@ parsers! {
             // HACK? peek back up to ensure this is _indeed_ an empty entry without passing it to the
             // all-handling error muncher
             map(terminated(tag(""), peek(char('}'))), |_| Parsed::ResetFormat),
-            inspect("last", cut(map_res(recognize(many1(none_of("}"))), |i| Err(ParseEntryError::UnknownEntry(i))))),
+            inspect("last", cut(map_res(recognize(many1(none_of("}"))), |i| Err(ParseEntryError::UnknownCommand(i))))),
         )),
     ))
 

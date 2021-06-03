@@ -23,7 +23,7 @@ pub struct SimpleRuleEntry {
 const BUCKET_SIZE: usize = 3;
 const BUCKET_OFFSET_BITS: usize = 18;
 const BUCKET_LENGTH_BITS: usize = 6;
-const BUCKET_CAP: usize = 0x3C00; // 1463 entries in simple rules; generates 65470 bytes < 64KiB
+pub const BUCKET_CAP: usize = 0x3C00; // 1463 entries in simple rules; generates 65470 bytes < 64KiB
 const EMPTY_BUCKET: u32 = 0xFFFFFF;
 
 pub fn generate() -> Vec<u8> {

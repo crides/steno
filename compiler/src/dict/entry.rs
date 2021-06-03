@@ -432,6 +432,13 @@ fn test_number_only() {
 #[test]
 fn test_command() {
     assert_eq!(
+        Entry::parse_entry("I{.}so"),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::String("I. So".into())],
+        })
+    );
+    assert_eq!(
         Entry::parse_entry("oh yeah{,}babe"),
         Ok(Entry {
             attr: Attr::valid_default(),
@@ -474,6 +481,32 @@ fn test_braces() {
 }
 
 #[test]
+fn test_attach() {
+    assert_eq!(
+        Entry::parse_entry(r"{^^}"),
+        Ok(Entry {
+            attr: Attr {
+                space_after: false,
+                space_prev: false,
+                ..Attr::valid_default()
+            },
+            inputs: vec![Input::String("".into())],
+        })
+    );
+}
+
+#[test]
+fn test_mods() {
+    assert_eq!(
+        Entry::parse_entry(r"{#Control_L(w)}"),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::Keycodes(vec![0x80, 0x1a, 0x80])],
+        })
+    );
+}
+
+#[test]
 fn test_keycode_error() {
     assert_eq!(
         Entry::parse_entry(r"{#key}"),
@@ -501,6 +534,6 @@ fn test_error() {
     );
     assert_eq!(
         Entry::parse_entry(r"{entry}"),
-        Err(ParseEntryError::UnknownEntry("entry"))
+        Err(ParseEntryError::UnknownCommand("entry"))
     );
 }
