@@ -107,8 +107,7 @@ fn main() {
             dbg!(&s);
             let hash = hash::hash(s.as_bytes(), None);
             println!("{:x}", hash);
-            let bucket_cap: usize = 0x3C00;
-            let index = hash as usize % (bucket_cap - 1);
+            let index = hash as usize % (orthography::BUCKET_CAP - 1);
             println!("{:x}", index);
         }
         ("test-parse", Some(m)) => {

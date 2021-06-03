@@ -19,7 +19,7 @@ impl KeyExpr {
 
     pub fn modifier(s: &str) -> Option<u8> {
         let b = match s {
-            "control" | "Control_L" => 0x80,
+            "control" | "Control_L" => 0xe0,
             "Shift_L" | "shift" => 0xe1,
             "Alt_L" | "alt" | "option" => 0xe2,
             "Super_L" | "super" | "windows" | "command" => 0xe3,

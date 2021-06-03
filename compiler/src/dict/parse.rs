@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alpha1, alphanumeric1, char, multispace0, none_of, one_of},
+    character::complete::{char, multispace0, none_of, one_of},
     combinator::{cut, eof, map, map_res, opt, peek, recognize},
     error::VerboseError,
     multi::{many0, many1},
@@ -20,7 +20,7 @@ pub enum ParseEntryError<'i> {
     InvalidModifier(&'i str),
     Plover(&'i str),
     PloverMode(&'i str),
-    UnknownEntry(&'i str),
+    UnknownCommand(&'i str),
     Nom(nom::error::VerboseError<&'i str>),
 }
 
@@ -61,8 +61,8 @@ impl<'i> ParseEntryError<'i> {
             ParseEntryError::PloverMode(p) => {
                 format!("Plover MODE command '{}' not supported yet", p)
             }
-            ParseEntryError::UnknownEntry(e) => {
-                format!("Unknown entry '{}'", e)
+            ParseEntryError::UnknownCommand(e) => {
+                format!("Unknown command '{}'", e)
             }
         }
     }
@@ -114,14 +114,14 @@ fn inspect<'i, T: std::fmt::Debug>(
 }
 
 parsers! {
-    ident: &str = recognize(pair(alt((alpha1, tag("_"))), many0(alt((alphanumeric1, tag("_"))))))
+    key_ident: &str = recognize(many1(recognize(none_of(r"\#(){} "))))
 
     keycode: KeyExpr =
-    inspect("keycode", map_res(ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
+    inspect("keycode", map_res(key_ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
 }
 
 fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
-    let (after_key, key) = ident(s)?;
+    let (after_key, key) = key_ident(s)?;
     if let Ok((after_left, _)) = char::<_, ParseEntryError>('(')(after_key) {
         let m = KeyExpr::modifier(key).ok_or(Error(ParseEntryError::InvalidModifier(key)))?;
         let mut p = map(terminated(cut(keylist), char(')')), |k| KeyExpr::Mod(m, k));
@@ -132,10 +132,10 @@ fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
 }
 
 parsers! {
-    keylist: Vec<KeyExpr> = many1(map(pair(keyexpr, multispace0), |(k, _)| k))
+    keylist: Vec<KeyExpr> = many1(map(pair(inspect("keyexpr", keyexpr), multispace0), |(k, _)| k))
 
     text: &str = recognize(many1(alt((recognize(none_of(r"\{}")), recognize(pair(char('\\'), one_of(r"\{}")))))))
-    attachable_text: &str = recognize(many1(alt((recognize(none_of(r"\{}^")), recognize(pair(char('\\'), one_of(r"\{}^")))))))
+    attachable_text: &str = recognize(many0(alt((recognize(none_of(r"\{}^")), recognize(pair(char('\\'), one_of(r"\{}^")))))))
 
     meta_inner: Parsed =
     alt((
@@ -168,7 +168,7 @@ parsers! {
             // HACK? peek back up to ensure this is _indeed_ an empty entry without passing it to the
             // all-handling error muncher
             map(terminated(tag(""), peek(char('}'))), |_| Parsed::ResetFormat),
-            inspect("last", cut(map_res(recognize(many1(none_of("}"))), |i| Err(ParseEntryError::UnknownEntry(i))))),
+            inspect("last", cut(map_res(recognize(many1(none_of("}"))), |i| Err(ParseEntryError::UnknownCommand(i))))),
         )),
     ))
 
