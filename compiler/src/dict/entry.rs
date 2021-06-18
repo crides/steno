@@ -1,6 +1,6 @@
 //! Provides value level types and constructs for parsing and representing the JSON dictionary. May contain
 //! values which are already byte level (e.g. keycodes) for simplicity
-use onig::{Captures, Regex};
+use regex::{Captures, Regex};
 
 use super::parse::parse_entry;
 pub use super::parse::{ParseEntryError, Parsed};
@@ -121,7 +121,7 @@ impl Entry {
     }
 
     fn replace_escapes(s: &str) -> String {
-        ESCAPED.replace_all(s, |c: &Captures| c.at(1).unwrap().to_string())
+        ESCAPED.replace_all(s, |c: &Captures| c.get(1).unwrap().as_str().to_string()).to_string()
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not

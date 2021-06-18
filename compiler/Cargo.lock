@@ -486,6 +486,7 @@ dependencies = [
  "lazy_static",
  "nom 6.1.2",
  "onig",
+ "regex",
  "serde",
  "serde_derive",
  "serde_json",
