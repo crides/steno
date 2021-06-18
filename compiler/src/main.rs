@@ -11,20 +11,22 @@ mod dict;
 mod freemap;
 mod hash;
 mod orthography;
+#[cfg(feature = "patching")]
 mod rule;
 mod stroke;
 
 use std::fs::File;
 use std::io::{Seek, SeekFrom};
 
-use clap::{App, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 
 use dict::Dict;
+#[cfg(feature = "patching")]
 use rule::{apply_rules, Dict as RuleDict, Rules};
 use stroke::{Stroke, Strokes};
 
 fn main() {
-    let matches = App::new("compile-steno")
+    let app = App::new("compile-steno")
         .subcommand(SubCommand::with_name("test").arg(Arg::with_name("stroke").required(true)))
         .subcommand(SubCommand::with_name("hash").arg(Arg::with_name("strokes").required(true)))
         .subcommand(SubCommand::with_name("test-parse").arg(Arg::with_name("text").required(true)))
@@ -39,13 +41,15 @@ fn main() {
                 )
                 .arg(Arg::with_name("output").required(true)),
         )
-        .subcommand(
+        .setting(AppSettings::SubcommandRequiredElseHelp);
+    #[cfg(feature = "patching")]
+    let app = app.subcommand(
             SubCommand::with_name("apply-rules")
                 .arg(Arg::with_name("rules").required(true))
                 .arg(Arg::with_name("from").required(true))
                 .arg(Arg::with_name("to").required(true)),
-        )
-        .get_matches();
+        );
+    let matches = app.get_matches();
     match matches.subcommand() {
         ("compile", Some(m)) => {
             let input_files = m.values_of("input").unwrap();
@@ -74,6 +78,7 @@ fn main() {
             };
             println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());
         }
+        #[cfg(feature = "patching")]
         ("apply-rules", Some(m)) => {
             let rules: Rules = serde_json::from_reader(
                 File::open(m.value_of("rules").unwrap()).expect("Cannot open rules file!"),
@@ -121,6 +126,6 @@ fn main() {
                 }
             }
         }
-        (cmd, _) => panic!("{}", cmd),
+        _ => panic!(),
     }
 }
