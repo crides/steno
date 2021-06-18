@@ -514,6 +514,17 @@ fn test_mods() {
 }
 
 #[test]
+fn test_keys() {
+    assert_eq!(
+        Entry::parse_entry(r"{#a b}"),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::Keycodes(vec![0x04, 0x05])],
+        })
+    );
+}
+
+#[test]
 fn test_keycode_error() {
     assert_eq!(
         Entry::parse_entry(r"{#key}"),

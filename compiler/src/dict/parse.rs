@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alphanumeric1, char, multispace0, none_of, one_of},
+    character::complete::{char, multispace0, none_of, one_of},
     combinator::{cut, eof, map, map_res, opt, peek, recognize},
     error::VerboseError,
     multi::{many0, many1},
@@ -114,7 +114,7 @@ fn inspect<'i, T: std::fmt::Debug>(
 }
 
 parsers! {
-    key_ident: &str = recognize(many1(recognize(none_of(r"\#(){}"))))
+    key_ident: &str = recognize(many1(recognize(none_of(r"\#(){} "))))
 
     keycode: KeyExpr =
     inspect("keycode", map_res(key_ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
