@@ -20,7 +20,7 @@ void hash_stroke_ptr(uint32_t *const hash, const uint8_t *const stroke) {
 }
 
 // Returns if the stroke contains only digits
-bool stroke_to_string(const uint32_t stroke, char *const buf, const uint8_t *const ret_len) {
+bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret_len) {
     uint8_t len = 0;
     const uint32_t DIGIT_BITS = 0x7562A8;
     if (stroke & ((uint32_t) 1 << 22) && !(stroke & ~DIGIT_BITS)) {
