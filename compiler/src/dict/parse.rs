@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alpha1, alphanumeric1, char, multispace0, none_of, one_of},
+    character::complete::{alphanumeric1, char, multispace0, none_of, one_of},
     combinator::{cut, eof, map, map_res, opt, peek, recognize},
     error::VerboseError,
     multi::{many0, many1},
@@ -114,7 +114,7 @@ fn inspect<'i, T: std::fmt::Debug>(
 }
 
 parsers! {
-    ident: &str = recognize(pair(alt((alpha1, tag("_"))), many0(alt((alphanumeric1, tag("_"))))))
+    ident: &str = recognize(many1(alt((alphanumeric1, tag("_")))))
 
     keycode: KeyExpr =
     inspect("keycode", map_res(ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
@@ -132,7 +132,7 @@ fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
 }
 
 parsers! {
-    keylist: Vec<KeyExpr> = many1(map(pair(keyexpr, multispace0), |(k, _)| k))
+    keylist: Vec<KeyExpr> = many1(map(pair(inspect("keyexpr", keyexpr), multispace0), |(k, _)| k))
 
     text: &str = recognize(many1(alt((recognize(none_of(r"\{}")), recognize(pair(char('\\'), one_of(r"\{}")))))))
     attachable_text: &str = recognize(many0(alt((recognize(none_of(r"\{}^")), recognize(pair(char('\\'), one_of(r"\{}^")))))))

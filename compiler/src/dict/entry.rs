@@ -501,7 +501,14 @@ fn test_mods() {
         Entry::parse_entry(r"{#Control_L(w)}"),
         Ok(Entry {
             attr: Attr::valid_default(),
-            inputs: vec![Input::Keycodes(vec![0x80, 0x1a, 0x80])],
+            inputs: vec![Input::Keycodes(vec![0xe0, 0x1a, 0xe0])],
+        })
+    );
+    assert_eq!(
+        Entry::parse_entry(r"{#Super_L(1)}"),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::Keycodes(vec![0xe3, 0x1e, 0xe3])],
         })
     );
 }
