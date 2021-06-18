@@ -18,7 +18,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             current |= (uint32_t) 1 << key;
         } else {
             current &= ~((uint32_t) 1 << key);
-            if (current == 0) {
+            if (current == 0 && pressed != 0) {
                 ebd_steno_process_stroke(pressed);
                 pressed = 0;
             }
