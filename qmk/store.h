@@ -12,11 +12,13 @@ void store_write_direct(const uint32_t offset, const uint8_t *const buf, const u
 // smallest Erase Unit. Thus a erase (maybe of the whole page) is needed and data other than the
 // section we want to erase need to be copied to some buffer and copied back
 void store_erase_partial(const uint32_t offset, const uint8_t len);
+#ifndef STENO_NOMSD
 // Starting a complete rewrite to the whole dictionary; corresponding to a device/region erase in
 // flash. Assumed that `len` is smaller than flash page size
 void store_rewrite_start(void);
 // Incremental addition to a total rewrite; buffer is always of the same length
 void store_rewrite_write(const uint32_t offset, const uint8_t *const buf);
+#endif
 
 #define STORE_REWRITE_PACKET_SIZE 64        // FIXME
 
