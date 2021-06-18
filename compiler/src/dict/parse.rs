@@ -114,14 +114,14 @@ fn inspect<'i, T: std::fmt::Debug>(
 }
 
 parsers! {
-    ident: &str = recognize(many1(alt((alphanumeric1, tag("_")))))
+    key_ident: &str = recognize(many1(recognize(none_of(r"\#(){}"))))
 
     keycode: KeyExpr =
-    inspect("keycode", map_res(ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
+    inspect("keycode", map_res(key_ident, |k| KeyExpr::key(k).ok_or(ParseEntryError::InvalidKeycode(k))))
 }
 
 fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
-    let (after_key, key) = ident(s)?;
+    let (after_key, key) = key_ident(s)?;
     if let Ok((after_left, _)) = char::<_, ParseEntryError>('(')(after_key) {
         let m = KeyExpr::modifier(key).ok_or(Error(ParseEntryError::InvalidModifier(key)))?;
         let mut p = map(terminated(cut(keylist), char(')')), |k| KeyExpr::Mod(m, k));
