@@ -69,7 +69,7 @@ static bool add_entry(void) {
     const uint32_t block_addr = block_ind * 16 + KVPAIR_BLOCK_START;
     const attr_t attr = { .space_prev = 1, .space_after = 1, .glue = 0 };
 #ifdef STENO_DEBUG_DICTED
-    steno_debug_ln("blok addr %06lX", block_addr);
+    steno_debug_ln("blok addr " DWF("06"), block_addr);
 #endif
     store_write_direct(block_addr, (const uint8_t *const) strokes, strokes_len * STROKE_SIZE);
     store_write_direct(block_addr + strokes_len * STROKE_SIZE, (const uint8_t *const) &attr, 1);
