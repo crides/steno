@@ -1,0 +1,71 @@
+menuconfig ZMK_EMBEDDED_STENO
+    bool "ZMK embedded steno"
+    default n
+
+if ZMK_EMBEDDED_STENO
+
+config ZMK_EMBEDDED_STENO_KEY_INTERVAL
+    int "Time interval between macro key presses and releases in microseconds"
+    default 3
+
+config ZMK_EMBEDDED_STENO_KEY_BUF_SIZE
+    int "Ring buffer size for macro key events"
+    default 256
+
+config ZMK_EMBEDDED_STENO_NOUI
+    bool "Disable UI in the embedded steno engine; also disables dictionary editing"
+    select ZMK_EMBEDDED_STENO_READONLY
+    default n
+
+config ZMK_EMBEDDED_STENO_READONLY
+    bool "Disable dictionary editing in the embedded steno engine"
+    default n
+
+config ZMK_EMBEDDED_STENO_NOUNICODE
+    bool "Disable Unicode output in the embedded steno engine"
+    default n
+
+config ZMK_EMBEDDED_STENO_STROKE_DISPLAY
+    bool "Enables graphical stroke display in the embedded steno engine"
+    depends on !ZMK_EMBEDDED_STENO_NOUI
+    default n
+
+menu "Debugging"
+
+config ZMK_EMBEDDED_STENO_DEBUG
+    bool
+    depends on ZMK_EMBEDDED_STENO_LOG_BACKEND_CONSOLE
+    default n
+
+config ZMK_EMBEDDED_STENO_LOG_LEVEL
+    int "Logging level"
+	default 4
+
+config ZMK_EMBEDDED_STENO_DEBUG_FLASH
+    bool "Enable debugging of the flash component in the embedded steno engine"
+    select ZMK_EMBEDDED_STENO_DEBUG
+    default n
+
+config ZMK_EMBEDDED_STENO_DEBUG_HIST
+    bool "Enable debugging of the history component in the embedded steno engine"
+    select ZMK_EMBEDDED_STENO_DEBUG
+    default y
+
+config ZMK_EMBEDDED_STENO_DEBUG_DICTED
+    bool "Enable debugging of the dictionary editing component in the embedded steno engine"
+    select ZMK_EMBEDDED_STENO_DEBUG
+    default n
+
+config ZMK_EMBEDDED_STENO_DEBUG_STROKE
+    bool "Enable debugging of the stroke processing component in the embedded steno engine"
+    select ZMK_EMBEDDED_STENO_DEBUG
+    default n
+
+config ZMK_EMBEDDED_STENO_LOG_BACKEND_CONSOLE
+    bool "Enable logging to the console in the embedded steno engine"
+    depends on ZMK_USB_LOGGING
+    default y
+
+endmenu
+
+endif

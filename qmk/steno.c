@@ -1,5 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#ifdef CONFIG_ZMK_KEYBOARD_NAME
+#include <kernel.h>
+#include <logging/log.h>
+LOG_MODULE_REGISTER(steno, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
+#define _STENO_C_
+#endif
 #include "steno.h"
 #include "store.h"
 #include "hist.h"
@@ -21,15 +27,28 @@ uint8_t hist_ind = 0;
 // Index into `history` that marks how far into the past the translation can go; always less than or
 // equal to `hist_ind` or 0xFF
 uint8_t stroke_start_ind = 0;
+#ifdef QMK_KEYBOARD
 uint16_t time = 0;
+#else
+int64_t time = 0;
+#endif
 
+#ifdef QMK_KEYBOARD
 #define print_time(sec) steno_debug_ln("<> " sec ": %ums", timer_elapsed(time));
+#else
+#define print_time(sec) steno_debug_ln("<> " sec ": %lldms", (k_uptime_get() - time));
+#endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output
 void _ebd_steno_process_stroke(const uint32_t stroke);
 void ebd_steno_process_stroke(const uint32_t stroke) {
 #ifdef STENO_DEBUG
-    time = timer_read();
+    time =
+#ifdef QMK_KEYBOARD
+        timer_read();
+#else
+        k_uptime_get();
+#endif
 #endif
     _ebd_steno_process_stroke(stroke);
 #ifdef STENO_FLASH_LOGGING
@@ -75,7 +94,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     print_time("search");
     hist->bucket = bucket;
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  bucket: %08lX", bucket);
+    steno_debug_ln("  bucket: " DWF("08"), bucket);
 #endif
     const uint8_t strokes_len = BUCKET_GET_STROKES_LEN(bucket);
     if (strokes_len > 1) {
@@ -119,9 +138,9 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
         steno_debug_ln("  scg: %u%u%u", state.space, state.cap, state.glue);
         char buf[24];
         stroke_to_string(hist->stroke, buf, NULL);
-        steno_debug_ln("  stroke: %s", buf);
+        steno_debug_ln("  stroke: %s", log_strdup(buf));
         if (hist->bucket != 0) {
-            steno_debug_ln("  bucket: %08lX", hist->bucket);
+            steno_debug_ln("  bucket: " DWF("08"), hist->bucket);
         }
 #endif
         hist_ind = HIST_LIMIT(hist_ind + 1);
@@ -140,6 +159,9 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
 // Setup the necessary stuff, init SPI flash
 void ebd_steno_init(void) {     // to avoid clashing with `steno_init` in QMK
     hist_get(0)->state.cap = CAPS_CAP;
+#ifdef CONFIG_ZMK_KEYBOARD_NAME
+    steno_macro_init();
+#endif
     store_init();
 #ifndef STENO_NOUI
     disp_init();

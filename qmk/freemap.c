@@ -22,7 +22,7 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
     uint32_t alloc_word;
     store_read(word_addr, (uint8_t *) &alloc_word, 4);
 #ifdef STENO_DEBUG_FLASH
-    steno_debug_ln("lvl %u bloq %u word %lu alok %08lX", lvl, block, word, alloc_word);
+    steno_debug_ln("lvl %u bloq %u word %lu alok " DWF("08"), lvl, block, word, alloc_word);
 #endif
     for (uint8_t i = 0; i < 32; i += size, mask <<= size) {
         if ((alloc_word & mask) == mask) {

@@ -73,7 +73,7 @@ typedef struct __attribute__((packed)) {
 
 extern uint8_t kvpair_buf[128];
 
-bool stroke_to_string(const uint32_t stroke, char *buf, uint8_t *len);
+bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret_len);
 uint32_t qmk_chord_to_stroke(const uint8_t chord[6]);
 uint8_t last_entry_len(void);
 uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);

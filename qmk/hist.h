@@ -32,6 +32,14 @@ typedef struct __attribute__((packed)) {
 #endif
 } history_t;
 
+#ifndef QMK_KEYBOARD
+void register_code(const uint32_t keycode);
+void unregister_code(const uint32_t keycode);
+void tap_code(const uint32_t keycode);
+void send_char(const char ascii_code);
+const char *decode_utf8(const char *str, int32_t *const code_point);
+#endif
+
 void hist_undo(uint8_t h_ind);
 history_t *hist_get(uint8_t ind);
 state_t process_output(uint8_t h_ind);

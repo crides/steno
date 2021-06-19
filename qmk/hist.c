@@ -7,7 +7,9 @@
 #include "hist.h"
 #include "steno.h"
 #include "store.h"
+#ifdef QMK_KEYBOARD
 #include "process_keycode/process_unicode_common.h"
+#endif
 #ifndef STENO_READONLY
 #include "dict_editing.h"
 #endif
@@ -16,6 +18,9 @@
 #endif
 #ifndef STENO_NOUI
 #include "disp.h"
+#endif
+#ifdef CONFIG_ZMK_KEYBOARD_NAME
+#include "dt-bindings/zmk/keys.h"
 #endif
 
 static history_t history[HIST_SIZE];
@@ -49,7 +54,13 @@ static void steno_back(const uint8_t len) {
 #endif
     {
         for (uint8_t i = 0; i < len; i ++) {
-            tap_code(KC_BSPC);
+            tap_code(
+#if defined(QMK_KEYBOARD)
+                    KC_BSPC
+#elif defined(CONFIG_ZMK_KEYBOARD_NAME)
+                    BSPC
+#endif
+                    );
         }
     }
 }
@@ -78,18 +89,18 @@ static void steno_send_char(const char c) {
 static uint8_t steno_send_unicode(const uint32_t u) {
 #ifdef STENO_DEBUG_HIST
     if (u < 0xFFFF) {
-        steno_debug("\\u%04lX", u);
+        steno_debug("\\u" DWF("04"), u);
     } else {
-        steno_debug("\\U%06lX", u);
+        steno_debug("\\U" DWF("06"), u);
     }
 #endif
     char buf[16];
     uint8_t len;
     if (u < 0xFFFF) {
-        snprintf(buf, 16, "\\u%04lX", u);
+        snprintf(buf, 16, "\\u" DWF("04"), u);
         len = 6;
     } else {
-        snprintf(buf, 16, "\\U%06lX", u);
+        snprintf(buf, 16, "\\U" DWF("06"), u);
         len = 8;
     }
 #ifndef STENO_READONLY
@@ -259,7 +270,7 @@ state_t process_output(const uint8_t h_ind) {
 
     if (hist->bucket == 0) {
 #ifdef STENO_DEBUG_HIST
-        steno_debug_ln("  stroke: %lX", hist->stroke & 0xFFFFFF);
+        steno_debug_ln("  stroke: " DWF("06"), hist->stroke & 0xFFFFFF);
 #endif
         char buf[24];
         new_state.space = 1;

@@ -50,6 +50,6 @@ void flog_init(void) {
 }
 
 void flog_finish_cycle(void) {
-    steno_debug_ln("log_addr: %06lX, erased_till: %06lX", log_addr, erased_till);
+    steno_debug_ln("log_addr: " DWF("06") ", erased_till: " DWF("06"), log_addr, erased_till);
     eeprom_update_dword(LOG_ADDR_ADDR, log_addr);
 }

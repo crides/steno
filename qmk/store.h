@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 // Init the underlying storage
 void store_init(void);
 void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len);
