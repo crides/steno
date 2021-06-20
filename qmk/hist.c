@@ -475,7 +475,7 @@ state_t process_output(const uint8_t h_ind) {
                             str_len += steno_send_unicode(code_point);
                         }
 #endif
-                        i += str - (char *) &entry[i];
+                        i = str - (char *) entry - 1;
                     }
                 }
                 new_state.cap = old_state.cap;
@@ -538,11 +538,11 @@ state_t process_output(const uint8_t h_ind) {
             const char *str = decode_utf8((char *) &entry[i], &code_point);
 #ifndef STENO_NOUNICODE
             if (code_point > 0) {
-                steno_send_unicode(code_point);
+                str_len += steno_send_unicode(code_point);
             }
 #endif
             str_len += 1;
-            i = str - (char *) entry;
+            i = str - (char *) entry - 1;
         }
     }
     if (!set_case) {
