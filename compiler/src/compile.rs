@@ -138,7 +138,6 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
             .and_modify(|c| *c += 1)
             .or_insert(1);
         let entry_len = entry.byte_len();
-        assert!(entry_len < 256);
         let pair_size = strokes.len() * 3 + 1 + entry_len;
         let block_no = if pair_size <= 16 {
             map.req(0)
@@ -148,6 +147,8 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
             map.req(2)
         } else if pair_size <= 128 {
             map.req(3)
+        } else if pair_size <= 256 {
+            map.req(4)
         } else {
             return Err(CompileError::LargeEntry(strokes));
         };
