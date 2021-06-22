@@ -58,6 +58,8 @@ void ebd_steno_process_stroke(const uint32_t stroke);
 void steno_macro_init(void);
 #endif
 
+#define sizeof_array(a) (sizeof(a) / sizeof(a[0]))
+
 #ifdef QMK_KEYBOARD
 enum {
     STN__Z = SAFE_RANGE,

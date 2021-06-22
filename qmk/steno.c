@@ -90,8 +90,18 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
     hist->stroke = stroke;
     // Default `state` set in last cycle
     print_time("start search");
-    const uint32_t bucket = search_entry(hist_ind);
+#ifdef STENO_FOLD_SUFFIX
+    uint8_t suffix_ind = 0;
+#endif
+    const uint32_t bucket = search_entry(hist_ind
+#ifdef STENO_FOLD_SUFFIX
+            , &suffix_ind
+#endif
+            );
     print_time("search");
+#ifdef STENO_FOLD_SUFFIX
+    hist->suffix_ind = suffix_ind;
+#endif
     hist->bucket = bucket;
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  bucket: " DWF("08"), bucket);

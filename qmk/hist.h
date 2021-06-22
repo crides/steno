@@ -30,6 +30,9 @@ typedef struct __attribute__((packed)) {
 #ifndef STENO_NOORTHOGRAPHY
     uint8_t end_buf[8];
 #endif
+#ifdef STENO_FOLD_SUFFIX
+    uint8_t suffix_ind;
+#endif
 } history_t;
 
 #ifndef QMK_KEYBOARD
