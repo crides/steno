@@ -324,9 +324,14 @@ state_t process_output(const uint8_t h_ind) {
         new_state = process_output(h_ind);
         hist->suffix_ind = suffix_ind_bak;
         const uint32_t suffix_bucket = find_strokes((const uint8_t *) &folding_suffixes[suffix_ind_bak - 1], 1, 0);
+#ifdef STENO_DEBUG_HIST
+        steno_debug_ln("  -suffix_bucket: %08lX", suffix_bucket);
+#endif
         // Reread the bucket cuz buffer is used
         read_entry(suffix_bucket, kvpair_buf);
-        const uint8_t *const suffix_entry = kvpair_buf + STROKE_SIZE + 1;
+        uint8_t *const suffix_entry = kvpair_buf + STROKE_SIZE + 1;
+        const uint8_t suffix_entry_len = BUCKET_GET_ENTRY_LEN(suffix_bucket);
+        suffix_entry[suffix_entry_len] = 0;
         char word_end[32];
         memcpy(word_end, hist->end_buf, 8);
         char output[16] = {0};
@@ -338,7 +343,8 @@ state_t process_output(const uint8_t h_ind) {
         if (ret < 0) {
             // Failing is the same as attaching
             ret = 0;
-            memcpy(output, suffix_entry, BUCKET_GET_ENTRY_LEN(suffix_bucket));
+            memcpy(output, suffix_entry, suffix_entry_len);
+            output[suffix_entry_len] = 0;
         }
         const uint8_t output_len = strlen(output);
         const uint8_t old_end_len = strlen((const char *) word_end);
