@@ -314,9 +314,53 @@ state_t process_output(const uint8_t h_ind) {
     steno_debug_ln("  attr: prev, glue, after: %u%u%u", attr.space_prev, attr.glue, attr.space_after);
     steno_debug("  output: '");
 #endif
-    const uint8_t *entry = kvpair_buf + STROKE_SIZE * strokes_len + 1;
+    const uint8_t *const entry = kvpair_buf + STROKE_SIZE * strokes_len + 1;
 
 #ifndef STENO_NOORTHOGRAPHY
+#ifdef STENO_FOLD_SUFFIX
+    if (hist->suffix_ind != 0) {
+        const uint8_t suffix_ind_bak = hist->suffix_ind;
+        hist->suffix_ind = 0;
+        new_state = process_output(h_ind);
+        hist->suffix_ind = suffix_ind_bak;
+        const uint32_t suffix_bucket = find_strokes((const uint8_t *) &folding_suffixes[suffix_ind_bak - 1], 1, 0);
+        // Reread the bucket cuz buffer is used
+        read_entry(suffix_bucket, kvpair_buf);
+        const uint8_t *const suffix_entry = kvpair_buf + STROKE_SIZE + 1;
+        char word_end[32];
+        memcpy(word_end, hist->end_buf, 8);
+        char output[16] = {0};
+        // NOTE assuming everything is ascii i.e. no commands, unicode, keycodes
+        int8_t ret = process_ortho((const char *) word_end, (const char *) suffix_entry, output);
+#ifdef STENO_DEBUG_HIST
+        steno_debug_ln("  -ret: %u", ret);
+#endif
+        if (ret < 0) {
+            // Failing is the same as attaching
+            ret = 0;
+            memcpy(output, suffix_entry, BUCKET_GET_ENTRY_LEN(suffix_bucket));
+        }
+        const uint8_t output_len = strlen(output);
+        const uint8_t old_end_len = strlen((const char *) word_end);
+        const uint8_t output_total_len = old_end_len - ret + output_len;
+        memcpy(word_end + old_end_len - ret, output, output_len);
+        word_end[output_total_len] = 0;
+        const uint8_t start_of_end = output_total_len < 7 ? 0 : output_total_len - 7;
+        strncpy((char *) hist->end_buf, (const char *) word_end + start_of_end, 7);
+        hist->end_buf[7] = 0;
+        hist->len += output_len - ret;
+        hist->ortho_len = strokes_len;
+#ifdef STENO_DEBUG_HIST
+        steno_debug_ln("  -ortho_len: %u", hist->ortho_len);
+        steno_debug_ln("  -output: %s", output);
+#endif
+        steno_back(ret);
+        for (uint8_t i = 0; i < sizeof_array(output) && output[i]; i ++) {
+            steno_send_char(output[i]);
+        }
+        return new_state;
+    }
+#endif
     // Possible suffix
     if (!attr.space_prev && strokes_len == 1) {
         const uint8_t last_hist_ind = HIST_LIMIT(h_ind - strokes_len);
@@ -346,7 +390,7 @@ state_t process_output(const uint8_t h_ind) {
             steno_debug_ln("  ortho_len: %u", hist->ortho_len);
 #endif
             steno_back(ret);
-            for (uint8_t i = 0; i < 32 && output[i]; i ++) {
+            for (uint8_t i = 0; i < sizeof_array(output) && output[i]; i ++) {
                 steno_send_char(output[i]);
             }
             return new_state;
@@ -405,6 +449,9 @@ state_t process_output(const uint8_t h_ind) {
         }
     }
 
+#ifdef STENO_DEBUG_HIST
+    steno_debug_ln("  -bucket: %08lX", hist->bucket);
+#endif
     uint8_t valid_len = 1, str_len = 0;
     uint8_t set_case;
     for (uint8_t i = 0; i < entry_len; i++) {

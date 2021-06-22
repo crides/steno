@@ -120,8 +120,23 @@ uint32_t find_strokes(const uint8_t *const strokes, const uint8_t len, const uin
     }
 }
 
+#ifdef STENO_FOLD_SUFFIX
 // Searches the dictionary for the appropriate entry to output, and places result in the corresponding history entry.
-uint32_t search_entry(const uint8_t h_ind) {
+const uint32_t folding_suffixes[] = {
+    0x000001,   // -Z
+    0x000002,   // -D
+    0x000004,   // -S
+    0x000010,   // -G
+};
+
+#define folding_suffixes_num (sizeof_array(folding_suffixes))
+#endif
+ 
+uint32_t search_entry(const uint8_t h_ind
+#ifdef STENO_FOLD_SUFFIX
+        , uint8_t *const suffix_ind
+#endif
+        ) {
 #ifdef STENO_DEBUG_STROKE
     steno_debug_ln("search_entry(%d):", h_ind);
 #endif
@@ -134,7 +149,14 @@ uint32_t search_entry(const uint8_t h_ind) {
         max_strokes_len = h_ind + HIST_SIZE - stroke_start_ind + 1;
     }
     uint32_t max_bucket = 0;
-    uint8_t strokes[STROKE_SIZE * max_strokes_len];
+    uint8_t strokes[STROKE_SIZE * max_strokes_len
+#ifdef STENO_FOLD_SUFFIX
+        + 1
+#endif
+    ];     // HACK have the extra byte so the 32bit set *will not* mess up other memory
+#ifdef STENO_FOLD_SUFFIX
+    uint32_t *const last_stroke = (uint32_t *) &strokes[STROKE_SIZE * (max_strokes_len - 1)];
+#endif
     for (uint8_t i = 0; i < max_strokes_len; i ++) {
         history_t const *old_hist = hist_get(HIST_LIMIT(h_ind - i));
         const uint8_t strokes_len = BUCKET_GET_STROKES_LEN(old_hist->bucket);
@@ -157,10 +179,39 @@ uint32_t search_entry(const uint8_t h_ind) {
         const uint32_t bucket = find_strokes(strokes_start, i + 1, 0);
         if (bucket != 0) {
             max_bucket = bucket;
+#ifdef STENO_FOLD_SUFFIX
+            *suffix_ind = 0;
+#endif
 #ifdef STENO_DEBUG_STROKE
             steno_debug_ln("  bucket: %08lX", bucket);
 #endif
+            continue;
         }
+#ifdef STENO_FOLD_SUFFIX
+        for (uint8_t j = 0; j < folding_suffixes_num; j ++) {
+            const uint32_t suffix = folding_suffixes[j];
+            if ((*last_stroke & suffix) != 0) {
+                *last_stroke &= ~suffix;
+                if (*last_stroke == 0) {
+                    *last_stroke |= suffix;
+                    break;
+                }
+                const uint32_t bucket = find_strokes(strokes_start, i + 1, 0);
+                if (bucket != 0) {
+                    max_bucket = bucket;
+#ifdef STENO_FOLD_SUFFIX
+                    *suffix_ind = j + 1;
+#endif
+#ifdef STENO_DEBUG_STROKE
+                    steno_debug_ln("  folded bucket: %08lX", bucket);
+#endif
+                    *last_stroke |= suffix;
+                    break;
+                }
+                *last_stroke |= suffix;
+            }
+        }
+#endif
     }
     return max_bucket;
 }

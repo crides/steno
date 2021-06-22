@@ -34,8 +34,13 @@ endif
 
 ifeq ($(STENO_NOORTHOGRAPHY),yes)
 	CFLAGS += -DSTENO_NOORTHOGRAPHY
+	STENO_FOLD_SUFFIX = no
 else
 	SRC += orthography.c
+endif
+
+ifeq ($(STENO_FOLD_SUFFIX),yes)
+	CFLAGS += -DSTENO_FOLD_SUFFIX
 endif
 
 STENO_DEBUG := $(filter hist stroke flash dicted, $(STENO_DEBUG))

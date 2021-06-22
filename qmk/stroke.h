@@ -72,12 +72,19 @@ typedef struct __attribute__((packed)) {
 } orthography_entry_t;
 
 extern uint8_t kvpair_buf[128];
+#ifdef STENO_FOLD_SUFFIX
+extern const uint32_t folding_suffixes[];
+#endif
 
 bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret_len);
 uint32_t qmk_chord_to_stroke(const uint8_t chord[6]);
 uint8_t last_entry_len(void);
 uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);
-uint32_t search_entry(const uint8_t h_ind);
+uint32_t search_entry(const uint8_t h_ind
+#ifdef STENO_FOLD_SUFFIX
+        , uint8_t *const suffix_ind
+#endif
+);
 uint32_t freemap_req(const uint8_t block);
 void print_strokes(const uint8_t *strokes, const uint8_t len);
 void read_entry(const uint32_t bucket, uint8_t *buf);
