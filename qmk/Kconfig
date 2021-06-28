@@ -68,4 +68,7 @@ config ZMK_EMBEDDED_STENO_LOG_BACKEND_CONSOLE
 
 endmenu
 
+config ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE
+    default 256
+
 endif
