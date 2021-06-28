@@ -298,14 +298,15 @@ state_t process_output(const uint8_t h_ind) {
     }
 
     const uint32_t bucket = hist->bucket;
-    memset(kvpair_buf, 0, 128);      // TODO optimize
     read_entry(bucket, kvpair_buf);
     const uint8_t entry_len = BUCKET_GET_ENTRY_LEN(bucket);
+    const uint8_t strokes_len = BUCKET_GET_STROKES_LEN(hist->bucket);
+    kvpair_buf[entry_len + strokes_len * STROKE_SIZE + 1] = 0;
+
 #ifdef STENO_DEBUG_HIST
     steno_debug_ln("  entry_len: %u", entry_len);
 #endif
 
-    const uint8_t strokes_len = BUCKET_GET_STROKES_LEN(hist->bucket);
     const attr_t attr = *((attr_t *) &kvpair_buf[strokes_len * STROKE_SIZE]);
     new_state.space = attr.space_after;
     new_state.glue = attr.glue;
@@ -325,7 +326,7 @@ state_t process_output(const uint8_t h_ind) {
         hist->suffix_ind = suffix_ind_bak;
         const uint32_t suffix_bucket = find_strokes((const uint8_t *) &folding_suffixes[suffix_ind_bak - 1], 1, 0);
 #ifdef STENO_DEBUG_HIST
-        steno_debug_ln("  -suffix_bucket: %08lX", suffix_bucket);
+        steno_debug_ln("  -suffix_bucket: " DWF("08"), suffix_bucket);
 #endif
         // Reread the bucket cuz buffer is used
         read_entry(suffix_bucket, kvpair_buf);
@@ -456,7 +457,7 @@ state_t process_output(const uint8_t h_ind) {
     }
 
 #ifdef STENO_DEBUG_HIST
-    steno_debug_ln("  -bucket: %08lX", hist->bucket);
+    steno_debug_ln("  -bucket: " DWF("08"), hist->bucket);
 #endif
     uint8_t valid_len = 1, str_len = 0;
     uint8_t set_case;
