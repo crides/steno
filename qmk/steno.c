@@ -169,9 +169,6 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
 // Setup the necessary stuff, init SPI flash
 void ebd_steno_init(void) {     // to avoid clashing with `steno_init` in QMK
     hist_get(0)->state.cap = CAPS_CAP;
-#ifdef CONFIG_ZMK_KEYBOARD_NAME
-    steno_macro_init();
-#endif
     store_init();
 #ifndef STENO_NOUI
     disp_init();

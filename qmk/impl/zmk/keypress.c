@@ -2,52 +2,21 @@
 #include <zmk/events/keycode_state_changed.h>
 
 #include <dt-bindings/zmk/keys.h>
-#include <sys/ring_buffer.h>
 #include <kernel.h>
-#include <logging/log.h>
-
-typedef struct __attribute__((packed)) {
-    bool down;
-    uint32_t key;
-} key_event_t;
-
-LOG_MODULE_REGISTER(steno_kp, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
-
-RING_BUF_DECLARE(macro_key_queue, CONFIG_ZMK_EMBEDDED_STENO_KEY_BUF_SIZE * sizeof(key_event_t));
-
-static void macro_key_cb(struct k_timer *const timer) {
-    key_event_t ev;
-    if (ring_buf_get(&macro_key_queue, (uint8_t *) &ev, sizeof(key_event_t))) {
-        ZMK_EVENT_RAISE(zmk_keycode_state_changed_from_encoded(ev.key, ev.down, k_uptime_get()));
-    }
-}
-
-K_TIMER_DEFINE(macro_key_timer, macro_key_cb, NULL);
 
 void register_code(const uint32_t keycode) {
-    const key_event_t ev = { .down = true, .key = keycode };
-    const uint32_t ret = ring_buf_put(&macro_key_queue, (const uint8_t *) &ev, sizeof(key_event_t));
-    if (ret != sizeof(key_event_t)) {
-        LOG_ERR("ringbuf overrun! bytes written: %u", ret);
-    }
+    ZMK_EVENT_RAISE(zmk_keycode_state_changed_from_encoded(keycode, true, k_uptime_get()));
+    k_msleep(CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL);
 }
 
 void unregister_code(const uint32_t keycode) {
-    const key_event_t ev = { .down = false, .key = keycode };
-    const uint32_t ret = ring_buf_put(&macro_key_queue, (const uint8_t *) &ev, sizeof(key_event_t));
-    if (ret != sizeof(key_event_t)) {
-        LOG_ERR("ringbuf overrun! bytes written: %u", ret);
-    }
+    ZMK_EVENT_RAISE(zmk_keycode_state_changed_from_encoded(keycode, false, k_uptime_get()));
+    k_msleep(CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL);
 }
  
 void tap_code(const uint32_t keycode) {
     register_code(keycode);
     unregister_code(keycode);
-}
-
-void steno_macro_init(void) {
-    k_timer_start(&macro_key_timer, K_MSEC(CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL),
-            K_MSEC(CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL));
 }
 
 // !!! FROM QMK !!!
