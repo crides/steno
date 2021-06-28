@@ -11,6 +11,7 @@
 #define STROKE_SIZE 3
 #define BUCKET_SIZE 4
 #define MAX_STROKE_NUM 14
+#define MAX_KVPAIR_SIZE 256
 #define U24_FROM_PTR_LE(p) (((uint32_t)(p)[2] << 16) | ((uint32_t)(p)[1] << 8) | ((uint32_t)(p)[0]))
 #define STROKE_FROM_PTR(p) U24_FROM_PTR_LE(p)
 
@@ -71,7 +72,7 @@ typedef struct __attribute__((packed)) {
     char extra_text[8];
 } orthography_entry_t;
 
-extern uint8_t kvpair_buf[128];
+extern uint8_t kvpair_buf[MAX_KVPAIR_SIZE];
 #ifdef STENO_FOLD_SUFFIX
 extern const uint32_t folding_suffixes[];
 #endif

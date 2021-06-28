@@ -7,7 +7,7 @@
 
 #include "store.h"
 
-uint8_t kvpair_buf[128];
+uint8_t kvpair_buf[MAX_KVPAIR_SIZE];
 
 void hash_stroke_ptr(uint32_t *const hash, const uint8_t *const stroke) {
     *hash *= FNV_FACTOR;
