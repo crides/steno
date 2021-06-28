@@ -4,11 +4,14 @@
 #include <dt-bindings/zmk/keys.h>
 #include <sys/ring_buffer.h>
 #include <kernel.h>
+#include <logging/log.h>
 
 typedef struct __attribute__((packed)) {
     bool down;
     uint32_t key;
 } key_event_t;
+
+LOG_MODULE_REGISTER(steno_kp, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
 
 RING_BUF_DECLARE(macro_key_queue, CONFIG_ZMK_EMBEDDED_STENO_KEY_BUF_SIZE * sizeof(key_event_t));
 
@@ -23,12 +26,18 @@ K_TIMER_DEFINE(macro_key_timer, macro_key_cb, NULL);
 
 void register_code(const uint32_t keycode) {
     const key_event_t ev = { .down = true, .key = keycode };
-    ring_buf_put(&macro_key_queue, (const uint8_t *) &ev, sizeof(key_event_t));
+    const uint32_t ret = ring_buf_put(&macro_key_queue, (const uint8_t *) &ev, sizeof(key_event_t));
+    if (ret != sizeof(key_event_t)) {
+        LOG_ERR("ringbuf overrun! bytes written: %u", ret);
+    }
 }
 
 void unregister_code(const uint32_t keycode) {
     const key_event_t ev = { .down = false, .key = keycode };
-    ring_buf_put(&macro_key_queue, (const uint8_t *) &ev, sizeof(key_event_t));
+    const uint32_t ret = ring_buf_put(&macro_key_queue, (const uint8_t *) &ev, sizeof(key_event_t));
+    if (ret != sizeof(key_event_t)) {
+        LOG_ERR("ringbuf overrun! bytes written: %u", ret);
+    }
 }
  
 void tap_code(const uint32_t keycode) {
