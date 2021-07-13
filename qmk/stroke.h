@@ -77,6 +77,7 @@ extern uint8_t kvpair_buf[MAX_KVPAIR_SIZE];
 extern const uint32_t folding_suffixes[];
 #endif
 
+void stroke_to_tape(const uint32_t stroke, char *const buf);
 bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret_len);
 uint32_t qmk_chord_to_stroke(const uint8_t chord[6]);
 uint8_t last_entry_len(void);

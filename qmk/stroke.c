@@ -19,6 +19,15 @@ void hash_stroke_ptr(uint32_t *const hash, const uint8_t *const stroke) {
     *hash *= FNV_FACTOR;
 }
 
+const char *STENO_KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
+
+void stroke_to_tape(const uint32_t stroke, char *const buf) {
+    for (uint8_t i = 0; i < strlen(STENO_KEYS); i ++) {
+        buf[i] = (stroke & ((uint32_t) 1 << (strlen(STENO_KEYS) - 1 - i))) ? STENO_KEYS[i] : ' ';
+    }
+    buf[strlen(STENO_KEYS)] = 0;
+}
+
 // Returns if the stroke contains only digits
 bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret_len) {
     uint8_t len = 0;
@@ -41,7 +50,6 @@ bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret
         return true;
     }
 
-    const char *KEYS = "#STKPWHRAO*EUFRPBLGTSDZ";
     bool has_mid = false;
     for (int8_t i = 22; i >= 0; i --) {
         if (stroke & ((uint32_t) 1 << i)) {
@@ -54,7 +62,7 @@ bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret
             } else if (i <= 14) {
                 has_mid = true;
             }
-            buf[len] = KEYS[22 - i];
+            buf[len] = STENO_KEYS[22 - i];
             len ++;
         }
     }
