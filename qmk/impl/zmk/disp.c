@@ -31,10 +31,9 @@ static steno_screen_t steno_screen;
 
 lv_style_t style, tape_style;
 
-LV_FONT_DECLARE(iosevka_8);
-LV_FONT_DECLARE(iosevka_16);
+LV_FONT_DECLARE(STENO_FONT);
 
-#define TAPE_LINES ((CONFIG_LVGL_VER_RES_MAX / 16) - 4)
+#define TAPE_LINES ((CONFIG_LVGL_VER_RES_MAX / STENO_FONT_HEIGHT) - 4)
 
 lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen;
@@ -68,7 +67,7 @@ lv_obj_t *zmk_display_status_screen() {
 
     steno_screen.tape_cont = lv_obj_create(screen, NULL);
     lv_style_init(&tape_style);
-    lv_style_set_text_font(&tape_style, LV_STATE_DEFAULT, &iosevka_16);
+    lv_style_set_text_font(&tape_style, LV_STATE_DEFAULT, &STENO_FONT);
     lv_style_set_bg_color(&tape_style, LV_STATE_DEFAULT, LV_COLOR_RED);
     lv_obj_add_style(steno_screen.tape_cont, LV_CONT_PART_MAIN, &tape_style);
     lv_obj_align(steno_screen.tape_cont, steno_screen.status_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
