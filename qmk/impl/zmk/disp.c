@@ -5,9 +5,7 @@
 #include <zmk/display/status_screen.h>
 #include <src/lv_widgets/lv_cont.h>
 
-/* #include <logging/log.h> */
-/* LOG_MODULE_DECLARE(steno, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL); */
-
+#include "steno.h"
 #include "stroke.h"
 
 static struct zmk_widget_battery_status battery_status_widget;
@@ -155,3 +153,202 @@ void disp_tape_show_trans(const char *const trans) {
     const uint8_t entry_lines = lv_obj_get_height(steno_screen.last_entry) / 16;
     tape_show(last_stroke, TAPE_LINES - (entry_lines - 2));
 }
+
+#ifndef STENO_READONLY
+
+static const char *ED_ENTER_STROKES_MODE = "DICT UPDATE\nEntering outline";
+static const char *ED_ENTER_TRANS_MODE = "DICT UPDATE\nEntering translation";
+static const char *ED_DONE = "DICT UPDATE\nEntry added";
+static const char *ED_ABORT = "DICT UPDATE\nCancelled";
+static const char *ED_NOSTORAGE = "DICT UPDATE\nNo storage";
+static const char *ED_REMOVED = "DICT UPDATE\nEntry removed";
+
+static const char *ED_ENTER_STROKES_MSG =
+    "Enter outline,\n"
+    "or leave empty to cancel\n\n"
+    "   *  Delete Stroke\n"
+    " R-R  Confirm\n";
+static const char *ED_ENTER_TRANS_MSG =
+    "Enter translation,\n"
+    "or leave empty to\n"
+    "remove entry\n\n"
+    "   *  Undo\n"
+    " R-R  Confirm\n";
+static const char *ED_ENTER_TRANS_DURING_MSG = "Enter translation:\n\n";
+static const char *ED_CONF_ENTRY_START = "Entry already exists:\n\n";
+static const char *ED_CONF_ENTRY_END =
+    "\n\n"
+    " R-R  Overwrite\n"
+    "   *  Cancel\n";
+static const char *ED_ABORT_MSG =
+    "Cancelled\n\n"
+    " R-R  Return";
+static const char *ED_NOSTORAGE_MSG =
+    "Can't update dictionary:\n"
+    "No more storage\n\n"
+    " R-R  Return";
+static const char *ED_REMOVED_MSG =
+    "Entry removed\n\n"
+    " R-R  Return";
+
+static uint32_t tape_before_edit[TAPE_LINES];
+static uint32_t trans_len;
+
+static void save_tape(void) {
+    for (int i = 0; i < TAPE_LINES; i++) {
+        tape_before_edit[i] = tape_strokes[i];
+        tape_strokes[i] = 0;
+    }
+}
+
+static void rewind_tape() {
+    for (int i = TAPE_LINES - 1; i >= 1; i--) {
+        tape_strokes[i] = tape_strokes[i - 1];
+    }
+    tape_strokes[0] = 0;
+}
+
+static void restore_tape(void) {
+    for (int i = 0; i < TAPE_LINES; i++) {
+        tape_strokes[i] = tape_before_edit[i];
+        tape_before_edit[i] = 0;
+    }
+}
+
+static void clear_tape(void) {
+    for (int i = 0; i < TAPE_LINES; i++) {
+        tape_strokes[i] = 0;
+    }
+}
+
+static void tape_show_full(void) {
+    char tape[TAPE_LINES * 32] = {[0] = 0};
+    for (uint8_t i = 0; i < TAPE_LINES; i++) {
+        char buf[32];
+        stroke_to_tape(tape_strokes[i], buf);
+        strcat(tape, buf);
+        strcat(tape, "\n");
+    }
+    lv_label_set_text(steno_screen.tape, tape);
+}
+
+void disp_prompt_strokes(void) {
+    save_tape();
+    lv_label_set_text(steno_screen.last_entry, ED_ENTER_STROKES_MODE);
+    lv_label_set_text(steno_screen.tape, ED_ENTER_STROKES_MSG);
+}
+
+void disp_stroke_edit_add(const uint32_t stroke, const uint8_t num_strokes) {
+    tape_show(stroke, TAPE_LINES);
+}
+
+void disp_stroke_edit_remove(const uint32_t last, const uint8_t num_strokes) {
+    if (num_strokes == 0) {
+        clear_tape();
+        lv_label_set_text(steno_screen.tape, ED_ENTER_STROKES_MSG);
+    } else {
+        rewind_tape();
+        tape_show_full();
+    }
+}
+
+void disp_conf_entry(const char *const s) {
+    char output[TAPE_LINES * 32] = {[0] = 0};
+    strcat(output, ED_CONF_ENTRY_START);
+    strcat(output, s);
+    strcat(output, ED_CONF_ENTRY_END);
+
+    lv_label_set_text(steno_screen.last_entry, ED_ENTER_STROKES_MODE);
+    lv_label_set_text(steno_screen.tape, output);
+}
+
+void disp_prompt_trans(void) {
+    lv_label_set_text(steno_screen.last_entry, ED_ENTER_TRANS_MODE);
+    lv_label_set_text(steno_screen.tape, ED_ENTER_TRANS_MSG);
+    trans_len = 0;
+}
+
+void disp_trans_edit_back(const uint8_t len) {
+    if (len == trans_len) {
+        lv_label_set_text(steno_screen.tape, ED_ENTER_TRANS_MSG);
+    } else {
+        char tape[TAPE_LINES * 32] = {[0] = 0};
+        strcat(tape, lv_label_get_text(steno_screen.tape));
+
+        int tape_len = strlen(tape);
+        tape[tape_len - len] = 0;
+        lv_label_set_text(steno_screen.tape, tape);
+    }
+    trans_len -= len;
+}
+
+void disp_trans_edit_handle_char(const char c) {
+    char tape[TAPE_LINES * 32] = {[0] = 0};
+    if (trans_len == 0) {
+        strcat(tape, ED_ENTER_TRANS_DURING_MSG);
+    } else {
+        strcat(tape, lv_label_get_text(steno_screen.tape));
+    }
+
+    int tape_len = strlen(tape);
+    tape[tape_len++] = c;
+    tape[tape_len] = 0;
+    trans_len++;
+    lv_label_set_text(steno_screen.tape, tape);
+}
+
+void disp_trans_edit_handle_str(const char *const s) {
+    char tape[TAPE_LINES * 32] = {[0] = 0};
+    if (trans_len == 0) {
+        strcat(tape, ED_ENTER_TRANS_DURING_MSG);
+    } else {
+        strcat(tape, lv_label_get_text(steno_screen.tape));
+    }
+
+    strcat(tape, s);
+    trans_len += strlen(s);
+    lv_label_set_text(steno_screen.tape, tape);
+}
+
+void disp_dicted_done(void) {
+    restore_tape();
+    tape_show_full();
+    lv_label_set_text(steno_screen.last_entry, ED_DONE);
+}
+
+void disp_show_abort(void) {
+    restore_tape();
+    lv_label_set_text(steno_screen.tape, ED_ABORT_MSG);
+    lv_label_set_text(steno_screen.last_entry, ED_ABORT);
+}
+
+void disp_show_entry_collision(void) {
+#if STENO_DEBUG
+    steno_debug_ln("disp_show_entry_collision");
+#endif
+}
+
+void disp_show_noentry(void) {
+#if STENO_DEBUG
+    steno_debug_ln("disp_show_noentry");
+#endif
+}
+
+void disp_show_nostorage(void) {
+    restore_tape();
+    lv_label_set_text(steno_screen.tape, ED_NOSTORAGE_MSG);
+    lv_label_set_text(steno_screen.last_entry, ED_NOSTORAGE);
+}
+
+void disp_show_removed(void) {
+    restore_tape();
+    lv_label_set_text(steno_screen.tape, ED_REMOVED_MSG);
+    lv_label_set_text(steno_screen.last_entry, ED_REMOVED);
+}
+
+void disp_unshow_error(void) {
+    tape_show_full();
+    lv_label_set_text(steno_screen.last_entry, "");
+}
+
+#endif /* STENO_READONLY */

@@ -7,6 +7,7 @@ if (CONFIG_ZMK_EMBEDDED_STENO_NOUI)
     target_compile_definitions(app PRIVATE -DSTENO_NOUI)
 else()
     target_sources(app PRIVATE impl/zmk/disp.c)
+    target_sources(app PRIVATE impl/zmk/iosevka_16.c)
 endif()
 
 if (CONFIG_ZMK_EMBEDDED_STENO_READONLY)
