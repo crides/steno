@@ -8,33 +8,17 @@ config ZMK_EMBEDDED_STENO_KEY_INTERVAL
     int "Time interval between macro key presses and releases in microseconds"
     default 3
 
-config ZMK_EMBEDDED_STENO_KEY_BUF_SIZE
-    int "Ring buffer size for macro key events"
-    default 256
+config ZMK_EMBEDDED_STENO_ENABLE_UI
+    bool "Enables UI in the embedded steno engine"
+    select LVGL_USE_CONT
+    depends on ZMK_DISPLAY
+    depends on ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+    default y
 
-config ZMK_EMBEDDED_STENO_NOUI
-    bool "Disable UI in the embedded steno engine; also disables dictionary editing"
-    select ZMK_EMBEDDED_STENO_READONLY
-    select ZMK_WIDGET_BATTERY_STATUS if !ZMK_EMBEDDED_STENO_NOUI
-    select ZMK_WIDGET_OUTPUT_STATUS if !ZMK_EMBEDDED_STENO_NOUI
-    select LVGL_USE_CONT if !ZMK_EMBEDDED_STENO_NOUI
-    default n
-
-if ZMK_EMBEDDED_STENO_NOUI
-choice ZMK_DISPLAY_STATUS_SCREEN
-	default ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN
-endchoice
-endif
-
-if !ZMK_EMBEDDED_STENO_NOUI
-choice ZMK_DISPLAY_STATUS_SCREEN
-	default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
-endchoice
-endif
-
-config ZMK_EMBEDDED_STENO_READONLY
+config ZMK_EMBEDDED_STENO_DICTEDIT
     bool "Disable dictionary editing in the embedded steno engine"
-    default n
+    depends on ZMK_EMBEDDED_STENO_ENABLE_UI
+    default y
 
 config ZMK_EMBEDDED_STENO_NOUNICODE
     bool "Disable Unicode output in the embedded steno engine"
@@ -42,7 +26,7 @@ config ZMK_EMBEDDED_STENO_NOUNICODE
 
 config ZMK_EMBEDDED_STENO_STROKE_DISPLAY
     bool "Enables graphical stroke display in the embedded steno engine"
-    depends on !ZMK_EMBEDDED_STENO_NOUI
+    depends on ZMK_EMBEDDED_STENO_ENABLE_UI
     default n
 
 menu "Debugging"
@@ -78,7 +62,7 @@ config ZMK_EMBEDDED_STENO_DEBUG_STROKE
 
 config ZMK_EMBEDDED_STENO_LOG_BACKEND_CONSOLE
     bool "Enable logging to the console in the embedded steno engine"
-    depends on ZMK_USB_LOGGING
+    select ZMK_USB_LOGGING
     default y
 
 endmenu
