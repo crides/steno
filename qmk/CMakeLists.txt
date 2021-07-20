@@ -1,7 +1,9 @@
 target_include_directories(app PRIVATE .)
 target_sources(app PRIVATE hist.c stroke.c steno.c)
 target_include_directories(app PRIVATE impl/zmk)
+zephyr_library_include_directories(${ZEPHYR_LVGL_MODULE_DIR})
 target_sources(app PRIVATE impl/zmk/behavior_steno.c impl/zmk/flash.c impl/zmk/keypress.c)
+target_sources(app PRIVATE impl/zmk/iosevka_8.c impl/zmk/iosevka_16.c)
 
 if (CONFIG_ZMK_EMBEDDED_STENO_NOUI)
     target_compile_definitions(app PRIVATE -DSTENO_NOUI)

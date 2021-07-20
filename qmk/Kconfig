@@ -15,7 +15,22 @@ config ZMK_EMBEDDED_STENO_KEY_BUF_SIZE
 config ZMK_EMBEDDED_STENO_NOUI
     bool "Disable UI in the embedded steno engine; also disables dictionary editing"
     select ZMK_EMBEDDED_STENO_READONLY
+    select ZMK_WIDGET_BATTERY_STATUS if !ZMK_EMBEDDED_STENO_NOUI
+    select ZMK_WIDGET_OUTPUT_STATUS if !ZMK_EMBEDDED_STENO_NOUI
+    select LVGL_USE_CONT if !ZMK_EMBEDDED_STENO_NOUI
     default n
+
+if ZMK_EMBEDDED_STENO_NOUI
+choice ZMK_DISPLAY_STATUS_SCREEN
+	default ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN
+endchoice
+endif
+
+if !ZMK_EMBEDDED_STENO_NOUI
+choice ZMK_DISPLAY_STATUS_SCREEN
+	default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+endchoice
+endif
 
 config ZMK_EMBEDDED_STENO_READONLY
     bool "Disable dictionary editing in the embedded steno engine"
