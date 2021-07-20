@@ -10,7 +10,7 @@
 uint8_t flash_debug_enable = 0;
 #endif
 
-#define FLASH_DEVICE DT_LABEL(DT_INST(0, jedec_spi_nor))
+#define FLASH_DEVICE DT_LABEL(DT_CHOSEN(zmk_steno_flash))
 
 static const struct device *flash_dev;
 
