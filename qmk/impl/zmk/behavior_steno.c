@@ -44,7 +44,7 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
     uint32_t key = binding->param1;
     if (steno_key_valid(key)) {
         current &= ~(1 << key);
-        if (current == 0) {
+        if (current == 0 && pressed != 0) {
             char stroke[32];
             stroke_to_string(pressed, stroke, NULL);
             LOG_WRN("chord pressed: %06X, %s", pressed, log_strdup(stroke));
