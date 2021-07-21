@@ -31,15 +31,25 @@ static steno_screen_t steno_screen;
 
 lv_style_t style, tape_style;
 
+#ifdef STENO_FONT_EXTERN
 LV_FONT_DECLARE(STENO_FONT);
+#endif
 
-#define TAPE_LINES ((CONFIG_LVGL_VER_RES_MAX / STENO_FONT_HEIGHT) - 4)
+#ifdef STENO_DISP_INVERT
+#define FG_COLOR LV_COLOR_WHITE
+#define BG_COLOR LV_COLOR_BLACK
+#else
+#define FG_COLOR LV_COLOR_BLACK
+#define BG_COLOR LV_COLOR_WHITE
+#endif
+
+#define TAPE_LINES (((CONFIG_LVGL_VER_RES_MAX - 16) / STENO_FONT_HEIGHT) - 3)
 
 lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen;
 
     lv_style_init(&style);
-    lv_style_set_bg_color(&style, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+    lv_style_set_bg_color(&style, LV_STATE_DEFAULT, BG_COLOR);
 
     screen = lv_obj_create(NULL, NULL);
     lv_obj_add_style(screen, LV_LABEL_PART_MAIN, &style);
@@ -67,8 +77,9 @@ lv_obj_t *zmk_display_status_screen() {
 
     steno_screen.tape_cont = lv_obj_create(screen, NULL);
     lv_style_init(&tape_style);
+    lv_style_set_text_color(&tape_style, LV_STATE_DEFAULT, FG_COLOR);
     lv_style_set_text_font(&tape_style, LV_STATE_DEFAULT, &STENO_FONT);
-    lv_style_set_bg_color(&tape_style, LV_STATE_DEFAULT, LV_COLOR_RED);
+    /* lv_style_set_bg_color(&tape_style, LV_STATE_DEFAULT, LV_COLOR_WHITE); */
     lv_obj_add_style(steno_screen.tape_cont, LV_CONT_PART_MAIN, &tape_style);
     lv_obj_align(steno_screen.tape_cont, steno_screen.status_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
     /* lv_cont_set_fit2(steno_screen.tape_cont, LV_FIT_MAX, LV_FIT_PARENT); */
@@ -78,7 +89,7 @@ lv_obj_t *zmk_display_status_screen() {
     steno_screen.tape = lv_label_create(steno_screen.tape_cont, NULL);
     lv_label_set_text(steno_screen.tape, "STOIN");
     lv_obj_align(steno_screen.tape, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-    lv_obj_set_height(steno_screen.tape, TAPE_LINES * 16);
+    lv_obj_set_height(steno_screen.tape, TAPE_LINES * STENO_FONT_HEIGHT);
 
     steno_screen.last_entry = lv_label_create(steno_screen.tape_cont, NULL);
     lv_label_set_text(steno_screen.last_entry, "\n");
@@ -93,6 +104,7 @@ lv_obj_t *zmk_display_status_screen() {
 }
 
 void disp_init(void) {
+    LOG_WRN("tape lines: %d", TAPE_LINES);
 }
 
 static uint32_t tape_strokes[TAPE_LINES];
@@ -149,7 +161,7 @@ void disp_tape_show_trans(const char *const trans) {
     strcat(entry, "\n");
     strcat(entry, trans);
     lv_label_set_text(steno_screen.last_entry, entry);
-    const uint8_t entry_lines = lv_obj_get_height(steno_screen.last_entry) / 16;
+    const uint8_t entry_lines = lv_obj_get_height(steno_screen.last_entry) / STENO_FONT_HEIGHT;
     tape_show(last_stroke, TAPE_LINES - (entry_lines - 2));
 }
 

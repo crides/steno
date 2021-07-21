@@ -15,6 +15,11 @@ config ZMK_EMBEDDED_STENO_ENABLE_UI
     depends on ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
     default y
 
+config ZMK_EMBEDDED_STENO_DISP_INVERT
+    bool "Invert the display background and foreground colors. Useful on the Sharp Memory Display"
+    depends on ZMK_EMBEDDED_STENO_ENABLE_UI
+    default n
+
 config ZMK_EMBEDDED_STENO_DICTEDIT
     bool "Disable dictionary editing in the embedded steno engine"
     depends on ZMK_EMBEDDED_STENO_ENABLE_UI
@@ -31,6 +36,13 @@ choice ZMK_EMBEDDED_STENO_FONT
 
 config ZMK_EMBEDDED_STENO_FONT_JETBRAINSMONO_16
     bool "Use JetBrains Mono 16"
+
+config ZMK_EMBEDDED_STENO_FONT_ADASCII_8
+    bool "Use Adascii 8 (5x7 pixel perfect font with only ASCII characters from Adafruit library somewhere)"
+
+config ZMK_EMBEDDED_STENO_FONT_UNSCII_8
+    select LVGL_FONT_UNSCII_8
+    bool "Use UNSCII 8 (8 px pixel perfect font with only ASCII characters)"
 
 config ZMK_EMBEDDED_STENO_FONT_IOSEVKA_8
     bool "Use Iosevka 8"
