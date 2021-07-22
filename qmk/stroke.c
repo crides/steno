@@ -86,13 +86,13 @@ uint32_t find_strokes(const uint8_t *const strokes, const uint8_t len, const uin
     }
     uint32_t bucket_ind = BUCKET_SIZE * (hash & 0xFFFFF);   // Lower 20 bits, mul 4 to byte address
 #ifdef STENO_DEBUG_STROKE
-    steno_debug_ln("\n    hash: %08lX, bucket_ind: %06lX", hash, bucket_ind);
+    steno_debug_ln("\n    hash: " DWF("08") ", bucket_ind: " DWF("06"), hash, bucket_ind);
 #endif
     uint32_t bucket;
     for (; ; bucket_ind += BUCKET_SIZE) {
         store_read(bucket_ind, (uint8_t *) &bucket, BUCKET_SIZE);
 #ifdef STENO_DEBUG_STROKE
-        steno_debug_ln("    bucket: %08lX", bucket);
+        steno_debug_ln("    bucket: " DWF("08"), bucket);
 #endif
         if (free) {
             if (bucket == 0xFFFFFFFF) {
@@ -173,7 +173,7 @@ uint32_t search_entry(const uint8_t h_ind
 #endif
         const uint32_t stroke = old_hist->stroke;
 #ifdef STENO_DEBUG_STROKE
-        steno_debug_ln("  [%d] = %06lX", i, stroke);
+        steno_debug_ln("  [%d] = " DWF("06"), i, stroke);
 #endif
         if (stroke == 0) {
             break;
@@ -191,7 +191,7 @@ uint32_t search_entry(const uint8_t h_ind
             *suffix_ind = 0;
 #endif
 #ifdef STENO_DEBUG_STROKE
-            steno_debug_ln("  bucket: %08lX", bucket);
+            steno_debug_ln("  bucket: " DWF("08"), bucket);
 #endif
             continue;
         }
@@ -211,7 +211,7 @@ uint32_t search_entry(const uint8_t h_ind
                     *suffix_ind = j + 1;
 #endif
 #ifdef STENO_DEBUG_STROKE
-                    steno_debug_ln("  folded bucket: %08lX", bucket);
+                    steno_debug_ln("  folded bucket: " DWF("08"), bucket);
 #endif
                     *last_stroke |= suffix;
                     break;
