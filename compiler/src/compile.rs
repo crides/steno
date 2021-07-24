@@ -114,8 +114,11 @@ impl std::fmt::Display for CompileError {
     }
 }
 
-pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
-    let mut file = Uf2File::new();
+pub fn to_writer(
+    d: Dict,
+    mut out: Box<dyn OutputFile>,
+    w: &mut dyn Write,
+) -> Result<(), CompileError> {
     // Buffering buckets so less book keeping
     // 1M entries of 4 bytes; key length cannot be 15
     let mut buckets = vec![0xFFFFFFFF; 2usize.pow(20)];
@@ -158,26 +161,154 @@ pub fn to_writer(d: Dict, w: &mut dyn Write) -> Result<(), CompileError> {
             total: total_len,
         })? << 4;
         buckets[index] = (entry_len as u32) << 24 | block_offset | strokes.len() as u32;
-        file.seek(KVPAIR_START + block_offset as usize);
+        out.seek(KVPAIR_START + block_offset as usize);
         for stroke in strokes.0 {
-            file.write_all(&stroke.raw().to_le_bytes()[0..3]);
+            out.write_all(&stroke.raw().to_le_bytes()[0..3]);
         }
         let raw_entry: RawEntry = entry.into();
-        file.write_all(&raw_entry.as_bytes());
+        out.write_all(&raw_entry.as_bytes());
     }
 
     dbg!(collisions);
-    file.seek(0);
+    out.seek(0);
     for bucket in buckets {
-        file.write_all(&bucket.to_le_bytes());
+        out.write_all(&bucket.to_le_bytes());
     }
-    file.seek(FREEMAP_START);
+    out.seek(FREEMAP_START);
     for word in map.map {
-        file.write_all(&word.to_le_bytes());
+        out.write_all(&word.to_le_bytes());
     }
-    file.seek(ORTHOGRAPHY_START);
-    file.write_all(&orthography::generate());
-    file.write_to(w).map_err(CompileError::Io)
+    out.seek(ORTHOGRAPHY_START);
+    out.write_all(&orthography::generate());
+    out.write_to(w).map_err(CompileError::Io)
+}
+
+pub trait OutputFile {
+    fn seek(&mut self, addr: usize);
+    fn write(&mut self, byte: u8);
+    fn write_all(&mut self, bytes: &[u8]) {
+        for byte in bytes {
+            self.write(*byte);
+        }
+    }
+    fn write_to(self: Box<Self>, w: &mut dyn Write) -> io::Result<()>;
+}
+
+pub struct BinFile {
+    cursor: usize,
+    binary: Vec<u8>,
+}
+
+impl BinFile {
+    pub fn new() -> Self {
+        Self {
+            cursor: 0,
+            binary: vec![0xFF; 16 * 2usize.pow(20)],
+        }
+    }
+}
+
+impl OutputFile for BinFile {
+    fn seek(&mut self, addr: usize) {
+        self.cursor = addr;
+    }
+
+    fn write(&mut self, byte: u8) {
+        self.binary[self.cursor] = byte;
+        self.cursor += 1;
+    }
+
+    fn write_to(self: Box<Self>, w: &mut dyn Write) -> io::Result<()> {
+        w.write_all(&self.binary)
+    }
+}
+
+/// A lazily filled file containing chunks of data.
+struct BlockFile<const B: usize> {
+    map: BTreeMap<usize, [u8; B]>,
+    cur_block: usize,
+    cur_block_ind: usize,
+}
+
+impl<const B: usize> BlockFile<B> {
+    fn new() -> Self {
+        let mut file = Self {
+            map: BTreeMap::new(),
+            cur_block: 0,
+            cur_block_ind: 0,
+        };
+        file.seek(0);
+        file
+    }
+
+    fn seek(&mut self, addr: usize) {
+        self.cur_block = addr / B;
+        self.cur_block_ind = addr % B;
+        self.map
+            .entry(self.cur_block)
+            .or_insert_with(|| [0xFFu8; B]);
+    }
+
+    fn write(&mut self, byte: u8) {
+        if self.cur_block_ind == B {
+            self.cur_block += 1;
+            self.cur_block_ind = 0;
+            self.map.insert(self.cur_block, [0xFFu8; B]);
+        }
+        self.map.get_mut(&self.cur_block).unwrap()[self.cur_block_ind] = byte;
+        self.cur_block_ind += 1;
+    }
+}
+
+pub struct HexFile(BlockFile<16>);
+
+impl HexFile {
+    pub fn new() -> Self {
+        Self(BlockFile::new())
+    }
+}
+
+impl OutputFile for HexFile {
+    fn seek(&mut self, addr: usize) {
+        self.0.seek(addr)
+    }
+
+    fn write(&mut self, byte: u8) {
+        self.0.write(byte)
+    }
+
+    fn write_to(self: Box<Self>, w: &mut dyn Write) -> io::Result<()> {
+        let filtered: Vec<_> = self
+            .0
+            .map
+            .into_iter()
+            .filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8))
+            .collect();
+        let mut last_upper_addr = 0xff;
+        for (block_addr, data) in filtered.iter() {
+            let byte_addr = block_addr * 16;
+            let lower_addr = byte_addr % 0x10000;
+            let upper_addr = byte_addr / 0x10000;
+            if upper_addr != last_upper_addr {
+                let checksum = (0x100 - (2 + 4 + 0x12 + upper_addr) % 0x100) as u8;
+                // NOTE we use 0x12xxxxxx cuz this is what the XIP starts at in nrf52
+                writeln!(w, ":0200000412{:02X}{:02X}", upper_addr, checksum)?;
+                last_upper_addr = upper_addr;
+            }
+            let checksum = (0x100
+                - (0x10
+                    + lower_addr % 0x100
+                    + lower_addr / 0x100
+                    + data.iter().fold(0, |a, b| a + *b as usize))
+                    % 0x100) as u8;
+            writeln!(w, ":10{:04X}00{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}", lower_addr,
+                data[0], data[1],  data[2],  data[3],  data[4],  data[5],  data[6],  data[7],
+                data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15],
+                checksum,
+            )?;
+        }
+        writeln!(w, ":00000001FF")
+    }
 }
 
 #[allow(dead_code)]
@@ -194,12 +325,7 @@ struct Uf2 {
     magic_end: u32,
 }
 
-/// A lazily filled file containing Uf2 chunks.
-struct Uf2File {
-    map: BTreeMap<usize, Vec<u8>>,
-    cur_block: usize,
-    cur_block_ind: usize,
-}
+pub struct Uf2File(BlockFile<{ Uf2File::DATA_SIZE }>);
 
 impl Uf2File {
     const MAGIC0: u32 = 0x0A324655;
@@ -212,42 +338,22 @@ impl Uf2File {
     const DATA_SIZE: usize = 256;
 
     pub fn new() -> Self {
-        let mut file = Self {
-            map: BTreeMap::new(),
-            cur_block: 0,
-            cur_block_ind: 0,
-        };
-        file.seek(0);
-        file
+        Self(BlockFile::new())
     }
+}
 
+impl OutputFile for Uf2File {
     fn seek(&mut self, addr: usize) {
-        self.cur_block = addr / Uf2File::DATA_SIZE;
-        self.cur_block_ind = addr % Uf2File::DATA_SIZE;
-        self.map
-            .entry(self.cur_block)
-            .or_insert_with(|| vec![0xFFu8; Uf2File::DATA_SIZE]);
+        self.0.seek(addr)
     }
 
     fn write(&mut self, byte: u8) {
-        if self.cur_block_ind == Uf2File::DATA_SIZE {
-            self.cur_block += 1;
-            self.cur_block_ind = 0;
-            self.map
-                .insert(self.cur_block, vec![0xFFu8; Uf2File::DATA_SIZE]);
-        }
-        self.map.get_mut(&self.cur_block).unwrap()[self.cur_block_ind] = byte;
-        self.cur_block_ind += 1;
+        self.0.write(byte)
     }
 
-    fn write_all(&mut self, bytes: &[u8]) {
-        for byte in bytes {
-            self.write(*byte);
-        }
-    }
-
-    pub fn write_to(self, w: &mut dyn Write) -> io::Result<()> {
+    fn write_to(self: Box<Self>, w: &mut dyn Write) -> io::Result<()> {
         let filtered: Vec<_> = self
+            .0
             .map
             .into_iter()
             .filter(|(_addr, data)| !data.iter().all(|b| *b == 0xFFu8))
@@ -265,9 +371,7 @@ impl Uf2File {
             w.write_all(&Uf2File::FAMILY_ID.to_le_bytes())?;
             assert_eq!(data.len(), Uf2File::DATA_SIZE);
             assert_eq!(data.len() + data_padding_post.len(), Uf2File::UF2_DATA_SIZE);
-            // NOTE: Custom UF2 format: Moving the data back by 32 bytes so that it's packet (64 byte)
-            // aligned, and that it'll be easier to process
-            w.write_all(&data)?;
+            w.write_all(data)?;
             w.write_all(&data_padding_post)?;
             w.write_all(&Uf2File::MAGIC_END.to_le_bytes())?;
         }
