@@ -460,10 +460,10 @@ state_t process_output(const uint8_t h_ind) {
     steno_debug_ln("  -bucket: " DWF("08"), hist->bucket);
 #endif
     uint8_t valid_len = 1, str_len = 0;
-    uint8_t set_case;
+    bool set_case = false;
     for (uint8_t i = 0; i < entry_len; i++) {
         // Commands
-        set_case = 0;
+        set_case = false;
         if (entry[i] < 32) {
 #ifdef STENO_DEBUG_HIST
             steno_debug("'\n    ");
@@ -486,7 +486,7 @@ state_t process_output(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
                 steno_debug_ln("LOWER");
 #endif
-                set_case = 1;
+                set_case = true;
                 break;
 
             case 2: // Uppercase next entry
@@ -494,7 +494,7 @@ state_t process_output(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
                 steno_debug_ln("UPPER");
 #endif
-                set_case = 1;
+                set_case = true;
                 break;
 
             case 3: // capitalize next entry
@@ -502,7 +502,7 @@ state_t process_output(const uint8_t h_ind) {
 #ifdef STENO_DEBUG_HIST
                 steno_debug_ln("CAP");
 #endif
-                set_case = 1;
+                set_case = true;
                 break;
 
             case 4:; // keep case after "length" amount of characters
@@ -533,7 +533,7 @@ state_t process_output(const uint8_t h_ind) {
                     }
                 }
                 new_state.cap = old_state.cap;
-                set_case = 1;
+                set_case = true;
                 break;
 
             case 5: // reset formatting
