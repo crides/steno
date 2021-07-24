@@ -121,7 +121,9 @@ impl Entry {
     }
 
     fn replace_escapes(s: &str) -> String {
-        ESCAPED.replace_all(s, |c: &Captures| c.get(1).unwrap().as_str().to_string()).to_string()
+        ESCAPED
+            .replace_all(s, |c: &Captures| c.get(1).unwrap().as_str().to_string())
+            .to_string()
     }
 
     /// Parse a single atom in an `Entry`. Can be either `{}` enclosed or not
@@ -491,6 +493,17 @@ fn test_attach() {
                 ..Attr::valid_default()
             },
             inputs: vec![Input::String("".into())],
+        })
+    );
+}
+
+#[test]
+fn test_empty() {
+    assert_eq!(
+        Entry::parse_entry(r""),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![],
         })
     );
 }

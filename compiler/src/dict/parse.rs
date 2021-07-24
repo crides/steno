@@ -174,7 +174,7 @@ parsers! {
 
     atom: Parsed = alt((preceded(char('{'), cut(terminated(inspect("minner", meta_inner), char('}')))), map(text, Parsed::Text)))
 
-    entry: Vec<Parsed> = terminated(many1(atom), eof)
+    entry: Vec<Parsed> = terminated(many0(atom), eof)
 }
 
 pub fn parse_entry(s: &str) -> Result<Vec<Parsed>, ParseEntryError> {
