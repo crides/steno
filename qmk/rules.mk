@@ -75,6 +75,9 @@ ifneq (, $(findstring console, $(STENO_LOG_BACKEND)))
 	CONSOLE_ENABLE = yes
 endif
 
+BAT_GIT_HASH := $(shell cd $(THIS_DIR)/.. && git rev-parse --short=8 HEAD)
+CFLAGS += -DBAT_GIT_HASH=$(BAT_GIT_HASH)
+
 MCU = atmega32u4
 F_CPU = 16000000
 ARCH = AVR8

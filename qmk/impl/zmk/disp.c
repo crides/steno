@@ -87,7 +87,7 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_set_height(steno_screen.tape_cont, CONFIG_LVGL_VER_RES_MAX - lv_obj_get_height(steno_screen.status_cont));
 
     steno_screen.tape = lv_label_create(steno_screen.tape_cont, NULL);
-    lv_label_set_text(steno_screen.tape, "STOIN");
+    lv_label_set_text(steno_screen.tape, BAT_INIT_MSG);
     lv_obj_align(steno_screen.tape, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     lv_obj_set_height(steno_screen.tape, TAPE_LINES * STENO_FONT_HEIGHT);
 

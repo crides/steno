@@ -49,6 +49,10 @@ LOG_MODULE_DECLARE(steno, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
 #define STENO_R_R 0x008100
 #define STENO_STAR 0x1000
 
+#define TO_STR1(s) #s
+#define TO_STR(s) TO_STR1(s)
+#define BAT_INIT_MSG "Bat steno\ngit hash: " TO_STR(BAT_GIT_HASH)
+
 extern uint8_t stroke_start_ind;
 
 void ebd_steno_init(void);

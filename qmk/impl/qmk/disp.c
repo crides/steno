@@ -54,6 +54,7 @@ static void disp_stenotype_show_stroke(const uint32_t stroke) {
 // NOTE: Though some displays may use SPI, we only assume that it's initialized in the flash init section, cuz that always uses SPI
 void disp_init(void) {
     lcd_init();
+    disp_puts_at(0, 0, BAT_INIT_MSG);
 }
 
 void disp_tape_show_star(void) {
