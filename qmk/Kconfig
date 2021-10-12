@@ -17,6 +17,7 @@ config ZMK_EMBEDDED_STENO_ENABLE_UI
     select LVGL_USE_CONT
     depends on ZMK_DISPLAY
     depends on ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+    select ZMK_EMBEDDED_UI_SCREEN
     default y
 
 config ZMK_EMBEDDED_STENO_DISP_INVERT
@@ -33,9 +34,44 @@ config ZMK_EMBEDDED_STENO_NOUNICODE
     bool "Disable Unicode output in the embedded steno engine"
     default n
 
+choice ZMK_EMBEDDED_UI_SCREEN
+    prompt "Screen to use for UI"
+    depends on ZMK_EMBEDDED_STENO_ENABLE_UI
+    default ZMK_EMBEDDED_UI_SCREEN_LCD
+
+config ZMK_EMBEDDED_UI_SCREEN_LCD
+    bool "Use large LCDs (width >= 144pixels)"
+
+config ZMK_EMBEDDED_UI_SCREEN_SMALL_OLED
+    bool "Use small OLED (SSD1306, 128x32)"
+
+config ZMK_EMBEDDED_UI_SCREEN_NORMAL_OLED
+    bool "Use normal OLED (SSD1306, 128x64)"
+
+endchoice
+
+choice ZMK_EMBEDDED_STENO_OLED_TEXT_FONT
+    prompt "Text font for OLED (for anything outside of tapes)"
+    depends on ZMK_EMBEDDED_STENO_ENABLE_UI
+    depends on ZMK_EMBEDDED_UI_SCREEN_SMALL_OLED || ZMK_EMBEDDED_UI_SCREEN_NORMAL_OLED
+    default ZMK_EMBEDDED_STENO_FONT_OLED_ADASCII_8
+
+config ZMK_EMBEDDED_STENO_FONT_OLED_ADASCII_8
+    bool "Use Adascii 8 (5x7 pixel perfect font with only ASCII characters from Adafruit library somewhere)"
+
+config ZMK_EMBEDDED_STENO_FONT_OLED_UNSCII_8
+    select LVGL_FONT_UNSCII_8
+    bool "Use UNSCII 8 (8 px pixel perfect font with only ASCII characters)"
+
+config ZMK_EMBEDDED_STENO_FONT_OLED_IOSEVKA_8
+    bool "Use Iosevka 8"
+
+endchoice
+
 choice ZMK_EMBEDDED_STENO_FONT
     prompt "UI font"
     depends on ZMK_EMBEDDED_STENO_ENABLE_UI
+    depends on ZMK_EMBEDDED_UI_SCREEN_LCD
     default ZMK_EMBEDDED_STENO_FONT_IOSEVKA_16
 
 config ZMK_EMBEDDED_STENO_FONT_JETBRAINSMONO_16

@@ -3,10 +3,31 @@ target_sources(app PRIVATE hist.c stroke.c steno.c)
 target_include_directories(app PRIVATE impl/zmk)
 target_sources(app PRIVATE impl/zmk/behavior_steno.c impl/zmk/flash.c impl/zmk/keypress.c)
 
-if (CONFIG_ZMK_EMBEDDED_STENO_ENABLE_UI)
-    target_sources(app PRIVATE impl/zmk/disp.c)
-else()
+if (NOT CONFIG_ZMK_EMBEDDED_STENO_ENABLE_UI)
     target_compile_definitions(app PRIVATE -DSTENO_NOUI)
+endif()
+
+if (CONFIG_ZMK_EMBEDDED_UI_SCREEN_SMALL_OLED OR CONFIG_ZMK_EMBEDDED_UI_SCREEN_NORMAL_OLED)
+    target_compile_definitions(app PRIVATE -DSTENO_ZMK_USE_OLED)
+    target_sources(app PRIVATE impl/zmk/oled_tape_font.c)
+endif()
+if (CONFIG_ZMK_EMBEDDED_UI_SCREEN_SMALL_OLED)
+    target_sources(app PRIVATE impl/zmk/disp_oled_small.c)
+endif()
+if (CONFIG_ZMK_EMBEDDED_UI_SCREEN_LCD)
+    target_sources(app PRIVATE impl/zmk/disp.c)
+endif()
+
+if (CONFIG_ZMK_EMBEDDED_STENO_FONT_OLED_UNSCII_8)
+    target_compile_definitions(app PRIVATE -DSTENO_OLED_FONT=lv_font_unscii_8)
+endif()
+if (CONFIG_ZMK_EMBEDDED_STENO_FONT_OLED_ADASCII_8)
+    target_compile_definitions(app PRIVATE -DSTENO_OLED_FONT=adascii_8 -DSTENO_OLED_FONT_EXTERN)
+    target_sources(app PRIVATE impl/zmk/adascii_8.c)
+endif()
+if (CONFIG_ZMK_EMBEDDED_STENO_FONT_OLED_IOSEVKA_8)
+    target_compile_definitions(app PRIVATE -DSTENO_OLED_FONT=iosevka_8 -DSTENO_OLED_FONT_EXTERN)
+    target_sources(app PRIVATE impl/zmk/iosevka_8.c)
 endif()
 
 if (CONFIG_ZMK_EMBEDDED_STENO_FONT_JETBRAINSMONO_16)
@@ -78,3 +99,10 @@ if (CONFIG_ZMK_EMBEDDED_STENO_DEBUG)
         target_compile_definitions(app PRIVATE -DSTENO_DEBUG_DICTED)
     endif()
 endif()
+
+execute_process(
+    COMMAND git rev-parse --short=8 HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE BAT_GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+target_compile_definitions(app PRIVATE -DBAT_GIT_HASH=${BAT_GIT_HASH})
