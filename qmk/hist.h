@@ -18,7 +18,7 @@ typedef struct __attribute__((packed)) {
     uint8_t glue : 1;
 } state_t;
 
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__((packed)) history_t {
     uint8_t len;
     state_t state;
 #ifndef STENO_NOORTHOGRAPHY

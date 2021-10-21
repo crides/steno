@@ -164,5 +164,6 @@ void store_rewrite_start(void) {
 }
 
 void store_rewrite_write(const uint32_t offset, const uint8_t *const buf) {
+    flash_flush();
     flash_write_page(offset, buf);
 }

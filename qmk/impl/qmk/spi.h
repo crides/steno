@@ -1,15 +1,16 @@
 #ifndef _SPI_H_
 #define _SPI_H_
 
+#define __AVR_ATmega32U4__
 #include <avr/io.h>
 
-#define configure_pin_sck() DDRB |= _BV(DDB1)
-#define configure_pin_mosi() DDRB |= _BV(DDB2)
-#define configure_pin_miso() DDRB &= ~_BV(DDB3)
-#define configure_pin_ss() DDRD |= _BV(DDD5)
+inline void select_card() {
+    PORTD &= ~_BV(PORTD5);
+}
 
-#define select_card() PORTD &= ~_BV(PORTD5)
-#define unselect_card() PORTD |= _BV(PORTD5)
+inline void unselect_card() {
+    PORTD |= _BV(PORTD5);
+}
 
 void spi_init(void);
 void spi_send_byte(uint8_t);

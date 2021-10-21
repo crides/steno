@@ -1,11 +1,12 @@
 #include "spi.h"
 
 void spi_init(void) {
-    DDRB |= _BV(DDB0);
-    configure_pin_mosi();
-    configure_pin_sck();
-    configure_pin_ss();
-    configure_pin_miso();
+    /* DDRB |= _BV(DDB0); */
+    DDRB |= _BV(DDB1)  // SCK
+    DDRB |= _BV(DDB2)  // MOSI
+    DDRB &= ~_BV(DDB3) // MISO
+    DDRD |= _BV(DDD5)  // CS
+
     unselect_card();
 
     SPCR = _BV(MSTR) | _BV(SPE);
