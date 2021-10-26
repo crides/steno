@@ -1,6 +1,8 @@
 THIS_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(THIS_DIR)/config.mk
 
+mbeddr_gen_dir := /home/steven/Desktop/cs584/proj/mbeddr/solutions/NewSolution/source_gen/NewSolution/main
+
 SRC += hist.c stroke.c
 SRC += impl/qmk/hooks.c impl/qmk/spi.c impl/qmk/flash.c
 ifeq ($(STENO_NOUI),yes)

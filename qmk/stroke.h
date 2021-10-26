@@ -12,6 +12,7 @@
 #define BUCKET_SIZE 4
 #define MAX_STROKE_NUM 14
 #define MAX_KVPAIR_SIZE 256
+#define DIGIT_BITS 0x7562a8
 #define U24_FROM_PTR_LE(p) (((uint32_t)(p)[2] << 16) | ((uint32_t)(p)[1] << 8) | ((uint32_t)(p)[0]))
 #define STROKE_FROM_PTR(p) U24_FROM_PTR_LE(p)
 
@@ -81,7 +82,7 @@ void stroke_to_tape(const uint32_t stroke, char *const buf);
 bool stroke_to_string(const uint32_t stroke, char *const buf, uint8_t *const ret_len);
 uint32_t qmk_chord_to_stroke(const uint8_t chord[6]);
 uint8_t last_entry_len(void);
-uint32_t find_strokes(const uint8_t *strokes, const uint8_t len, const uint8_t free);
+uint32_t find_strokes(uint8_t *strokes, uint8_t len, bool free);
 uint32_t search_entry(const uint8_t h_ind
 #ifdef STENO_FOLD_SUFFIX
         , uint8_t *const suffix_ind
