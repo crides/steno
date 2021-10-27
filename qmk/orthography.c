@@ -15,8 +15,10 @@ static bool chrin(const char *const s, const char c) {
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
 // Rules borrowed from https://github.com/nimble0/dotterel/blob/master/app/src/main/assets/orthography/english.regex.json
-static int8_t regex_ortho(const char *const word, const char *const suffix, char *const output) {
+static int8_t regex_ortho(const char *restrict const word, const char *restrict const suffix, char *restrict const output) {
+    __CPROVER_assume(word != NULL && suffix != NULL && output != NULL);
     const uint8_t word_len = strlen(word);
+    __CPROVER_assume(word_len <= 30);
     char rev[WORD_ENDING_SIZE];
     // Invert `word` so that indexing is anchored to the end
     for (uint8_t i = 0; i < WORD_ENDING_SIZE; i ++) {
@@ -190,7 +192,9 @@ static uint32_t hash_str(const char *str) {
     return hash;
 }
 
-static int8_t simple_ortho(const char *const word, const char *const suffix, char *const output) {
+static int8_t simple_ortho(const char *const word, const char *const suffix, char *const output)
+    __CPROVER_requires(strlen(word) <= 30 && strlen(suffix) <= 8)
+{
     const uint8_t word_len = strlen(word);
     const uint8_t suffix_len = strlen(suffix);
     if (word_len > 13 || suffix_len > 9) {  // None of the entries in the rules are that long
@@ -228,7 +232,9 @@ static int8_t simple_ortho(const char *const word, const char *const suffix, cha
     return -1;
 }
 
-int8_t process_ortho(const char *const word, const char *const suffix, char *const output) {
+int8_t process_ortho(const char *const word, const char *const suffix, char *const output)
+    __CPROVER_requires(strlen(word) <= 30 && strlen(suffix) <= 8)
+{
     const int8_t ret = regex_ortho(word, suffix, output);
     if (ret == -1) {
         return simple_ortho(word, suffix, output);
