@@ -1,14 +1,16 @@
 #ifndef _SPI_H_
 #define _SPI_H_
 
+#ifndef __AVR_ATmega32U4__
 #define __AVR_ATmega32U4__
+#endif
 #include <avr/io.h>
 
-inline void select_card() {
+static inline void select_card(void) {
     PORTD &= ~_BV(PORTD5);
 }
 
-inline void unselect_card() {
+static inline void unselect_card(void) {
     PORTD |= _BV(PORTD5);
 }
 

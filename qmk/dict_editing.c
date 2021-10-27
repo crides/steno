@@ -26,7 +26,7 @@ static void dicted_add_stroke(const uint32_t stroke) {
     if (stroke == STENO_STAR) {
         if (strokes_len != 0) {
             strokes_len --;
-            const uint32_t temp_last_stroke = STROKE_FROM_PTR(&strokes[STROKE_SIZE * strokes_len]);
+            const uint32_t temp_last_stroke = stroke_from_ptr(&strokes[STROKE_SIZE * strokes_len]);
             disp_stroke_edit_remove(temp_last_stroke, strokes_len);
         }
     } else if (strokes_len < MAX_STROKE_NUM) {
@@ -71,12 +71,12 @@ static bool add_entry(void) {
 #ifdef STENO_DEBUG_DICTED
     steno_debug_ln("blok addr " DWF("06"), block_addr);
 #endif
-    store_write_direct(block_addr, (const uint8_t *const) strokes, strokes_len * STROKE_SIZE);
-    store_write_direct(block_addr + strokes_len * STROKE_SIZE, (const uint8_t *const) &attr, 1);
+    store_write_direct(block_addr, (uint8_t *) strokes, strokes_len * STROKE_SIZE);
+    store_write_direct(block_addr + strokes_len * STROKE_SIZE, (uint8_t *) &attr, 1);
     store_write_direct(block_addr + strokes_len * STROKE_SIZE + 1, entry_buf, entry_buf_len);
     const uint32_t bucket_addr = find_strokes((uint8_t *) strokes, strokes_len, 1);
     const uint32_t bucket = (uint32_t) entry_buf_len << 24 | ((block_addr - KVPAIR_BLOCK_START) & 0xFFFFF0) | (strokes_len & 0x0F);
-    store_write_direct(bucket_addr, (const uint8_t *const) &bucket, BUCKET_SIZE);
+    store_write_direct(bucket_addr, (uint8_t *) &bucket, BUCKET_SIZE);
     store_flush();
 #ifdef STENO_DEBUG_FLASH
     flash_debug_enable = 0;

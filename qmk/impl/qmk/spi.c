@@ -1,11 +1,12 @@
+#include <avr/io.h>
 #include "spi.h"
 
 void spi_init(void) {
     /* DDRB |= _BV(DDB0); */
-    DDRB |= _BV(DDB1)  // SCK
-    DDRB |= _BV(DDB2)  // MOSI
-    DDRB &= ~_BV(DDB3) // MISO
-    DDRD |= _BV(DDD5)  // CS
+    DDRB |= _BV(DDB1);  // SCK
+    DDRB |= _BV(DDB2);  // MOSI
+    DDRB &= ~_BV(DDB3); // MISO
+    DDRD |= _BV(DDD5);  // CS
 
     unselect_card();
 

@@ -26,7 +26,7 @@ uint8_t last_trans_size;
 uint8_t hist_ind = 0;
 // Index into `history` that marks how far into the past the translation can go; always less than or
 // equal to `hist_ind` or 0xFF
-uint8_t stroke_start_ind = 0;
+/* uint8_t stroke_start_ind = 0; */
 #ifdef QMK_KEYBOARD
 uint16_t time = 0;
 #else

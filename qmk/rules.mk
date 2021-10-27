@@ -4,7 +4,7 @@ include $(THIS_DIR)/config.mk
 mbeddr_gen_dir := /home/steven/Desktop/cs584/proj/mbeddr/solutions/NewSolution/source_gen/NewSolution/main
 
 SRC += hist.c stroke.c
-SRC += impl/qmk/hooks.c impl/qmk/spi.c impl/qmk/flash.c
+SRC += impl/qmk/hooks.c impl/qmk/spi.c impl/qmk/store.c
 ifeq ($(STENO_NOUI),yes)
 	STENO_READONLY = yes
 	CFLAGS += -DSTENO_NOUI

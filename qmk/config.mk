@@ -6,10 +6,10 @@ STENO_NOUI = no
 STENO_NOMSD = no
 # Graphical stroke display for demos
 STENO_STROKE_DISPLAY = no
-STENO_NOUNICODE = no
+STENO_NOUNICODE = yes
 
 STENO_DEBUG = hist # stroke flash dicted
-STENO_LOG_BACKEND = flash # console
+STENO_LOG_BACKEND = console # flash
 # Disables the internal orthography engine
 STENO_NOORTHOGRAPHY = no
 # Enables stroke folding; requires orthography engine
