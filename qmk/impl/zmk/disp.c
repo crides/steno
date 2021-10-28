@@ -50,6 +50,7 @@ lv_obj_t *zmk_display_status_screen() {
 
     lv_style_init(&style);
     lv_style_set_bg_color(&style, LV_STATE_DEFAULT, BG_COLOR);
+    lv_style_set_text_color(&style, LV_STATE_DEFAULT, FG_COLOR);
 
     screen = lv_obj_create(NULL, NULL);
     lv_obj_add_style(screen, LV_LABEL_PART_MAIN, &style);
@@ -63,23 +64,23 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_align(zmk_widget_output_status_obj(&output_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
     zmk_widget_battery_status_init(&battery_status_widget, steno_screen.status_cont);
-    lv_obj_align(zmk_widget_battery_status_obj(&battery_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, CONFIG_LVGL_HOR_RES_MAX / 4, 0);
+    lv_obj_align(zmk_widget_battery_status_obj(&battery_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, CONFIG_LVGL_HOR_RES_MAX * 0.4, 0);
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_LAYER_STATUS)
     zmk_widget_layer_status_init(&layer_status_widget, steno_screen.status_cont);
-    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, CONFIG_LVGL_HOR_RES_MAX / 4 * 2, 0);
+    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, CONFIG_LVGL_HOR_RES_MAX * 0.6, 0);
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_WPM_STATUS)
     zmk_widget_wpm_status_init(&wpm_status_widget, steno_screen.status_cont);
-    lv_obj_align(zmk_widget_wpm_status_obj(&wpm_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, CONFIG_LVGL_HOR_RES_MAX / 4 * 3, 0);
+    lv_obj_align(zmk_widget_wpm_status_obj(&wpm_status_widget), NULL, LV_ALIGN_IN_TOP_LEFT, CONFIG_LVGL_HOR_RES_MAX * 0.8, 0);
 #endif
 
     steno_screen.tape_cont = lv_obj_create(screen, NULL);
     lv_style_init(&tape_style);
     lv_style_set_text_color(&tape_style, LV_STATE_DEFAULT, FG_COLOR);
     lv_style_set_text_font(&tape_style, LV_STATE_DEFAULT, &STENO_FONT);
-    /* lv_style_set_bg_color(&tape_style, LV_STATE_DEFAULT, LV_COLOR_WHITE); */
+    lv_style_set_bg_color(&tape_style, LV_STATE_DEFAULT, BG_COLOR);
     lv_obj_add_style(steno_screen.tape_cont, LV_CONT_PART_MAIN, &tape_style);
     lv_obj_align(steno_screen.tape_cont, steno_screen.status_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
     /* lv_cont_set_fit2(steno_screen.tape_cont, LV_FIT_MAX, LV_FIT_PARENT); */

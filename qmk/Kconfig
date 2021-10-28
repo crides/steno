@@ -20,6 +20,19 @@ config ZMK_EMBEDDED_STENO_ENABLE_UI
     select ZMK_EMBEDDED_UI_SCREEN
     default y
 
+if ZMK_EMBEDDED_STENO_ENABLE_UI
+config LVGL_FONT_MONTSERRAT_12
+    default y
+
+choice LVGL_THEME_DEFAULT_FONT_NORMAL
+    default LVGL_THEME_DEFAULT_FONT_NORMAL_MONTSERRAT_12
+endchoice
+
+choice LVGL_THEME_DEFAULT_FONT_SMALL
+    default LVGL_THEME_DEFAULT_FONT_SMALL_MONTSERRAT_12
+endchoice
+endif
+
 config ZMK_EMBEDDED_STENO_DISP_INVERT
     bool "Invert the display background and foreground colors. Useful on the Sharp Memory Display"
     depends on ZMK_EMBEDDED_STENO_ENABLE_UI
