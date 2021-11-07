@@ -10,3 +10,6 @@
 [submodule "pcb/libs/pg1350"]
 	path = pcb/libs/pg1350
 	url = https://github.com/crides/pg1350
+[submodule "pcb/libs/choc"]
+	path = pcb/libs/choc
+	url = https://github.com/crides/choc

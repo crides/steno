@@ -9,6 +9,7 @@ use crate::bar::progress_bar;
 use crate::stroke::Strokes;
 
 pub use entry::{Attr, Entry, Input};
+pub use keycode::{KeyExpr, KeyExprs};
 
 pub type JsonDict = BTreeMap<String, String>;
 
@@ -131,4 +132,35 @@ impl Dict {
         pbar.finish_with_message("Dictionary parsed");
         Ok(Dict(parsed))
     }
+
+    // pub fn to_plover(&self) -> JsonDict {
+    //     use Input::*;
+    //     self.0
+    //         .iter()
+    //         .map(|(strokes, entry)| {
+    //             let Entry { attr, inputs } = entry;
+    //             let mut trans = inputs
+    //                 .iter()
+    //                 .map(|input| match input {
+    //                     String(s) => s.to_string(),
+    //                     Carry(s) => format!("{{~|{}}}", s),
+    //                     Lower => "{>}".to_string(),
+    //                     LowerLast => "{*>}".to_string(),
+    //                     Capital => "{-|}".to_string(),
+    //                     CapitalLast => "{*-|}".to_string(),
+    //                     Upper => "{<}".to_string(),
+    //                     UpperLast => "{*<}".to_string(),
+    //                     RetroSpace => "{*?}".to_string(),
+    //                     RetroNoSpace => "{*!}".to_string(),
+    //                     ResetFormat => "{}".to_string(),
+    //                     Repeat => "{*+}".to_string(),
+    //                     ToggleStar => "{*}".to_string(),
+    //                     DictEdit => "{PLOVER:ADD_TRANSLATION}".to_string(),
+    //                 })
+    //                 .collect::<Vec<_>>()
+    //                 .join("");
+    //             (strokes.to_string(), trans)
+    //         })
+    //         .collect()
+    // }
 }

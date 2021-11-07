@@ -19,7 +19,8 @@ impl From<Entry> for RawEntry {
         let bytes = iter::once(attr.0)
             .chain(e.inputs.iter().flat_map(|i| match i {
                 Input::Keycodes(keycodes) => {
-                    assert!(keycodes.len() <= 127);
+                    let keycodes = keycodes.to_keycodes();
+                    assert!(keycodes.len() <= u8::MAX as usize);
                     if keycodes.is_empty() {
                         vec![]
                     } else {
@@ -54,7 +55,7 @@ impl From<Entry> for RawEntry {
 }
 
 impl RawEntry {
-    fn as_bytes(&self) -> &[u8] {
+    pub(crate) fn as_bytes(&self) -> &[u8] {
         &self.0
     }
 }

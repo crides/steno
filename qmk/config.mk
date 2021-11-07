@@ -9,8 +9,8 @@ STENO_STROKE_DISPLAY = no
 STENO_NOUNICODE = no
 
 STENO_DEBUG = hist # stroke flash dicted
-STENO_LOG_BACKEND = flash # console
+STENO_LOG_BACKEND = # console flash
 # Disables the internal orthography engine
 STENO_NOORTHOGRAPHY = no
 # Enables stroke folding; requires orthography engine
-STENO_FOLD_SUFFIX = no
+STENO_FOLD_SUFFIX = yes

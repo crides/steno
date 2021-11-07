@@ -7,6 +7,7 @@ extern crate bitfield;
 
 mod bar;
 mod compile;
+// mod decompile;
 mod dict;
 mod freemap;
 mod hash;
@@ -52,6 +53,11 @@ fn main() {
                 .group(ArgGroup::with_name("format").args(&["bin", "uf2"]))
                 .arg(Arg::with_name("output").required(true)),
         )
+        // .subcommand(
+        //     SubCommand::with_name("decompile")
+        //         .arg(Arg::with_name("input").required(true))
+        //         .arg(Arg::with_name("output").required(true)),
+        // )
         .setting(AppSettings::SubcommandRequiredElseHelp);
     #[cfg(feature = "patching")]
     let app = app.subcommand(
@@ -102,7 +108,9 @@ fn main() {
                     )
                 })
                 .collect();
-            let dict = match Dict::parse(Dict::merge_dicts(inputs)) {
+            let mut merged = Dict::merge_dicts(inputs);
+            merged.insert("TKA*EUT".into(), chrono::Local::now().naive_local().format("%Y-%m-%d %H:%M:%S").to_string());
+            let dict = match Dict::parse(merged) {
                 Ok(d) => d,
                 Err(e) => {
                     eprintln!("{}", e);
@@ -121,6 +129,29 @@ fn main() {
             };
             println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());
         }
+        // ("decompile", Some(m)) => {
+        //     let input_file = m.value_of("input").unwrap();
+        //     let output_file = m.value_of("output").unwrap();
+
+        //     let mut input = Vec::new();
+        //     File::open(input_file)
+        //         .expect("input file")
+        //         .read_to_end(&mut input)
+        //         .unwrap();
+        //     let dict = match decompile::decompile(&input) {
+        //         Ok(d) => d,
+        //         Err(e) => {
+        //             eprintln!("{:?}", e);
+        //             return;
+        //         }
+        //     };
+        //     let mut output_file = File::create(output_file).expect("output file");
+        //     if let Err(e) = compile::to_writer(dict, &mut output_file) {
+        //         eprintln!("{}", e);
+        //         return;
+        //     };
+        //     println!("Size: {}", output_file.seek(SeekFrom::Current(0)).unwrap());
+        // }
         #[cfg(feature = "patching")]
         ("apply-rules", Some(m)) => {
             let rules: Rules = serde_json::from_reader(

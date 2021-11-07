@@ -6,3 +6,4 @@
 *.bak
 *.bin
 __pycache__
+*-backups

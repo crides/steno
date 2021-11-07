@@ -10,9 +10,9 @@ use nom::{
     Finish, IResult,
 };
 
-use crate::dict::keycode::KeyExpr;
+use crate::dict::keycode::{KeyExpr, KeyExprs};
 
-pub type ParseResult<'i, T, E = ParseEntryError<'i>> = IResult<&'i str, T, E>;
+type ParseResult<'i, T, E = ParseEntryError<'i>> = IResult<&'i str, T, E>;
 
 #[derive(Debug, PartialEq)]
 pub enum ParseEntryError<'i> {
@@ -76,9 +76,9 @@ macro_rules! parsers {
 
 const ATTACH: char = '^';
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Parsed<'i> {
-    Keycodes(Vec<KeyExpr>),
+    Keycodes(KeyExprs),
     Text(&'i str),
     HalfStop(&'i str),
     FullStop(&'i str),
@@ -132,7 +132,7 @@ fn keyexpr(s: &str) -> ParseResult<KeyExpr> {
 }
 
 parsers! {
-    keylist: Vec<KeyExpr> = many1(map(pair(inspect("keyexpr", keyexpr), multispace0), |(k, _)| k))
+    keylist: KeyExprs = map(many1(terminated(inspect("keyexpr", keyexpr), multispace0)), KeyExprs)
 
     text: &str = recognize(many1(alt((recognize(none_of(r"\{}")), recognize(pair(char('\\'), one_of(r"\{}")))))))
     attachable_text: &str = recognize(many0(alt((recognize(none_of(r"\{}^")), recognize(pair(char('\\'), one_of(r"\{}^")))))))

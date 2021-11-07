@@ -1,19 +1,36 @@
 use std::iter::once;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum KeyExpr {
-    Mod(u8, Vec<KeyExpr>),
+    Mod(u8, KeyExprs),
     Key(u8),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct KeyExprs(pub Vec<KeyExpr>);
+
+impl KeyExprs {
+    pub fn byte_len(&self) -> usize {
+        self.0.iter().map(|k| k.byte_len()).sum()
+    }
+
+    pub fn to_keycodes(&self) -> Vec<u8> {
+        self.0.iter().flat_map(|t| t.to_keycodes()).collect()
+    }
+}
+
 impl KeyExpr {
-    pub fn into_keycodes(self) -> Vec<u8> {
+    fn byte_len(&self) -> usize {
         match self {
-            KeyExpr::Key(k) => vec![k],
-            KeyExpr::Mod(m, terms) => once(m)
-                .chain(terms.into_iter().flat_map(|t| t.into_keycodes()))
-                .chain(once(m))
-                .collect(),
+            KeyExpr::Mod(_, ks) => ks.byte_len(),
+            KeyExpr::Key(_) => 1,
+        }
+    }
+
+    fn to_keycodes(&self) -> Vec<u8> {
+        match self {
+            KeyExpr::Key(k) => vec![*k],
+            KeyExpr::Mod(m, keys) => once(*m).chain(keys.to_keycodes()).chain(once(*m)).collect(),
         }
     }
 

@@ -1,5 +1,5 @@
 (fp_lib_table
   (lib (name steno)(type KiCad)(uri ${KIPRJMOD}/../steno)(options "")(descr ""))
-  (lib (name pg1350)(type KiCad)(uri ${KIPRJMOD}/../libs/pg1350)(options "")(descr ""))
   (lib (name misc)(type KiCad)(uri ${KIPRJMOD}/../libs/misc)(options "")(descr ""))
+  (lib (name pg1350)(type KiCad)(uri /home/steven/gitproj/steno/pcb/libs/choc/pg1350.pretty)(options "")(descr ""))
 )

@@ -2,6 +2,7 @@
 //! values which are already byte level (e.g. keycodes) for simplicity
 use regex::{Captures, Regex};
 
+pub use super::keycode::{KeyExpr, KeyExprs};
 use super::parse::parse_entry;
 pub use super::parse::{ParseEntryError, Parsed};
 
@@ -14,7 +15,7 @@ lazy_static! {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Input {
     /// Raw HID keycodes, with `0xE0` to `0xE3` toggling Ctrl, Shift, Alt, Super (GUI/Windows key) respectively
-    Keycodes(Vec<u8>),
+    Keycodes(KeyExprs),
     /// Strings, which can contain Unicode characters
     String(String),
     /// Make the next word lower case
@@ -114,7 +115,7 @@ impl Entry {
             .map(|i| match i {
                 Input::String(s) => s.len(),
                 Input::Carry(s) => s.len() + 2,
-                Input::Keycodes(k) => k.len() + 2,
+                Input::Keycodes(k) => k.byte_len() + 2,
                 _ => 1,
             })
             .sum()
@@ -139,9 +140,7 @@ impl Entry {
             },
             Keycodes(k) => Entry {
                 attr: Attr::valid_default(),
-                inputs: vec![Input::Keycodes(
-                    k.into_iter().flat_map(|k| k.into_keycodes()).collect(),
-                )],
+                inputs: vec![Input::Keycodes(k)],
             },
             HalfStop(s) => Entry {
                 attr: Attr {
@@ -314,7 +313,7 @@ impl Entry {
                         a.push_str(b);
                     }
                     (Some(Input::Keycodes(a)), Input::Keycodes(ref mut b)) => {
-                        a.append(b);
+                        a.0.append(&mut b.0);
                     }
                     _ => {
                         entry.inputs.push(input);
@@ -514,14 +513,14 @@ fn test_mods() {
         Entry::parse_entry(r"{#Control_L(w)}"),
         Ok(Entry {
             attr: Attr::valid_default(),
-            inputs: vec![Input::Keycodes(vec![0xe0, 0x1a, 0xe0])],
+            inputs: vec![Input::Keycodes(KeyExprs(vec![KeyExpr::Key(0xe0), KeyExpr::Key(0x1a), KeyExpr::Key(0xe0)]))],
         })
     );
     assert_eq!(
         Entry::parse_entry(r"{#Super_L(1)}"),
         Ok(Entry {
             attr: Attr::valid_default(),
-            inputs: vec![Input::Keycodes(vec![0xe3, 0x1e, 0xe3])],
+            inputs: vec![Input::Keycodes(KeyExprs(vec![KeyExpr::Key(0xe3), KeyExpr::Key(0x1e), KeyExpr::Key(0xe3)]))],
         })
     );
 }
@@ -532,7 +531,7 @@ fn test_keys() {
         Entry::parse_entry(r"{#a b}"),
         Ok(Entry {
             attr: Attr::valid_default(),
-            inputs: vec![Input::Keycodes(vec![0x04, 0x05])],
+            inputs: vec![Input::Keycodes(KeyExprs(vec![KeyExpr::Key(0x04), KeyExpr::Key(0x05)]))],
         })
     );
 }
@@ -566,5 +565,16 @@ fn test_error() {
     assert_eq!(
         Entry::parse_entry(r"{entry}"),
         Err(ParseEntryError::UnknownCommand("entry"))
+    );
+}
+
+#[test]
+fn test_empty() {
+    assert_eq!(
+        Entry::parse_entry(r""),
+        Ok(Entry {
+            attr: Attr::valid_default(),
+            inputs: vec![Input::String("".into())],
+        })
     );
 }
