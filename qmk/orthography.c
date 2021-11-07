@@ -15,7 +15,7 @@ static bool chrin(const char *const s, const char c) {
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
 // Rules borrowed from https://github.com/nimble0/dotterel/blob/master/app/src/main/assets/orthography/english.regex.json
-int8_t regex_ortho(const char *const word, const char *const suffix, char *const output) {
+static int8_t regex_ortho(const char *const word, const char *const suffix, char *const output, uint8_t const *clause) {
     const uint8_t word_len = strlen(word);
     char rev[WORD_ENDING_SIZE];
     // Invert `word` so that indexing is anchored to the end
@@ -30,11 +30,13 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
         if ((rev[0] == 'c' && chrin("aeiou", rev[1])) || strneq(rev, "noi", 3)) {
             strcat(output, "ally");
             strcat(output, suffix + 2);
+            clause = 1;
             return 0;
         }
         if (strneq(rev, "eru", 3)) {
             strcat(output, "ally");
             strcat(output, suffix + 2);
+            clause = 2;
             return 1;
         }
     }
@@ -43,6 +45,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     if (strneq("et", rev, 2) && (strneq("ry", suffix, 2) || strneq("ries", suffix, 4))) {
         output[0] = 'o';
         strcat(output, suffix);
+        clause = 3;
         return 1;
     }
 
@@ -51,6 +54,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
         const uint8_t t_start = rev[0] == 'e';
         if (rev[t_start] == 't' && chrin("naeiou", rev[t_start + 1])) {
             strcat(output, suffix);
+            clause = 4;
             return t_start + 1;
         }
     }
@@ -68,11 +72,13 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
                         || (rev[2] == 'r' && !(rev[3] == 'a' && chrin("gin", rev[4])))))) {
             output[0] = 'e';
             strcat(output, suffix);
+            clause = 5;
             return 0;
         }
         if (rev[0] == 'y' && chrin("bcdfghjklmnpqrstvwxz", rev[1])) {
             output[0] = 'i'; output[1] = 'e';
             strcat(output, suffix);
+            clause = 6;
             return 1;
         }
     }
@@ -80,6 +86,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     // (\w)ie + ing -> \1ying
     if (strneq("ei", rev, 2) && isalpha(rev[2]) && strneq("ing", suffix, 3)) {
         strcpy(output, "ying");
+        clause = 7;
         return 2;
     }
 
@@ -87,6 +94,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     if (strneq("ist", suffix, 3) && rev[0] == 'y' && chrin("cdfghlmnpr", rev[1])) {
         output[0] = rev[1];
         strcat(output, "ist");
+        clause = 8;
         return 1;
     }
 
@@ -94,6 +102,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     if (rev[0] == 'y' && chrin("bcdfghjklmnpqrstvwxz", rev[1]) && isalpha(rev[2]) && chrin("abcdefghjklnopqrstuxz", suffix[0])) {
         strcat(output, "i");
         strcat(output, suffix);
+        clause = 9;
         return 1;
     }
 
@@ -106,12 +115,14 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
         if (rev[0] == 't' && ((rev[1] == 'c' && isalpha(rev[2])) || (rev[1] == 'i' && !chrin("aeiou", rev[2]) && isalpha(rev[3])))) {
             output[0] = 'o';
             strcat(output, suffix + 1);
+            clause = 10;
             return 0;
         }
         if (rev[0] == 'e') {
             if (rev[1] == 's' && rev[2] == 'i' && !chrin("aeiou", rev[3]) && isalpha(rev[4])) {
                 output[0] = 'o';
                 strcat(output, suffix + 1);
+                clause = 11;
                 return 1;
             }
             if (rev[1] == 't' && rev[2] == 'a' && chrin("bcdfghjklmnprstvwxyz", rev[3])) {
@@ -120,6 +131,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
                 if (chrin("aeiou", rev[i]) && isalpha(rev[i+1])) {
                     output[0] = 'o';
                     strcat(output, suffix + 1);
+                    clause = 12;
                     return 1;
                 }
             }
@@ -130,12 +142,14 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     if (rev[0] == 'e' && chrin("bcdfghjklmnpqrstuvwxz", rev[1]) && isalpha(rev[2]) \
             && ((chrin("aeiouy", suffix[0]) && isalpha(suffix[1])) || chrin("aeoy", suffix[0]))) {
         strcat(output, suffix);
+        clause = 13;
         return 1;
     }
 
     // ([aeiouy](?:pod|log)) + ([aeiouy]) -> \1\2
     if (chrin("aeiouy", rev[3]) && (strneq("gol", rev, 3) || strneq("dop", rev, 3)) && chrin("aeiouy", suffix[0])) {
         strcat(output, suffix);
+        clause = 14;
         return 0;
     }
 
@@ -143,6 +157,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     if (suffix[0] == 'y' && rev[0] == 'l' && (rev[1] == 'a' || rev[1] == 'e')
             && (strneq("uq", rev + 2, 2) || chrin("bcdfghjklmnprstvwxyz", rev[2]))) {
         output[0] = 'l'; output[1] = 'y';
+        clause = 15;
         return 0;
     }
 
@@ -168,6 +183,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
             if (junk || (rev[1] != 'u' && strneq("uq", rev + 2, 2))) {
                 output[0] = rev[0];
                 strcat(output, suffix);
+                clause = 16;
                 return 0;
             }
         }
@@ -228,10 +244,11 @@ static int8_t simple_ortho(const char *const word, const char *const suffix, cha
     return -1;
 }
 
-int8_t process_ortho(const char *const word, const char *const suffix, char *const output) {
+int8_t process_ortho(const char *const word, const char *const suffix, char *const output, uint8_t const *clause) {
     const int8_t ret = simple_ortho(word, suffix, output);
     if (ret == -1) {
-        return regex_ortho(word, suffix, output);
+        return regex_ortho(word, suffix, output, clause);
     }
+    *clause = 0;
     return ret;
 }
