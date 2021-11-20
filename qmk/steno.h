@@ -60,32 +60,4 @@ void steno_macro_init(void);
 
 #define sizeof_array(a) (sizeof(a) / sizeof(a[0]))
 
-#ifdef QMK_KEYBOARD
-enum {
-    STN__Z = SAFE_RANGE,
-    STN__D,
-    STN__S,
-    STN__T,
-    STN__G,
-    STN__L,
-    STN__B,
-    STN__P,
-    STN__R,
-    STN__F,
-    STN_U,
-    STN_E,
-    STN_STAR,
-    STN_O,
-    STN_A,
-    STN_R_,
-    STN_H_,
-    STN_W_,
-    STN_P_,
-    STN_K_,
-    STN_T_,
-    STN_S_,
-    STN_NUM,
-};
-#endif
-
 #endif

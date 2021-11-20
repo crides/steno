@@ -460,7 +460,7 @@ state_t process_output(const uint8_t h_ind) {
     steno_debug_ln("  -bucket: " DWF("08"), hist->bucket);
 #endif
     uint8_t valid_len = 1, str_len = 0;
-    uint8_t set_case;
+    uint8_t set_case = 0;
     for (uint8_t i = 0; i < entry_len; i++) {
         // Commands
         set_case = 0;
