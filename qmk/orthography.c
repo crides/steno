@@ -12,6 +12,30 @@ static bool chrin(const char *const s, const char c) {
     return c != 0 && strchr(s, c);
 }
 
+static bool chrin2(const char *const s, const char c) {
+    if (c == 0) return false;
+    const int8_t s_len = strlen(s);
+    for (int8_t i = s_len - 1; i >= 0; i --) {
+        if (c == s[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static char *nondet_string();
+static char nondet_char();
+
+static void check_chrin() {
+    const char *s = nondet_string();
+    const char c = nondet_char();
+    __CPROVER_printf("input (%d) %s\n", strlen(s), s);
+    __CPROVER_assume(s != NULL && __CPROVER_is_fresh(s, 32) && strlen(s) < 32);
+    const bool a = chrin(s, c), b = chrin2(s, c);
+    __CPROVER_printf("a %d b %d\n", a, b);
+    __CPROVER_assert(a == b, "check");
+}
+
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
 // Rules borrowed from https://github.com/nimble0/dotterel/blob/master/app/src/main/assets/orthography/english.regex.json
