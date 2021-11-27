@@ -15,7 +15,7 @@ static bool chrin(const char *const s, const char c) {
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
 // Rules borrowed from https://github.com/nimble0/dotterel/blob/master/app/src/main/assets/orthography/english.regex.json
-static int8_t regex_ortho(const char *const word, const char *const suffix, char *const output, uint8_t *const clause) {
+int8_t regex_ortho(const char *const word, const char *const suffix, char *const output, uint8_t *const clause) {
     const uint8_t word_len = strlen(word);
     char rev[WORD_ENDING_SIZE];
     // Invert `word` so that indexing is anchored to the end
