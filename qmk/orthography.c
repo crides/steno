@@ -230,49 +230,49 @@ static uint32_t hash_str(const char *str) {
     return hash;
 }
 
-static int8_t simple_ortho(const char *const word, const char *const suffix, char *const output) {
-    const uint8_t word_len = strlen(word);
-    const uint8_t suffix_len = strlen(suffix);
-    if (word_len > 13 || suffix_len > 9) {  // None of the entries in the rules are that long
-        return -1;
-    }
-    uint8_t merged[24] = {0};
-    memcpy(merged, word, word_len);
-    merged[word_len] = ' ';
-    memcpy(merged + word_len + 1, suffix, suffix_len);
-    const uint8_t merged_len = word_len + suffix_len + 1;
-    const uint32_t hash = hash_str((const char *) merged);
-    const uint32_t bucket_ind = hash % (ORTHO_BUCKET_NUM - 1);
-    uint32_t bucket_addr = ORTHOGRAPHY_START + bucket_ind * ORTHO_BUCKET_SIZE;
-    uint32_t bucket;
+/* static int8_t simple_ortho(const char *const word, const char *const suffix, char *const output) { */
+/*     const uint8_t word_len = strlen(word); */
+/*     const uint8_t suffix_len = strlen(suffix); */
+/*     if (word_len > 13 || suffix_len > 9) {  // None of the entries in the rules are that long */
+/*         return -1; */
+/*     } */
+/*     uint8_t merged[24] = {0}; */
+/*     memcpy(merged, word, word_len); */
+/*     merged[word_len] = ' '; */
+/*     memcpy(merged + word_len + 1, suffix, suffix_len); */
+/*     const uint8_t merged_len = word_len + suffix_len + 1; */
+/*     const uint32_t hash = hash_str((const char *) merged); */
+/*     const uint32_t bucket_ind = hash % (ORTHO_BUCKET_NUM - 1); */
+/*     uint32_t bucket_addr = ORTHOGRAPHY_START + bucket_ind * ORTHO_BUCKET_SIZE; */
+/*     uint32_t bucket; */
 
-    const uint8_t length_mask = (1 << BUCKET_LENGTH_BITS) - 1;
-    for (; ; bucket_addr += ORTHO_BUCKET_SIZE) {
-        store_read(bucket_addr, (uint8_t *) &bucket, ORTHO_BUCKET_SIZE);
-        const uint8_t entry_len = (bucket >> BUCKET_OFFSET_BITS) & length_mask;
-        if (entry_len == length_mask) {
-            return -1;
-        }
-        const uint32_t entry_addr = (bucket & (((uint32_t) 1 << BUCKET_OFFSET_BITS) - 1)) + (uint32_t) ORTHOGRAPHY_START + (uint32_t) ORTHO_BUCKET_SIZE * ORTHO_BUCKET_NUM;
-        uint8_t entry_buf[32];
-        store_read(entry_addr, entry_buf, entry_len);
-        if (strcmp((const char *) merged, (const char *) entry_buf) == 0) {
-            const uint8_t extra_len = entry_len - merged_len - 2;
-            memcpy(output, entry_buf + merged_len + 2, extra_len);
-            output[extra_len] = 0;
-            return (int8_t) entry_buf[merged_len + 1];
-        } else {
-            continue;
-        }
-    }
-    return -1;
-}
+/*     const uint8_t length_mask = (1 << BUCKET_LENGTH_BITS) - 1; */
+/*     for (; ; bucket_addr += ORTHO_BUCKET_SIZE) { */
+/*         store_read(bucket_addr, (uint8_t *) &bucket, ORTHO_BUCKET_SIZE); */
+/*         const uint8_t entry_len = (bucket >> BUCKET_OFFSET_BITS) & length_mask; */
+/*         if (entry_len == length_mask) { */
+/*             return -1; */
+/*         } */
+/*         const uint32_t entry_addr = (bucket & (((uint32_t) 1 << BUCKET_OFFSET_BITS) - 1)) + (uint32_t) ORTHOGRAPHY_START + (uint32_t) ORTHO_BUCKET_SIZE * ORTHO_BUCKET_NUM; */
+/*         uint8_t entry_buf[32]; */
+/*         store_read(entry_addr, entry_buf, entry_len); */
+/*         if (strcmp((const char *) merged, (const char *) entry_buf) == 0) { */
+/*             const uint8_t extra_len = entry_len - merged_len - 2; */
+/*             memcpy(output, entry_buf + merged_len + 2, extra_len); */
+/*             output[extra_len] = 0; */
+/*             return (int8_t) entry_buf[merged_len + 1]; */
+/*         } else { */
+/*             continue; */
+/*         } */
+/*     } */
+/*     return -1; */
+/* } */
 
-int8_t process_ortho(const char *const word, const char *const suffix, char *const output, uint8_t *const clause) {
-    const int8_t ret = simple_ortho(word, suffix, output);
-    if (ret == -1) {
-        return regex_ortho(word, suffix, output, clause);
-    }
-    *clause = 0;
-    return ret;
-}
+/* int8_t process_ortho(const char *const word, const char *const suffix, char *const output, uint8_t *const clause) { */
+/*     const int8_t ret = simple_ortho(word, suffix, output); */
+/*     if (ret == -1) { */
+/*         return regex_ortho(word, suffix, output, clause); */
+/*     } */
+/*     *clause = 0; */
+/*     return ret; */
+/* } */

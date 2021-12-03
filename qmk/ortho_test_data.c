@@ -1,4 +1,4 @@
-const char *RULES[25][3] = {
+const char *RULES[][3] = {
     {"([aeiou]c)", "ly", "\1ally"},
     {"(ion)", "ly", "\1ally"},
     {"(.*ur)e", "ly", "\1ally"},
@@ -8,7 +8,7 @@ const char *RULES[25][3] = {
     {"([naeiou])te?", "(cy|cies)", "\1\2"},
 
     {"(s|sh|x|z|zh)", "s([^\\w]|$)", "\1es\2"},
-    {"((?:oa|ea|i|ee|oo|au|ou|l|n|(?<![gin]a)r|t)ch)", "s([^\\w]|$)", "\1es\2"},
+    /* {"((?:oa|ea|i|ee|oo|au|ou|l|n|(?<![gin]a)r|t)ch)", "s([^\\w]|$)", "\1es\2"}, */
     {"([bcdfghjklmnpqrstvwxz])y", "s([^\\w]|$)", "\1ies\2"},
 
     {"(\\w)ie", "ing", "\1ying"},
@@ -23,19 +23,21 @@ const char *RULES[25][3] = {
     {"(\\w[bcdfghjklmnpqrstuvwxz])e", "([aeoy])", "\1\2"},
     {"(\\w[bcdfghjklmnpqrstuvwxz])e", "([aeiouy]\\w)", "\1\2"},
 
-    {"([aoieuy](?:pod|log))", "([aoieuy])", "\1\2"},
-    {"((?:[bcdfghjklmnprstvwxyz]|qu)[ae]l)", "y", "\1ly"},
-    {"((?:^|\\W)(?:[bcdfghjklmnprstvwxyz]+|[bcdfghjklmnprstvwxyz]*qu)[aeiou])([bdfgklmnprstz])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"},
+    {"([aoieuy](pod|log))", "([aoieuy])", "\1\3"},
+    {"(([bcdfghjklmnprstvwxyz]|qu)[ae]l)", "y", "\1ly"},
+    {"((^|\\W)([bcdfghjklmnprstvwxyz]+|[bcdfghjklmnprstvwxyz]*qu)[aeiou])([bdfgklmnprstz])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\4\4\5"},
 
-    {"((?:[bcdfghjklmnprstvwxyz]|qu)a)([gbmptv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"},
-    {"((?:[bcdfghjklmnprstvwxyz]|qu)e)([gbpv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"},
-    {"((?:[bcdfghjklmnprstvwxyz]|qu)i)([gbmpv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"},
-    {"((?:[bcdfghjklmnprstvwxyz]|qu)o)([gbdlv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"},
+    {"(([bcdfghjklmnprstvwxyz]|qu)a)([gbmptv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\3\3\4"},
+    {"(([bcdfghjklmnprstvwxyz]|qu)e)([gbpv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\3\3\4"},
+    {"(([bcdfghjklmnprstvwxyz]|qu)i)([gbmpv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\3\3\4"},
+    {"(([bcdfghjklmnprstvwxyz]|qu)o)([gbdlv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\3\3\4"},
     {"([bcdfghjklmnprstvwxyz]u)([gbdlmntv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"}
 };
 
 const char *SUFFIXES[] = {
   "able",
+};
+const char *_SUFFIXES[] = {
   "er",
   "a",
   "ability",
@@ -631,6 +633,8 @@ const char *WORDS[] = {
   "aahing",
   "aardvark",
   "abacavir",
+};
+const char *_WORDS[] = {
   "abaci",
   "aback",
   "abacus",

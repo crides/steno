@@ -2,17 +2,17 @@
 #include <stdbool.h>
 #include <string.h>
 #include <malloc.h>
-#include <oniguruma.h>
 #include <assert.h>
 #include "orthography.h"
+#include "mregexp.h"
 
 #define sizeof_array(a) (sizeof(a) / sizeof(a[0]))
-#define U_FFFD "\xef\xbf\xbd"
+#define SEP " # "
 
 typedef struct {
-    const regex_t *word;
+    MRegexp *word;
     /* const regex_t *suffix; */
-    const regex_t *full;
+    MRegexp *full;
     const char *word_re;
     const char *suffix_re;
     const char *repl;
@@ -27,8 +27,7 @@ typedef struct {
 #define CBMC_assert(e, s)
 #endif
 
-static int replace(const char *restrict word, const char *restrict suffix, const regex_t *restrict full, const char *restrict repl, char *restrict output) {
-    OnigRegion *region = onig_region_new();
+static int replace(const char *restrict word, const char *restrict suffix, MRegexp *restrict full, const char *restrict repl, char *restrict output) {
     const int word_len = strlen(word), suffix_len = strlen(suffix);
 #ifdef CBMC
     __CPROVER_assume(word_len <= 34 && suffix_len <= 10);
@@ -36,13 +35,11 @@ static int replace(const char *restrict word, const char *restrict suffix, const
     char combined[word_len + suffix_len + 8];
     memset(combined, 0, word_len + suffix_len + 8);
     strcat(combined, word);
-    strcat(combined, U_FFFD);
+    strcat(combined, SEP);
     strcat(combined, suffix);
-    const char *combined_end = combined + word_len + strlen(U_FFFD) + suffix_len;
-    int ret = onig_search(full, (const UChar *) combined, (const UChar *) combined_end,
-            (const UChar *) combined, (const UChar *) combined_end, region, ONIG_OPTION_NONE);
-    if (ret > 0) {
-        strncat(output, combined, region->beg[0]);
+    MRegexpMatch m;
+    if (mregexp_match(full, combined, &m)) {
+        strncat(output, combined, m.match_begin);
         const int repl_len = strlen(repl);
 #ifdef CBMC
         __CPROVER_assume(repl_len < 6);
@@ -50,7 +47,8 @@ static int replace(const char *restrict word, const char *restrict suffix, const
         for (int i = 0; i < repl_len; i ++) {
             const char c = repl[i];
             if (c < ' ') {
-                strncat(output, combined + region->beg[c], region->end[c] - region->beg[c]);
+                const MRegexpMatch *cap = mregexp_capture(full, c - 1);
+                strncat(output, combined + cap->match_begin, cap->match_end - cap->match_begin);
             } else {
                 output[strlen(output)] = c;
             }
@@ -62,11 +60,9 @@ static int replace(const char *restrict word, const char *restrict suffix, const
 }
 
 static int apply_rules_re(const regex_rule_t *rules, const char *restrict word, const char *restrict suffix, char *restrict output) {
-    OnigRegion *region = onig_region_new();
-    const UChar *start = word, *end = word + strlen(word);
     for (int i = 0; i < sizeof_array(RULES); i ++) {
-        int ret = onig_search(rules[i].word, start, end, start, end, region, ONIG_OPTION_NONE);
-        if (ret > 0) {
+        MRegexpMatch m;
+        if (mregexp_match(rules[i].word, word, &m)) {
             int r = replace(word, suffix, rules[i].full, rules[i].repl, output);
             if (r < 0) {
                 continue;
@@ -114,37 +110,29 @@ static int diff_result(const regex_rule_t *rules, const char *restrict word, con
     return 0;
 }
 
+#ifdef CBMC
 static char *nondet_string();
+#endif
 
 int main() {
-    OnigOptionType options = ONIG_OPTION_CAPTURE_GROUP;
     regex_rule_t *rules = calloc(sizeof(regex_rule_t), sizeof_array(RULES));
-    OnigErrorInfo einfo;
 
     for (int i = 0; i < sizeof_array(RULES); i ++) {
-        int ret = onig_new(&rules[i].word, (const UChar *) RULES[i][0], (const UChar *) RULES[i][0] + strlen(RULES[i][0]),
-                options, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &einfo);
-        if (ret != ONIG_NORMAL) {
-            fprintf(stderr, "onig_new: word: %d\n", ret);
+        rules[i].word = mregexp_compile(RULES[i][0]);
+        if (mregexp_error() != MREGEXP_OK) {
+            fprintf(stderr, "compile: word: %d\n", mregexp_error());
             break;
         }
-        /* ret = onig_new(&rules[i].suffix, (const UChar *) RULES[i][1], (const UChar *) RULES[i][1] + strlen(RULES[i][1]), */
-        /*         options, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &einfo); */
-        /* if (ret != ONIG_NORMAL) { */
-        /*     fprintf(stderr, "onig_new: suffix: %d\n", ret); */
-        /*     break; */
-        /* } */
 
-        int full_re_len = strlen(RULES[i][0]) + strlen(RULES[i][1]) + strlen(U_FFFD);
+        int full_re_len = strlen(RULES[i][0]) + strlen(RULES[i][1]) + strlen(SEP);
         char full[full_re_len + 1];
         memset(full, 0, full_re_len + 1);
         strcat(full, RULES[i][0]);
-        strcat(full, U_FFFD);
+        strcat(full, SEP);
         strcat(full, RULES[i][1]);
-        ret = onig_new(&rules[i].full, (const UChar *) full, (const UChar *) full + full_re_len,
-                options, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &einfo);
-        if (ret != ONIG_NORMAL) {
-            fprintf(stderr, "onig_new: full: %d\n", ret);
+        rules[i].full = mregexp_compile(full);
+        if (mregexp_error() != MREGEXP_OK) {
+            fprintf(stderr, "compile: full: %d\n", mregexp_error());
             break;
         }
         rules[i].word_re = RULES[i][0];
@@ -152,13 +140,13 @@ int main() {
         rules[i].repl = RULES[i][2];
     }
 
-#ifdef CBMC
-    const char *word = nondet_string(), *suffix = nondet_string();
-    __CPROVER_assume(word != NULL && __CPROVER_is_fresh(word, 32) && strlen(word) < 32);
-    __CPROVER_assume(suffix != NULL && __CPROVER_is_fresh(suffix, 32) && strlen(suffix) < 32);
+/* #ifdef CBMC */
+/*     const char *word = nondet_string(), *suffix = nondet_string(); */
+/*     __CPROVER_assume(word != NULL && __CPROVER_is_fresh(word, 32) && strlen(word) < 32); */
+/*     __CPROVER_assume(suffix != NULL && __CPROVER_is_fresh(suffix, 32) && strlen(suffix) < 32); */
 
-    diff_result(rules, word, suffix);
-#else
+/*     diff_result(rules, word, suffix); */
+/* #else */
     for (int i = 0; i < sizeof_array(SUFFIXES); i ++) {
         for (int j = 0; j < sizeof_array(WORDS); j ++) {
             if (diff_result(rules, WORDS[j], SUFFIXES[i]) < 0) {
@@ -166,5 +154,5 @@ int main() {
             }
         }
     }
-#endif
+/* #endif */
 }
