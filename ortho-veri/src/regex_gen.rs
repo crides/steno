@@ -61,13 +61,13 @@ fn gen_from_hir(w: &mut dyn Write, hir: &regex_syntax::hir::Hir) {
                 RepetitionKind::ZeroOrMore => {
                     wln!(w, "while (true) {{");
                     gen_from_hir(w, &r.hir);
-                    wln!(w, "error = false; }}");
+                    wln!(w, "if (error) {{ error = false; break; }} }}");
                 }
                 RepetitionKind::OneOrMore => {
                     gen_from_hir(w, &r.hir);
                     wln!(w, "while (true) {{");
                     gen_from_hir(w, &r.hir);
-                    wln!(w, "error = false; }}");
+                    wln!(w, "if (error) {{ error = false; break; }} }}");
                 }
                 RepetitionKind::Range(_) => unimplemented!(),
             }
@@ -79,9 +79,9 @@ fn gen_from_hir(w: &mut dyn Write, hir: &regex_syntax::hir::Hir) {
                 }
                 GroupKind::CaptureName { .. } => unimplemented!(),
                 GroupKind::CaptureIndex(ind) => {
-                    wln!(w, "groups[{}].start = i;", ind);
+                    wln!(w, "groups[{}].start = i;", ind - 1);
                     gen_from_hir(w, &g.hir);
-                    wln!(w, "groups[{}].end = i;", ind);
+                    wln!(w, "groups[{}].end = i;", ind - 1);
                 }
             }
         }
@@ -105,26 +105,28 @@ fn rule_gen(w: &mut dyn Write, rs: &[(&str, &str)]) {
     wln!(w, r"#include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 typedef struct {{
     uint8_t start, end;
 }} group_t;
 uint8_t ortho_rules(char *inp, char *output) {{
 const uint8_t inp_len = strlen(inp); bool error = false; group_t groups[10] = {{0}};");
-    for (re, repl) in rs {
+    for (i, (re, repl)) in rs.iter().enumerate() {
         let mut builder = regex_syntax::ParserBuilder::new();
         let mut parser = builder.unicode(false).allow_invalid_utf8(true).build();
         let hir = parser.parse(re).unwrap();
-        wln!(w, "
+        wln!(w, r#"
         // {}
         error = false;
         for (uint8_t j = 0; j < inp_len; j ++) {{
-            char *s = &inp[j]; uint8_t i = 0, i_save = 0, s_len = inp_len - j;", re);
+            printf("cl {} j %d\n", j);
+            char *s = &inp[j]; uint8_t i = 0, i_save = 0, s_len = inp_len - j;"#, re, i);
         wln!(w, "while (true) {{");
         gen_from_hir(w, &hir);
         wln!(w, "}}
         if (!error) {{");
         repl_gen(w, repl);
-        wln!(w, "return j; }} }}");
+        wln!(w, "return {}; }} }}", i);
     }
     wln!(w, "return -1; }}");
 }
@@ -135,9 +137,10 @@ lazy_static::lazy_static! {
 }
 
 fn repl_gen(w: &mut dyn Write, rule: &str) {
+    wln!(w, "strncat(output, inp, j);");
     for capture in REPL_ATOM.captures_iter(rule) {
         if let Some(g) = capture.at(1) {
-            wln!(w, "strncat(output, s, groups[{0}].end - groups[{0}].start);", g.parse::<u8>().unwrap());
+            wln!(w, "strncat(output, s + groups[{0}].start, groups[{0}].end - groups[{0}].start);", g.parse::<u8>().unwrap() - 1);
         } else {
             wln!(w, "strcat(output, \"{}\");", capture.at(0).unwrap());
         }

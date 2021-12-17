@@ -10,3 +10,6 @@
 [submodule "pcb/libs/pg1350"]
 	path = pcb/libs/pg1350
 	url = https://github.com/crides/pg1350
+[submodule "qmk/mregexp"]
+	path = qmk/mregexp
+	url = https://github.com/deinernstjetzt/mregexp

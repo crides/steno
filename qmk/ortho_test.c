@@ -88,22 +88,42 @@ static int apply_rules_emb(const char *restrict word, const char *restrict suffi
     }
 }
 
+uint8_t ortho_rules(char *inp, char *output);
+static int apply_rules_gen(const char *restrict word, const char *restrict suffix, char *restrict output) {
+    const int word_len = strlen(word), suffix_len = strlen(suffix);
+    char sub_output[64] = {0};
+    char combined[word_len + suffix_len + 8];
+    memset(combined, 0, word_len + suffix_len + 8);
+    strcat(combined, word);
+    strcat(combined, " ");
+    strcat(combined, suffix);
+    return ortho_rules(combined, sub_output);
+}
+
 static int diff_result(const regex_rule_t *rules, const char *restrict word, const char *restrict suffix) {
-    char re_output[128] = {0}, emb_output[128] = {0};
-    const int re_ret = apply_rules_re(rules, word, suffix, re_output), emb_ret = apply_rules_emb(word, suffix, emb_output, false);
-    const bool re_outted = re_ret > 0, emb_outted = emb_ret > 0;
+    /* char re_output[128] = {0}; */
+    /* const int re_ret = apply_rules_re(rules, word, suffix, re_output); */
+    /* const bool re_outted = re_ret > 0; */
+
+    char emb_output[128] = {0};
+    const int emb_ret = apply_rules_emb(word, suffix, emb_output, false);
+    const bool emb_outted = emb_ret > 0;
+
+    char gen_output[128] = {0};
+    const int gen_ret = apply_rules_gen(word, suffix, gen_output);
+    const bool gen_outted = gen_ret > 0;
 #ifdef CBMC
-    CBMC_assert(re_outted == emb_outted, "rules ret");
-    CBMC_assert(0 == strcmp(re_output, emb_output), "rules output");
+    CBMC_assert(emb_outted == gen_outted, "rules ret");
+    CBMC_assert(0 == strcmp(emb_output, gen_output), "rules output");
 #else
-    const bool ret_neq = re_outted != emb_outted, out_neq = 0 != strcmp(re_output, emb_output);
+    const bool ret_neq = emb_outted != gen_outted, out_neq = 0 != strcmp(emb_output, gen_output);
     if (ret_neq || out_neq) {
         if (ret_neq) {
             fprintf(stderr, "ret");
         } else {
             fprintf(stderr, "out");
         }
-        fprintf(stderr, ": (%s %s) %s (%d) %s (%d)\n", word, suffix, re_outted ? re_output : "(none)", re_ret, emb_outted ? emb_output : "(none)", emb_ret);
+        fprintf(stderr, ": (%s %s) %s (%d) %s (%d)\n", word, suffix, emb_outted ? emb_output : "(none)", emb_ret, gen_outted ? gen_output : "(none)", gen_ret);
         return -1;
     }
 #endif
