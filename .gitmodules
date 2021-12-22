@@ -7,9 +7,18 @@
 [submodule "compiler/lib/hidapi-1"]
 	path = compiler/lib/hidapi-1
 	url = git@github.com:crides/hidapi-1.git
-[submodule "pcb/libs/pg1350"]
-	path = pcb/libs/pg1350
-	url = https://github.com/crides/pg1350
 [submodule "pcb/libs/choc"]
 	path = pcb/libs/choc
-	url = https://github.com/crides/choc
+	url = git@github.com:crides/choc.git
+[submodule "pcb/libs/xiao"]
+	path = pcb/libs/xiao
+	url = git@github.com:crides/xiao
+[submodule "pcb/libs/keeb-libs"]
+	path = pcb/libs/keeb-libs
+	url = git@github.com:crides/keeb-libs
+[submodule "pcb/libs/keyboard_footprints"]
+	path = pcb/libs/keyboard_footprints
+	url = https://github.com/pierrechevalier83/keyboard_footprints
+[submodule "pcb/libs/Keebio-Parts.pretty"]
+	path = pcb/libs/Keebio-Parts.pretty
+	url = https://github.com/crides/Keebio-Parts.pretty
