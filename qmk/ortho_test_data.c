@@ -3,6 +3,7 @@ const char *RULES[][3] = {
     {"(ion)", "ly", "\1ally"},
     {"(.*ur)e", "ly", "\1ally"},
 
+#if 0
     {"(t)e", "(ry|ries)", "\1o\2"},
 
     {"([naeiou])te?", "(cy|cies)", "\1\2"},
@@ -32,6 +33,7 @@ const char *RULES[][3] = {
     {"(([bcdfghjklmnprstvwxyz]|qu)i)([gbmpv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\3\3\4"},
     {"(([bcdfghjklmnprstvwxyz]|qu)o)([gbdlv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\3\3\4"},
     {"([bcdfghjklmnprstvwxyz]u)([gbdlmntv])", "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "\1\2\2\3"}
+#endif
 };
 
 const char *SUFFIXES[] = {
@@ -629,10 +631,10 @@ const char *_SUFFIXES[] = {
 };
 
 const char *WORDS[] = {
+  "abacavir",
   "a",
   "aahing",
   "aardvark",
-  "abacavir",
 };
 const char *_WORDS[] = {
   "abaci",

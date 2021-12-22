@@ -23,18 +23,18 @@ static bool chrin2(const char *const s, const char c) {
     return false;
 }
 
-static char *nondet_string();
-static char nondet_char();
+/* static char *nondet_string(); */
+/* static char nondet_char(); */
 
-static void check_chrin() {
-    const char *s = nondet_string();
-    const char c = nondet_char();
-    __CPROVER_printf("input (%d) %s\n", strlen(s), s);
-    __CPROVER_assume(s != NULL && __CPROVER_is_fresh(s, 32) && strlen(s) < 32);
-    const bool a = chrin(s, c), b = chrin2(s, c);
-    __CPROVER_printf("a %d b %d\n", a, b);
-    __CPROVER_assert(a == b, "check");
-}
+/* static void check_chrin() { */
+/*     const char *s = nondet_string(); */
+/*     const char c = nondet_char(); */
+/*     __CPROVER_printf("input (%d) %s\n", strlen(s), s); */
+/*     __CPROVER_assume(s != NULL && __CPROVER_is_fresh(s, 32) && strlen(s) < 32); */
+/*     const bool a = chrin(s, c), b = chrin2(s, c); */
+/*     __CPROVER_printf("a %d b %d\n", a, b); */
+/*     __CPROVER_assert(a == b, "check"); */
+/* } */
 
 // Returns how many chars to backspace, and what text (`output`) to append after
 // NOTE assumes the suffix we get is valid, so no end of string checking
@@ -65,6 +65,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
         }
     }
     
+#if 0
     // (t)e + (ry|ries) -> \1o\2
     if (strneq("et", rev, 2) && (strneq("ry", suffix, 2) || strneq("ries", suffix, 4))) {
         output[0] = 'o';
@@ -212,6 +213,7 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
             }
         }
     }
+#endif
     return -1;
 }
 
