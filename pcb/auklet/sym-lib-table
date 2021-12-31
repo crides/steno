@@ -1,0 +1,6 @@
+(sym_lib_table
+  (lib (name "steno")(type "Legacy")(uri "${KIPRJMOD}/../libs/steno.lib")(options "")(descr ""))
+  (lib (name "diode-choc")(type "Legacy")(uri "/home/steven/gitproj/steno/pcb/libs/choc/diode-choc.lib")(options "")(descr ""))
+  (lib (name "xiao")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/xiao/xiao.kicad_sym")(options "")(descr ""))
+  (lib (name "mcp23s08")(type "Legacy")(uri "/home/steven/gitproj/steno/pcb/libs/misc/mcp23s08.lib")(options "")(descr ""))
+)
