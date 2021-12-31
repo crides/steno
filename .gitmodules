@@ -13,9 +13,9 @@
 [submodule "pcb/libs/xiao"]
 	path = pcb/libs/xiao
 	url = git@github.com:crides/xiao
-[submodule "pcb/libs/keeb-libs"]
-	path = pcb/libs/keeb-libs
-	url = git@github.com:crides/keeb-libs
+[submodule "pcb/libs/kleeb"]
+	path = pcb/libs/kleeb
+	url = git@github.com:crides/kleeb
 [submodule "pcb/libs/keyboard_footprints"]
 	path = pcb/libs/keyboard_footprints
 	url = https://github.com/pierrechevalier83/keyboard_footprints
