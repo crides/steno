@@ -1,0 +1,8 @@
+(fp_lib_table
+  (lib (name "pg1350")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/choc/pg1350.pretty")(options "")(descr ""))
+  (lib (name "xiao")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/xiao/")(options "")(descr ""))
+  (lib (name "puck")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/keyboard_footprints/puck.pretty")(options "")(descr ""))
+  (lib (name "Keebio-parts")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/Keebio-Parts.pretty")(options "")(descr ""))
+  (lib (name "misc")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/kleeb/misc.pretty")(options "")(descr ""))
+  (lib (name "display")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/kleeb/display.pretty")(options "")(descr ""))
+)
