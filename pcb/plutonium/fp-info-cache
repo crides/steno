@@ -1,4 +1,4 @@
-19811685121254810
+19814443198400111
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -84251,6 +84251,13 @@ OLED-128x32-cutout
 0
 4
 4
+display
+OLED-128x32-double-sided
+
+
+0
+12
+8
 display
 OLED-128x64
 

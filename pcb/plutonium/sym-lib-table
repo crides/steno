@@ -3,4 +3,5 @@
   (lib (name "diode-choc")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/choc/diode-choc.kicad_sym")(options "")(descr ""))
   (lib (name "display")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/kleeb/display.kicad_sym")(options "")(descr ""))
   (lib (name "ic")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/kleeb/ic.kicad_sym")(options "")(descr ""))
+  (lib (name "misc")(type "KiCad")(uri "/home/steven/gitproj/steno/pcb/libs/kleeb/misc.kicad_sym")(options "")(descr ""))
 )
