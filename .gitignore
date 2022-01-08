@@ -7,3 +7,5 @@
 *.bin
 __pycache__
 *-backups
+gerber
+Gerber
