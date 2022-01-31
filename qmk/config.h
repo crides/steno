@@ -13,13 +13,13 @@
 #define DESCRIPTION     30 key steno board
 
 #define MATRIX_ROWS 3
-#define MATRIX_COLS 11
+#define MATRIX_COLS 10
 
 #define OLED_TIMEOUT 3000
 #define OLED_DISABLE_TIMEOUT
 
 #define MATRIX_ROW_PINS { F7, F6, F5 }
-#define MATRIX_COL_PINS { B7, B6, D6, D7, C6, D3, D2, D0, F0, F1, F4 }
+#define MATRIX_COL_PINS { F4, F1, F0, D2, D3, D7, B6, B7, D6, C7 }
 
 #define DIODE_DIRECTION COL2ROW
 #define DEBOUNCING_DELAY 5

@@ -5,9 +5,9 @@
     L10 , L11 , L12 , L13 , L14 , R10    , R11 , R12 , R13 , R14 , R15 , \
     L20 , L21 , L22 , R20 , R21 , R22) \
     { \
-        {L00   , L01   , L02 , L03 , L04 , R00 , R01 , R02 , R03   , R04   , R05}   , \
-        {L10   , L11   , L12 , L13 , L14 , R10 , R11 , R12 , R13   , R14   , R15}   , \
-        {KC_NO , KC_NO , L20 , L21 , L22 , R20 , R21 , R22 , KC_NO , KC_NO , KC_NO} , \
+        {L00   , L01   , L02 , L03 , L04 , R00 , R01 , R02 , R03   , R04 }   , \
+        {L10   , L11   , L12 , L13 , L14 , R10 , R11 , R12 , R13   , R14 }   , \
+        {KC_NO , KC_NO , L20 , L21 , L22 , R20 , R21 , R22 , R05 , R15  } , \
     }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
