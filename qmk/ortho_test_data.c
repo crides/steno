@@ -37,9 +37,14 @@ const char *RULES[][3] = {
 };
 
 const char *SUFFIXES[] = {
-  "able",
+    "ly",
 };
+const char *WORDS[] = {
+    "basic",
+};
+
 const char *_SUFFIXES[] = {
+  "able",
   "er",
   "a",
   "ability",
@@ -630,13 +635,11 @@ const char *_SUFFIXES[] = {
   "zoite"
 };
 
-const char *WORDS[] = {
+const char *_WORDS[] = {
   "abacavir",
   "a",
   "aahing",
   "aardvark",
-};
-const char *_WORDS[] = {
   "abaci",
   "aback",
   "abacus",

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "orthography.h"
 #include "mregexp.h"
+#include "seahorn/seahorn.h"
 
 #define sizeof_array(a) (sizeof(a) / sizeof(a[0]))
 #define SEP " # "
@@ -18,15 +19,10 @@ typedef struct {
     const char *repl;
 } regex_rule_t;
 
-#define SMACK
-
 #include "ortho_test_data.c"
 
 static int8_t replace(const char *restrict word, const char *restrict suffix, MRegexp *restrict full, const char *restrict repl, char *restrict output) {
     const uint8_t word_len = strlen(word), suffix_len = strlen(suffix);
-#ifdef SMACK
-    /* __CPROVER_assume(word_len <= 34 && suffix_len <= 10); */
-#endif
     char combined[128] = {0};
     /* char combined[word_len + suffix_len + 8]; */
     /* memset(combined, 0, word_len + suffix_len + 8); */
@@ -37,10 +33,6 @@ static int8_t replace(const char *restrict word, const char *restrict suffix, MR
     if (mregexp_match(full, combined, &m)) {
         strncat(output, combined, m.match_begin);
         const uint8_t repl_len = strlen(repl);
-        assume(repl_len > 0);
-#ifdef SMACK
-        /* __CPROVER_assume(repl_len < 6); */
-#endif
         for (uint8_t i = 0; i < repl_len; i ++) {
             const char c = repl[i];
             if (c < ' ') {
@@ -100,30 +92,31 @@ static uint8_t apply_rules_gen(const char *restrict word, const char *restrict s
 static uint8_t diff_result(const regex_rule_t *rules, const char *restrict word, const char *restrict suffix) {
     char re_output[128] = {0};
     const uint8_t re_ret = apply_rules_re(rules, word, suffix, re_output);
-    const bool re_outted = re_ret > 0;
+    const bool re_outted = re_ret >= 0;
 
     char emb_output[128] = {0};
     const uint8_t emb_ret = apply_rules_emb(word, suffix, emb_output, false);
-    const bool emb_outted = emb_ret > 0;
+    const bool emb_outted = emb_ret >= 0;
 
     /* char gen_output[128] = {0}; */
     /* const uint8_t gen_ret = apply_rules_gen(word, suffix, gen_output); */
     /* const bool gen_outted = gen_ret > 0; */
-#ifdef SMACK
-    assert(emb_outted == re_outted);
-    assert(0 == strcmp(emb_output, re_output));
-#else
-    const bool ret_neq = emb_outted != re_outted, out_neq = 0 != strcmp(emb_output, re_output);
-    if (ret_neq || out_neq) {
-        if (ret_neq) {
-            fprintf(stderr, "ret");
-        } else {
-            fprintf(stderr, "out");
-        }
-        fprintf(stderr, ": (%s %s) %s (%d) %s (%d)\n", word, suffix, emb_outted ? emb_output : "(none)", emb_ret, re_outted ? re_output : "(none)", re_ret);
-        return -1;
-    }
-#endif
+    printf("emb %d re %d\n", emb_ret, re_ret);
+    sassert(emb_outted == re_outted);
+    printf("emb %s re %s\n", emb_output, re_output);
+    sassert(0 == strcmp(emb_output, re_output));
+/* #else */
+/*     const bool ret_neq = emb_outted != re_outted, out_neq = 0 != strcmp(emb_output, re_output); */
+/*     if (ret_neq || out_neq) { */
+/*         if (ret_neq) { */
+/*             fprintf(stderr, "ret"); */
+/*         } else { */
+/*             fprintf(stderr, "out"); */
+/*         } */
+/*         fprintf(stderr, ": (%s %s) %s (%d) %s (%d)\n", word, suffix, emb_outted ? emb_output : "(none)", emb_ret, re_outted ? re_output : "(none)", re_ret); */
+/*         return -1; */
+/*     } */
+/* #endif */
     return 0;
 }
 

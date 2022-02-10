@@ -53,13 +53,11 @@ int8_t regex_ortho(const char *const word, const char *const suffix, char *const
     if (strneq(suffix, "ly", 2)) {
         if ((rev[0] == 'c' && chrin("aeiou", rev[1])) || strneq(rev, "noi", 3)) {
             strcat(output, "ally");
-            strcat(output, suffix + 2);
             *clause = 1;
             return 0;
         }
         if (strneq(rev, "eru", 3)) {
             strcat(output, "ally");
-            strcat(output, suffix + 2);
             *clause = 2;
             return 1;
         }
