@@ -1,4 +1,6 @@
-# Firmware
+# Kolibri - a embedded steno firmware
+
+Note: this belongs in the `qmk/` directory as this project began before ZMK (and if you must, KMK) did, and I haven't yet changed the directory name yet.
 
 This is (as I know of) the first open source attempt of putting a stenography engine into a keyboard. Heavily inspired by Plover and Dotterel, this is **not** an attempt at a full featured engine, rather an engine that include the very basic features. The system is originally designed for a ATMega32u4 + a 16MB SPI NOR flash, based on the [QMK firmware](https://qmk.fm), however it's possible to port it to other hardware. Currently, the available features are:
 - Strokes to text translation
