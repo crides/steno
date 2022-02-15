@@ -3155,7 +3155,7 @@
     (pad "" np_thru_hole circle (at -27.5 10) (size 2.1 2.1) (drill 2.1) (layers *.Mask) (tstamp 671b6836-f3a0-485d-9b89-ada2cebed1f3))
     (pad "" np_thru_hole circle (at 27.5 10) (size 2.1 2.1) (drill 2.1) (layers *.Mask) (tstamp bd1c0186-6edd-4e54-a0d7-91c026253c25))
     (pad "" np_thru_hole circle (at -40 -40) (size 2.1 2.1) (drill 2.1) (layers *.Mask) (tstamp f2283546-7964-4464-90f2-9a61bb0a8221))
-    (model "${KIPRJMOD}/cover.wrl"
+    (model "${KIPRJMOD}/cover.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
