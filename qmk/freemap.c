@@ -1,6 +1,47 @@
-#include "stroke.h"
-#include "store.h"
-#include "steno.h"
+/* #include "stroke.h" */
+/* #include "store.h" */
+/* #include "steno.h" */
+#include <stdint.h>
+#include <string.h>
+
+#define KVPAIR_BLOCK_START  0x400000
+#define FREEMAP_START       0xF00000
+
+#define FREEMAP_LVL_0 FREEMAP_START
+#define FREEMAP_LVL_1 ((1ul << 20) / 32 * 4 + FREEMAP_LVL_0)
+#define FREEMAP_LVL_2 ((1ul << 20) / 32 / 32 * 4 + FREEMAP_LVL_1)
+#define FREEMAP_LVL_3 ((1ul << 20) / 32 / 32 / 32 * 4 + FREEMAP_LVL_2)
+
+#define ALLOCATOR_SIZE (sizeof(uint32_t) * (1 + 32 + 32*32 + 32*32*32))
+
+static uint8_t mem[ALLOCATOR_SIZE] = {0};
+
+void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len) {
+    const uint32_t fm_off = offset - FREEMAP_START;
+    if (fm_off + len > ALLOCATOR_SIZE) {
+        goto ERROR;
+    }
+    for (uint32_t i = 0; i < len; i ++) {
+        buf[i] = mem[fm_off + i];
+    }
+    /* memcpy(buf, &mem[fm_off], len); */
+    return;
+ERROR:
+    return;
+}
+
+void store_write_direct(const uint32_t offset, const uint8_t *const buf, const uint8_t len) {
+    const uint32_t fm_off = offset - FREEMAP_START;
+    if (fm_off + len > ALLOCATOR_SIZE) {
+        goto ERROR;
+    }
+    for (uint32_t i = 0; i < len; i ++) {
+        mem[fm_off + i] &= buf[i];
+    }
+    return;
+ERROR:
+    return;
+}
 
 static uint32_t get_offset(uint8_t lvl) {
     switch (lvl) {
@@ -17,7 +58,8 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
     const uint8_t this_lvl_block = lvl == 0 ? block : 0;
     const uint32_t offset = get_offset(lvl);
     const uint8_t size = 1 << this_lvl_block;
-    uint32_t mask = (1 << size) - 1;
+    const uint32_t shifted = 1 << size;
+    uint32_t mask = shifted - 1;
     const uint32_t word_addr = offset + 4 * word;
     uint32_t alloc_word;
     store_read(word_addr, (uint8_t *) &alloc_word, 4);
@@ -64,4 +106,23 @@ uint32_t freemap_req(uint8_t block) {
     } else {
         return -1;
     }
+}
+
+extern int __VERIFIER_nondet_int();
+
+int main() {
+    /* for (uint32_t i = 0; i < 10; i ++) { */
+        const uint8_t blok = __VERIFIER_nondet_int() % 5;   // [0, 4]
+        const uint32_t addr = freemap_req(blok);
+        if (addr == -1) {
+            goto ERROR;
+        }
+        const uint32_t size = (1 << blok) * 16;
+        if (addr % size != 0) {
+            goto ERROR;
+        }
+    /* } */
+    return 0;
+ERROR:
+    return 1;
 }
