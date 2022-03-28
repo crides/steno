@@ -1,8 +1,8 @@
 # Steno
 
-If you are here, you are probably looking for my embedded steno work. You can find the PCB design and production files for my steno keyboards (mostly known as the batwing or just bat) in the `pcb/` directory, and the embedded steno firmware (Kolibri) and the dictionary compiler in the `qmk/` and `compiler/` directories.
+If you are here, you are probably looking for my embedded steno work. You can find the PCB design and production files for my steno keyboards (mostly known as the batwing or just bat) in the `pcb/` directory, and the embedded steno firmware (Kolibri) and the dictionary compiler in the `firmware/` and `compiler/` directories.
 
-The detailed info for each can be found in their own READMEs, [boards](pcb/README.md) [firmware](qmk/README.md) and [dictionary compiler](compiler/README.md).
+The detailed info for each can be found in their own READMEs, [boards](pcb/README.md) [firmware](firmware/README.md) and [dictionary compiler](compiler/README.md).
 
 ## What's Steno(graphy)?
 
