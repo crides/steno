@@ -2,6 +2,7 @@
 /* #include "store.h" */
 /* #include "steno.h" */
 #include <stdint.h>
+/* #include <stdlib.h> */
 #include <string.h>
 
 #define KVPAIR_BLOCK_START  0x400000
@@ -53,12 +54,19 @@ static uint32_t get_offset(uint8_t lvl) {
     return -1;
 }
 
+uint32_t lshift(uint32_t i, const uint32_t n) {
+    for (uint32_t j = 0; j < n; j ++) {
+        i *= 2;
+    }
+    return i;
+}
+
 static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block, uint32_t *ret_ind) {
     // NOTE: `word` is word (32-bit) index, *not byte*
     const uint8_t this_lvl_block = lvl == 0 ? block : 0;
     const uint32_t offset = get_offset(lvl);
-    const uint8_t size = 1 << this_lvl_block;
-    const uint32_t shifted = 1 << size;
+    const uint8_t size = lshift(1, this_lvl_block);
+    const uint32_t shifted = lshift(1, size);
     uint32_t mask = shifted - 1;
     const uint32_t word_addr = offset + 4 * word;
     uint32_t alloc_word;
@@ -66,7 +74,7 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
 #ifdef STENO_DEBUG_FLASH
     steno_debug_ln("lvl %u bloq %u word %lu alok " DWF("08"), lvl, block, word, alloc_word);
 #endif
-    for (uint8_t i = 0; i < 32; i += size, mask <<= size) {
+    for (uint8_t i = 0; i < 32; i += size, mask = lshift(mask, size)) {
         if ((alloc_word & mask) == mask) {
             const uint32_t sub_ind = i + word * 32;
             const uint32_t write_word = ~mask;
@@ -111,13 +119,17 @@ uint32_t freemap_req(uint8_t block) {
 extern int __VERIFIER_nondet_int();
 
 int main() {
-    /* for (uint32_t i = 0; i < 10; i ++) { */
-        const uint8_t blok = __VERIFIER_nondet_int() % 5;   // [0, 4]
+    for (uint32_t i = 0; i < sizeof(mem); i ++) {
+        mem[i] = 0xFF;
+    }
+    /* srand(0); */
+    /* for (uint32_t i = 0; i < 100000; i ++) { */
+        const uint8_t blok = __VERIFIER_nondet_int() /* rand() */ % 5;   // [0, 4]
         const uint32_t addr = freemap_req(blok);
         if (addr == -1) {
             goto ERROR;
         }
-        const uint32_t size = (1 << blok) * 16;
+        const uint32_t size = lshift(1, blok);
         if (addr % size != 0) {
             goto ERROR;
         }
