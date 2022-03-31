@@ -1,8 +1,16 @@
+#define CHECK_LEVEL 2
+#ifndef __GNUC__
+#define CPA
+#endif
+
 /* #include "stroke.h" */
 /* #include "store.h" */
 /* #include "steno.h" */
 #include <stdint.h>
-/* #include <stdlib.h> */
+#ifndef CPA
+#include <stdlib.h>
+#include <stdio.h>
+#endif
 #include <string.h>
 
 #define KVPAIR_BLOCK_START  0x400000
@@ -13,13 +21,30 @@
 #define FREEMAP_LVL_2 ((1ul << 20) / 32 / 32 * 4 + FREEMAP_LVL_1)
 #define FREEMAP_LVL_3 ((1ul << 20) / 32 / 32 / 32 * 4 + FREEMAP_LVL_2)
 
+#define FULL_ALLOCATOR_SIZE (sizeof(uint32_t) * (1 + 32 + 32*32 + 32*32*32))
+
+#if CHECK_LEVEL == 1
+#define ALLOCATOR_SIZE (sizeof(uint32_t) * (1))
+#define MEM_OFFSET FREEMAP_LVL_3
+#elif CHECK_LEVEL == 2
+#define ALLOCATOR_SIZE (sizeof(uint32_t) * (1 + 32))
+#define MEM_OFFSET FREEMAP_LVL_2
+#elif CHECK_LEVEL == 3
+#define ALLOCATOR_SIZE (sizeof(uint32_t) * (1 + 32 + 32*32))
+#define MEM_OFFSET FREEMAP_LVL_1
+#elif CHECK_LEVEL == 4
 #define ALLOCATOR_SIZE (sizeof(uint32_t) * (1 + 32 + 32*32 + 32*32*32))
+#define MEM_OFFSET FREEMAP_LVL_0
+#endif
 
 static uint8_t mem[ALLOCATOR_SIZE] = {0};
 
 void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len) {
-    const uint32_t fm_off = offset - FREEMAP_START;
+    const uint32_t fm_off = offset - MEM_OFFSET;
     if (fm_off + len > ALLOCATOR_SIZE) {
+#ifndef CPA
+        printf("off %u + len %u > aloc %u\n", fm_off, len, ALLOCATOR_SIZE);
+#endif
         goto ERROR;
     }
     for (uint32_t i = 0; i < len; i ++) {
@@ -32,8 +57,11 @@ ERROR:
 }
 
 void store_write_direct(const uint32_t offset, const uint8_t *const buf, const uint8_t len) {
-    const uint32_t fm_off = offset - FREEMAP_START;
+    const uint32_t fm_off = offset - MEM_OFFSET;
     if (fm_off + len > ALLOCATOR_SIZE) {
+#ifndef CPA
+        printf("off %u + len %u > aloc %u\n", fm_off, len, ALLOCATOR_SIZE);
+#endif
         goto ERROR;
     }
     for (uint32_t i = 0; i < len; i ++) {
@@ -45,6 +73,7 @@ ERROR:
 }
 
 static uint32_t get_offset(uint8_t lvl) {
+    lvl = 4 - CHECK_LEVEL + lvl;
     switch (lvl) {
         case 0: return FREEMAP_LVL_0;
         case 1: return FREEMAP_LVL_1;
@@ -108,7 +137,7 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
 // 0xFF is None, since we don't have that much space
 uint32_t freemap_req(uint8_t block) {
     uint32_t ind;
-    _req(3, 0, block, &ind);
+    _req(CHECK_LEVEL - 1, 0, block, &ind);
     if (ind < (FREEMAP_START - KVPAIR_BLOCK_START)) {
         return ind;
     } else {
@@ -116,24 +145,43 @@ uint32_t freemap_req(uint8_t block) {
     }
 }
 
+#ifdef CPA
 extern int __VERIFIER_nondet_int();
+#endif
 
 int main() {
-    for (uint32_t i = 0; i < sizeof(mem); i ++) {
+    for (uint32_t i = 0; i < ALLOCATOR_SIZE; i ++) {
         mem[i] = 0xFF;
     }
-    /* srand(0); */
-    /* for (uint32_t i = 0; i < 100000; i ++) { */
-        const uint8_t blok = __VERIFIER_nondet_int() /* rand() */ % 5;   // [0, 4]
+#ifndef CPA
+    srand(0);
+#endif
+    for (uint32_t i = 0; i < 2048; i ++) {
+        const uint8_t blok =
+#ifdef CPA
+            __VERIFIER_nondet_int()
+#else
+            rand()
+#endif
+            % 5;   // [0, 4]
         const uint32_t addr = freemap_req(blok);
+#ifndef CPA
+        printf("aloc %u = %u\n", blok, addr);
+#endif
         if (addr == -1) {
+#ifndef CPA
+            printf("nomem @ %u\n", i);
+#endif
             goto ERROR;
         }
         const uint32_t size = lshift(1, blok);
         if (addr % size != 0) {
+#ifndef CPA
+            printf("no align @ %u\n", i);
+#endif
             goto ERROR;
         }
-    /* } */
+    }
     return 0;
 ERROR:
     return 1;
