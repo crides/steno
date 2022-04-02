@@ -1,7 +1,5 @@
-#define CHECK_LEVEL 2
-#ifndef __GNUC__
+#define CHECK_LEVEL 1
 #define CPA
-#endif
 
 /* #include "stroke.h" */
 /* #include "store.h" */
@@ -39,7 +37,7 @@
 
 static uint8_t mem[ALLOCATOR_SIZE] = {0};
 
-void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len) {
+void store_read(unsigned int const offset, uint8_t *buf, const uint8_t len) {
     const uint32_t fm_off = offset - MEM_OFFSET;
     if (fm_off + len > ALLOCATOR_SIZE) {
 #ifndef CPA
@@ -48,7 +46,8 @@ void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len) {
         goto ERROR;
     }
     for (uint32_t i = 0; i < len; i ++) {
-        buf[i] = mem[fm_off + i];
+        const uint8_t byte = mem[fm_off + i];
+        buf[i] = byte;
     }
     /* memcpy(buf, &mem[fm_off], len); */
     return;
@@ -83,19 +82,12 @@ static uint32_t get_offset(uint8_t lvl) {
     return -1;
 }
 
-uint32_t lshift(uint32_t i, const uint32_t n) {
-    for (uint32_t j = 0; j < n; j ++) {
-        i *= 2;
-    }
-    return i;
-}
-
 static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block, uint32_t *ret_ind) {
     // NOTE: `word` is word (32-bit) index, *not byte*
     const uint8_t this_lvl_block = lvl == 0 ? block : 0;
     const uint32_t offset = get_offset(lvl);
-    const uint8_t size = lshift(1, this_lvl_block);
-    const uint32_t shifted = lshift(1, size);
+    const uint8_t size = 1 << this_lvl_block;
+    const uint32_t shifted = 1 << size;
     uint32_t mask = shifted - 1;
     const uint32_t word_addr = offset + 4 * word;
     uint32_t alloc_word;
@@ -103,7 +95,7 @@ static uint8_t _req(const uint8_t lvl, const uint32_t word, const uint8_t block,
 #ifdef STENO_DEBUG_FLASH
     steno_debug_ln("lvl %u bloq %u word %lu alok " DWF("08"), lvl, block, word, alloc_word);
 #endif
-    for (uint8_t i = 0; i < 32; i += size, mask = lshift(mask, size)) {
+    for (uint8_t i = 0; i < 32; i += size, mask <<= size) {
         if ((alloc_word & mask) == mask) {
             const uint32_t sub_ind = i + word * 32;
             const uint32_t write_word = ~mask;
@@ -156,7 +148,7 @@ int main() {
 #ifndef CPA
     srand(0);
 #endif
-    for (uint32_t i = 0; i < 2048; i ++) {
+    /* for (uint32_t i = 0; i < 1; i ++) { */
         const uint8_t blok =
 #ifdef CPA
             __VERIFIER_nondet_int()
@@ -174,14 +166,15 @@ int main() {
 #endif
             goto ERROR;
         }
-        const uint32_t size = lshift(1, blok);
-        if (addr % size != 0) {
+        const uint32_t size = 1 << blok;
+        const uint32_t mod = addr % size;
+        if (mod != 0) {
 #ifndef CPA
             printf("no align @ %u\n", i);
 #endif
             goto ERROR;
         }
-    }
+    /* } */
     return 0;
 ERROR:
     return 1;
