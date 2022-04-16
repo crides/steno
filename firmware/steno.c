@@ -36,7 +36,7 @@ int64_t time = 0;
 #ifdef QMK_KEYBOARD
 #define print_time(sec) steno_debug_ln("<> " sec ": %ums", timer_elapsed(time));
 #else
-#define print_time(sec) steno_debug_ln("<> " sec ": %lldms", (k_uptime_get() - time));
+#define print_time(sec) steno_debug_ln("<> " sec ": %ldms", (long) (k_uptime_get() - time));
 #endif
 
 // Intercept the steno key codes, searches for the stroke, and outputs the output

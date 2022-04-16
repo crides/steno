@@ -61,5 +61,5 @@ static const struct behavior_driver_api behavior_steno_driver_api = {
     .binding_pressed = on_keymap_binding_pressed, .binding_released = on_keymap_binding_released
 };
 
-DEVICE_DT_INST_DEFINE(0, behavior_steno_init, device_pm_control_nop, NULL, NULL, APPLICATION,
+DEVICE_DT_INST_DEFINE(0, behavior_steno_init, NULL, NULL, NULL, APPLICATION,
                     CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &behavior_steno_driver_api);
