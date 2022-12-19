@@ -139,7 +139,7 @@ config ZMK_EMBEDDED_STENO_DEBUG_STROKE
 
 config ZMK_EMBEDDED_STENO_LOG_BACKEND_CONSOLE
     bool "Enable logging to the console in the embedded steno engine"
-    select ZMK_USB_LOGGING
+    # select ZMK_USB_LOGGING
     default y
 
 endmenu

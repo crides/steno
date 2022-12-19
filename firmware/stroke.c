@@ -90,7 +90,7 @@ uint32_t find_strokes(const uint8_t *const strokes, const uint8_t len, const uin
 #endif
     uint32_t bucket;
     for (; ; bucket_ind += BUCKET_SIZE) {
-        store_read(bucket_ind, (uint8_t *) &bucket, BUCKET_SIZE);
+        store_read(BUCKET_START + bucket_ind, (uint8_t *) &bucket, BUCKET_SIZE);
 #ifdef STENO_DEBUG_STROKE
         steno_debug_ln("    bucket: " DWF("08"), bucket);
 #endif

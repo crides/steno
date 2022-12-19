@@ -83,7 +83,9 @@ impl From<Attr> for RawAttr {
 }
 
 #[allow(dead_code)]
-pub const KVPAIR_START: usize = 0x400000;
+pub const BUCKET_START: usize = 0x100000;
+#[allow(dead_code)]
+pub const KVPAIR_START: usize = 0x500000;
 #[allow(dead_code)]
 pub const FREEMAP_START: usize = 0xF00000;
 #[allow(dead_code)]
@@ -171,7 +173,7 @@ pub fn to_writer(
     }
 
     dbg!(collisions);
-    out.seek(0);
+    out.seek(BUCKET_START);
     for bucket in buckets {
         out.write_all(&bucket.to_le_bytes());
     }
@@ -334,7 +336,7 @@ impl Uf2File {
     const MAGIC_END: u32 = 0x0AB16F30;
     // Family ID present
     const FLAGS: u32 = 0x00002000;
-    const FAMILY_ID: u32 = 0x00302cc0; // STOEUPB
+    const FAMILY_ID: u32 = 0xe48bff56; // STOEUPB
     const UF2_DATA_SIZE: usize = 476;
     const DATA_SIZE: usize = 256;
 

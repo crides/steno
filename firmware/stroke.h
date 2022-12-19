@@ -15,8 +15,8 @@
 #define U24_FROM_PTR_LE(p) (((uint32_t)(p)[2] << 16) | ((uint32_t)(p)[1] << 8) | ((uint32_t)(p)[0]))
 #define STROKE_FROM_PTR(p) U24_FROM_PTR_LE(p)
 
-#define BUCKET_START 0
-#define KVPAIR_BLOCK_START  0x400000
+#define BUCKET_START        0x100000
+#define KVPAIR_BLOCK_START  0x500000
 #define FREEMAP_START       0xF00000
 #define SCRATCH_START       0xF22000
 #define ORTHOGRAPHY_START   0xF30000
