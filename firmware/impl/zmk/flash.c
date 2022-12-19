@@ -1,8 +1,7 @@
 // Functions for interacting with SPI flash
 #include "store.h"
 #include "steno.h"
-#include <device.h>
-#include <drivers/flash.h>
+#include <zephyr/drivers/flash.h>
 
 #define FLASH_ERASE_PAGE_SIZE 0x1000    // 4KiB
 

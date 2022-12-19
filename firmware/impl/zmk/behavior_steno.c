@@ -6,7 +6,8 @@
 
 #define DT_DRV_COMPAT zmk_behavior_steno
 
-#include <device.h>
+#include <zephyr/device.h>
+#include <zephyr/logging/log.h>
 #include <drivers/behavior.h>
 #include "steno_keys.h"
 
@@ -47,7 +48,7 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
         if (current == 0 && pressed != 0) {
             char stroke[32];
             stroke_to_string(pressed, stroke, NULL);
-            LOG_WRN("chord pressed: %06X, %s", pressed, log_strdup(stroke));
+            LOG_WRN("chord pressed: %06X, %s", pressed, stroke);
             ebd_steno_process_stroke(pressed);
             pressed = 0;
         }

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #ifdef CONFIG_ZMK_KEYBOARD_NAME
-#include <kernel.h>
-#include <logging/log.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(steno, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
 #define _STENO_C_
 #endif
@@ -148,7 +148,7 @@ void _ebd_steno_process_stroke(const uint32_t stroke) {
         steno_debug_ln("  scg: %u%u%u", state.space, state.cap, state.glue);
         char buf[24];
         stroke_to_string(hist->stroke, buf, NULL);
-        steno_debug_ln("  stroke: %s", log_strdup(buf));
+        steno_debug_ln("  stroke: %s", buf);
         if (hist->bucket != 0) {
             steno_debug_ln("  bucket: " DWF("08"), hist->bucket);
         }

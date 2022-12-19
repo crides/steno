@@ -2,7 +2,7 @@
 #include <zmk/events/keycode_state_changed.h>
 
 #include <dt-bindings/zmk/keys.h>
-#include <kernel.h>
+#include <zephyr/kernel.h>
 
 void register_code(const uint32_t keycode) {
     ZMK_EVENT_RAISE(zmk_keycode_state_changed_from_encoded(keycode, true, k_uptime_get()));
