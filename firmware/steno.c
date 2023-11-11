@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #ifdef CONFIG_ZMK_KEYBOARD_NAME
-#include <kernel.h>
-#include <logging/log.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(steno, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
 #define _STENO_C_
 #endif

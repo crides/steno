@@ -1,8 +1,8 @@
 // Functions for interacting with SPI flash
 #include "store.h"
 #include "steno.h"
-#include <device.h>
-#include <drivers/flash.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/flash.h>
 
 #define FLASH_ERASE_PAGE_SIZE 0x1000    // 4KiB
 
@@ -10,16 +10,9 @@
 uint8_t flash_debug_enable = 0;
 #endif
 
-#define FLASH_DEVICE DT_LABEL(DT_CHOSEN(zmk_steno_flash))
+static const struct device *flash_dev = DEVICE_DT_GET(DT_CHOSEN(zmk_steno_flash));
 
-static const struct device *flash_dev;
-
-void store_init(void) {
-    flash_dev = device_get_binding(FLASH_DEVICE);
-	if (!flash_dev) {
-		LOG_ERR("SPI flash driver %s was not found!\n", FLASH_DEVICE);
-	}
-}
+void store_init(void) { }
 
 void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len) {
 #ifdef STENO_DEBUG_FLASH

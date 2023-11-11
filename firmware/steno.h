@@ -28,7 +28,7 @@
 #elif defined(CONFIG_ZMK_KEYBOARD_NAME)
 
 #ifndef _STENO_C_
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(steno, CONFIG_ZMK_EMBEDDED_STENO_LOG_LEVEL);
 #endif
 
