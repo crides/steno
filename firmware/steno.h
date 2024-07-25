@@ -23,7 +23,6 @@
 #define steno_debug(format, ...) xprintf(format, ##__VA_ARGS__)
 #define steno_debug_ln(format, ...) xprintf(format "\n", ##__VA_ARGS__)
 #endif
-#define log_strdup(s) (s)
 
 #elif defined(CONFIG_ZMK_KEYBOARD_NAME)
 

@@ -1,3 +1,5 @@
+#include <zmk/behavior.h>
+#include <zmk/behavior_queue.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/keycode_state_changed.h>
 
@@ -5,13 +7,13 @@
 #include <zephyr/kernel.h>
 
 void register_code(const uint32_t keycode) {
-    ZMK_EVENT_RAISE(zmk_keycode_state_changed_from_encoded(keycode, true, k_uptime_get()));
-    k_msleep(CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL);
+    struct zmk_behavior_binding binding = { .behavior_dev = "key_press", .param1 = keycode };
+    zmk_behavior_queue_add(0, binding, true, CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL);
 }
 
 void unregister_code(const uint32_t keycode) {
-    ZMK_EVENT_RAISE(zmk_keycode_state_changed_from_encoded(keycode, false, k_uptime_get()));
-    k_msleep(CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL);
+    struct zmk_behavior_binding binding = { .behavior_dev = "key_press", .param1 = keycode };
+    zmk_behavior_queue_add(0, binding, false, CONFIG_ZMK_EMBEDDED_STENO_KEY_INTERVAL);
 }
  
 void tap_code(const uint32_t keycode) {

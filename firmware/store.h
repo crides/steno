@@ -5,6 +5,7 @@
 // Init the underlying storage
 void store_init(void);
 void store_read(uint32_t const offset, uint8_t *const buf, const uint8_t len);
+#ifndef STENO_READONLY
 // Flush the erases and writes in the underlying storage; may be used for optimizations
 void store_flush(void);
 // Perform a raw/direct write to the underlying storage; this is when we know we are only clearing
@@ -20,6 +21,7 @@ void store_erase_partial(const uint32_t offset, const uint8_t len);
 void store_rewrite_start(void);
 // Incremental addition to a total rewrite; buffer is always of the same length
 void store_rewrite_write(const uint32_t offset, const uint8_t *const buf);
+#endif
 #endif
 
 #define STORE_REWRITE_PACKET_SIZE 64        // FIXME
